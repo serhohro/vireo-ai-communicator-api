@@ -2,8 +2,8 @@
 
 **One Language. All AI. Unlimited Future.**
 
-[![GitHub stars](https://img.shields.io/github/stars/serhohro/vireo-ai-communicator?style=for-the-badge)](https://github.com/serhohro/vireo-ai-communicator/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/serhohro/vireo-ai-communicator?style=for-the-badge)](https://github.com/serhohro/vireo-ai-communicator/network/members)
+[![GitHub stars](https://img.shields.io/github/stars/serhohro/vireo-ai-communicator-api?style=for-the-badge)](https://github.com/serhohro/vireo-ai-communicator-api/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/serhohro/vireo-ai-communicator-api?style=for-the-badge)](https://github.com/serhohro/vireo-ai-communicator-api/network/members)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue?style=for-the-badge)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.8+-blue?style=for-the-badge&logo=python)](https://python.org)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=for-the-badge)](CONTRIBUTING.md)
@@ -53,7 +53,7 @@ It enables:
 
 ```bash
 # Clone the repository
-git clone https://github.com/serhohro/vireo-ai-communicator.git
+git clone https://github.com/serhohro/vireo-ai-communicator-api.git
 cd vireo-ai-communicator
 
 # Install dependencies
