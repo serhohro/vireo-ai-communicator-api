@@ -3,7 +3,7 @@
     "displayName": "Vireo Language",
     "description": "Syntax highlighting, code snippets, and language support for Vireo — the world's first AI-to-AI communication language",
     "version": "1.0.0",
-    "publisher": "YOUR_USERNAME",
+    "publisher": "serhohro",
     "engines": {
         "vscode": "^1.74.0"
     },
@@ -16,14 +16,20 @@
         "vireo",
         "ai",
         "programming-language",
-        "syntax-highlighting"
+        "syntax-highlighting",
+        "machine-learning",
+        "neural-networks"
     ],
     "icon": "icon.png",
     "repository": {
         "type": "git",
-        "url": "https://github.com/YOUR_USERNAME/vireo-ai-communicator"
+        "url": "https://github.com/serhohro/vireo-ai-communicator-api.git"
     },
     "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://github.com/serhohro/vireo-ai-communicator-api/issues"
+    },
+    "homepage": "https://github.com/serhohro/vireo-ai-communicator-api#readme",
     "contributes": {
         "languages": [
             {
