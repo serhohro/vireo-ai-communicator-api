@@ -110,16 +110,14 @@ evaluate MNIST {
 }
 
 ## 📊 Comparison
-
-| Feature | Python | Rust | Vireo |
-|---------|--------|------|-------|
-| AI Integration | ⚠️ Via prompting | ⚠️ Via prompting | ✅ **Native design** |
-| Execution Speed | ⚠️ Medium | ✅ High | ✅ **High** |
-| Ease of Use | ✅ High | ❌ Low | ✅ **High** |
-| Built-in Tensors | ❌ Via libraries | ❌ Via libraries | ✅ **Built-in** |
-| Automatic Differentiation | ❌ Via libraries | ❌ No | ✅ **Built-in** |
-| Local Execution | ✅ Yes | ✅ Yes | ✅ **Yes** |
-| AI Communication | ❌ No | ❌ No | ✅ **Native design** |
+| Feature                   | Python            | Rust             | Vireo |
+| AI Integration            | ⚠️ Via prompting | ⚠️ Via prompting | ✅ **Native design** |
+| Execution Speed           | ⚠️ Medium        | ✅ High          | ✅ **High** |
+| Ease of Use               | ✅ High          | ❌ Low           | ✅ **High** |
+| Built-in Tensors          | ❌ Via libraries | ❌ Via libraries | ✅ **Built-in** |
+| Automatic Differentiation | ❌ Via libraries | ❌ No            | ✅ **Built-in** |
+| Local Execution           | ✅ Yes           | ✅ Yes           | ✅ **Yes**       
+| AI Communication          | ❌ No            | ❌ No            | ✅ **Native design** |
 
 🤝 How to Contribute
 ⭐ Star the repository
