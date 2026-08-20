@@ -108,16 +108,18 @@ evaluate MNIST {
     data = "test"
     metrics = [accuracy, precision, recall, f1]
 }
-📊 Comparison
 
-Feature	Python	Rust	Vireo
-AI Can Generate/Interpret	🟡 Via prompting	🟡 Via prompting	🟢 Designed for it
-Speed	🟡 Medium	🟢 High	🟢 High
-Simplicity	🟢 High	🔴 Low	🟢 High
-Built-in Tensors	🔴 Via libs	🔴 Via libs	🟢 Built-in
-Built-in Autodiff	🔴 Via libs	🔴 No	🟢 Built-in
-Local Execution	🟢 Yes	🟢 Yes	🟢 Yes
-AI Communication	🔴 No	🔴 No	🟢 Designed for it
+## 📊 Comparison
+
+| Feature | Python | Rust | Vireo |
+|---------|--------|------|-------|
+| AI Integration | 🟡 Via prompting | 🟡 Via prompting | 🟢 **Native design** |
+| Execution Speed | 🟡 Medium | 🟢 High | 🟢 **High** |
+| Ease of Use | 🟢 High | 🔴 Low | 🟢 **High** |
+| Built-in Tensors | 🔴 Via libraries | 🔴 Via libraries | 🟢 **Built-in** |
+| Automatic Differentiation | 🔴 Via libraries | 🔴 No | 🟢 **Built-in** |
+| Local Execution | 🟢 Yes | 🟢 Yes | 🟢 **Yes** |
+| AI Communication | 🔴 No | 🔴 No | 🟢 **Native design** |
 
 🤝 How to Contribute
 ⭐ Star the repository
