@@ -4,7 +4,7 @@
 
 > 🚧 **Status: Active Development (v1.4.0)**
 > 
-> **Note:** Vireo is currently in active development (v0.4.0). While the syntax is stable and AI models can generate Vireo code through prompting, the full protocol for AI-to-AI communication is still evolving. We welcome contributions and feedback!
+> **Note:** Vireo is currently in active development (v1.4.0). While the syntax is stable and AI models can generate Vireo code through prompting, the full protocol for AI-to-AI communication is still evolving. We welcome contributions and feedback!
 
 [![GitHub stars](https://img.shields.io/github/stars/serhohro/vireo-ai-communicator-api?style=for-the-badge)](https://github.com/serhohro/vireo-ai-communicator-api/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/serhohro/vireo-ai-communicator-api?style=for-the-badge)](https://github.com/serhohro/vireo-ai-communicator-api/network/members)
