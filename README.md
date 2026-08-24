@@ -2,7 +2,7 @@
 
 > **One Language. All AI. Unlimited Future.**
 
-> 🚧 **Status: Active Development (v1.4.0)**  
+> 🚧 **Status: Active Development (v1.4.1)**  
 > Core language and protocol are stable. Multi-agent system with 8 roles is implemented.  
 > LLM integration with 5+ providers works. Ready for testing and feedback.
 
