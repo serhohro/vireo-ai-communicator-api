@@ -1,6 +1,5 @@
 # 🌿 Vireo — A Language Designed for AI-to-AI Communication
-
-> **One Language. All AI. Unlimited Future.**
+**One Language. All AI. Unlimited Future.**
 
 > 🚧 **Status: Active Development (v1.4.1)**  
 > Core language and protocol are stable. Multi-agent system with 8 roles is implemented.  
@@ -16,8 +15,8 @@
 ---
 
 ## 🌍 What is Vireo?
-
-**Vireo** is a programming language and protocol designed specifically for **autonomous AI-to-AI communication**.
+      
+**Vireo** is the world's first programming language designed specifically for **autonomous AI-to-AI communication**.
 
 It enables AI agents to:
 - ✅ **Generate code** through LLMs (Ollama, Claude, GPT-4, Gemini, Mistral)
