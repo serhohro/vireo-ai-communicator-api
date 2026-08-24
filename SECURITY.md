@@ -12,8 +12,8 @@ If you discover a security vulnerability, please **do not** open a public issue.
 
 Instead, please report it to us privately:
 
-- Email: sergo87231@gmail.com
-- GitHub: serhohro
+- Email: [YOUR_EMAIL]
+- GitHub: [YOUR_USERNAME]
 
 We will respond within 48 hours.
 

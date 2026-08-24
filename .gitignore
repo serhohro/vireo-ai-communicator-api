@@ -1,0 +1,368 @@
+# [file name]: .gitignore
+# ============================================================
+# VIREO .gitignore
+# ============================================================
+
+# ============================================================
+# PYTHON
+# ============================================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+target/
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# pdm
+.pdm.toml
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# ============================================================
+# VIREO SPECIFIC
+# ============================================================
+
+# Model files
+*.model
+*.weights
+*.vireo
+*.vireo.backup
+
+# Saved models
+models/
+*.h5
+*.pkl
+*.joblib
+
+# Data files
+*.csv
+*.json
+*.parquet
+*.feather
+
+# Logs
+logs/
+*.log
+server_log.txt
+
+# Temporary files
+*.tmp
+*.temp
+
+# Checkpoints
+checkpoints/
+*.ckpt
+
+# Output files
+outputs/
+predictions/
+results/
+
+# ============================================================
+# LLM PROVIDERS
+# ============================================================
+
+# Ollama
+ollama/
+.ollama/
+
+# Anthropic
+anthropic/
+
+# OpenAI
+openai/
+
+# Gemini
+gemini/
+
+# Mistral
+mistral/
+
+# ============================================================
+# IDEs AND EDITORS
+# ============================================================
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+*.un~
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# Atom
+.atom/
+
+# ============================================================
+# OPERATING SYSTEMS
+# ============================================================
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Linux
+.directory
+*.swap
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# ============================================================
+# DOCKER
+# ============================================================
+
+docker-compose.override.yml
+.dockerignore
+
+# ============================================================
+# MISC
+# ============================================================
+
+# Local configuration files
+*.local
+*.orig
+*.rej
+
+# Debug files
+*.dbg
+*.debug
+
+# Performance files
+*.prof
+*.callgrind
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Archives
+*.zip
+*.tar
+*.gz
+*.7z
+*.rar
+
+# ============================================================
+# SECURITY
+# ============================================================
+
+# Secrets
+*.secret
+*.key
+*.pem
+*.crt
+*.csr
+
+# Credentials
+credentials.json
+secrets.json
+*.private
+
+# ============================================================
+# DATABASES
+# ============================================================
+
+*.db
+*.sqlite
+*.sqlite3
+
+# ============================================================
+# DEPLOYMENT
+# ============================================================
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Kubernetes
+*.kubeconfig
+
+# Ansible
+*.retry
+
+# ============================================================
+# DEVELOPMENT
+# ============================================================
+
+# Temporary development files
+test_*.py
+debug_*.py
+sandbox/
+tmp/
+temp/
+
+# ============================================================
+# NPM / NODE
+# ============================================================
+
+node_modules/
+package-lock.json
+yarn.lock
+
+# VS Code Extension
+*.vsix

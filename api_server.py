@@ -1,6 +1,7 @@
 # ============================================================
-# VIREO AI COMMUNICATOR - API SERVER v1.1.0
-# Повноцінний API сервер з інтерпретатором Vireo v0.7.2
+# VIREO AI COMMUNICATOR - API SERVER v1.3.0
+# Повноцінний API сервер з інтерпретатором Vireo, 
+# AI-to-AI протоколом та LLM підтримкою (Ollama, Gemini, Claude, OpenAI, Mistral)
 # ============================================================
 
 from flask import Flask, request, jsonify, render_template_string
@@ -286,7 +287,7 @@ class Sequential:
 
 
 # ============================================================
-# 4. ІНТЕРПРЕТАТОР VIREO (РОЗШИРЕНИЙ)
+# 4. ІНТЕРПРЕТАТОР VIREO
 # ============================================================
 
 class VireoInterpreter:
@@ -309,7 +310,6 @@ class VireoInterpreter:
                 continue
             
             if line.startswith('model '):
-                # Збираємо весь блок model
                 block_lines = [line]
                 i += 1
                 brace_count = 0
@@ -344,7 +344,6 @@ class VireoInterpreter:
         return '\n'.join(self.output)
     
     def _execute_model_block(self, lines: List[str]):
-        """Обробка model блоку — збирає ВСІ рядки всередині"""
         first_line = lines[0]
         model_name = first_line.replace('model ', '').strip().split('{')[0].strip()
         
@@ -464,27 +463,166 @@ class VireoInterpreter:
 
 
 # ============================================================
-# 5. API ЕНДПОІНТИ
+# 5. ОСНОВНІ API ЕНДПОІНТИ
 # ============================================================
 
 @app.route('/')
 def home():
-    return jsonify({
-        "service": "Vireo AI Communicator API",
-        "version": "1.1.0",
-        "status": "running",
-        "documentation": "/docs",
-        "endpoints": {
-            "GET /": "Home",
-            "GET /docs": "Documentation",
-            "POST /execute": "Execute Vireo code",
-            "POST /interpreter": "Execute with interpreter",
-            "POST /neural": "Create neural network",
-            "POST /tensor": "Tensor operations",
-            "POST /chat": "AI communication",
-            "GET /health": "Health check"
-        }
-    })
+    """Головна сторінка з переходом на веб-інтерфейс."""
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>🌿 Vireo</title>
+        <style>
+            body { 
+                font-family: 'Segoe UI', sans-serif; 
+                background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+                color: #e2e8f0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+                text-align: center;
+            }
+            .container { max-width: 700px; padding: 40px; }
+            h1 { 
+                font-size: 4em; 
+                background: linear-gradient(135deg, #48bb78, #667eea); 
+                -webkit-background-clip: text; 
+                -webkit-text-fill-color: transparent; 
+                margin-bottom: 10px;
+            }
+            .subtitle { 
+                color: #a0aec0; 
+                font-size: 1.2em; 
+                margin-bottom: 30px;
+            }
+            .subtitle span { color: #48bb78; font-weight: 600; }
+            .links { 
+                display: flex; 
+                gap: 20px; 
+                justify-content: center; 
+                flex-wrap: wrap; 
+            }
+            .links a { 
+                color: #48bb78; 
+                text-decoration: none; 
+                padding: 14px 35px; 
+                border: 2px solid #48bb78; 
+                border-radius: 12px; 
+                transition: all 0.3s;
+                font-weight: 600;
+                font-size: 1.1em;
+            }
+            .links a:hover { 
+                background: #48bb78; 
+                color: #1a202c;
+                transform: translateY(-3px);
+                box-shadow: 0 8px 25px rgba(72, 187, 120, 0.3);
+            }
+            .links a.llm { 
+                border-color: #9f7aea;
+                color: #9f7aea;
+            }
+            .links a.llm:hover { 
+                background: #9f7aea; 
+                color: #1a202c;
+                box-shadow: 0 8px 25px rgba(159, 122, 234, 0.3);
+            }
+            .version {
+                color: #718096;
+                font-size: 0.8em;
+                margin-top: 30px;
+                border-top: 1px solid rgba(255,255,255,0.1);
+                padding-top: 20px;
+            }
+            .badges {
+                display: flex;
+                gap: 10px;
+                justify-content: center;
+                flex-wrap: wrap;
+                margin-bottom: 30px;
+            }
+            .badge {
+                padding: 4px 15px;
+                border-radius: 20px;
+                font-size: 0.7em;
+                font-weight: 600;
+                border: 1px solid rgba(255,255,255,0.15);
+            }
+            .badge.green { color: #48bb78; border-color: #48bb78; }
+            .badge.purple { color: #9f7aea; border-color: #9f7aea; }
+            .badge.gold { color: #ecc94b; border-color: #ecc94b; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🌿 Vireo</h1>
+            <p class="subtitle">A Language Designed for <span>AI-to-AI Communication</span></p>
+            
+            <div class="badges">
+                <span class="badge green">✅ Real AI-to-AI</span>
+                <span class="badge purple">🧠 5+ LLM Providers</span>
+                <span class="badge gold">🔄 Autonomous Agents</span>
+            </div>
+            
+            <div class="links">
+                <a href="/web">🌐 Web Interface</a>
+                <a href="/docs">📚 Documentation</a>
+                <a href="/llm/providers" class="llm">📡 LLM Providers</a>
+            </div>
+            
+            <div class="version">
+                ⚡ v1.3.0 · Powered by Ollama, Gemini, Claude, OpenAI, Mistral
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
+
+@app.route('/web')
+def web_interface():
+    """Відкриває веб-інтерфейс через Flask."""
+    try:
+        with open('web_interface.html', 'r', encoding='utf-8') as f:
+            return f.read()
+    except FileNotFoundError:
+        return """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>web_interface.html not found</title>
+            <style>
+                body { font-family: 'Segoe UI', sans-serif; 
+                       background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+                       color: #e2e8f0;
+                       display: flex;
+                       justify-content: center;
+                       align-items: center;
+                       height: 100vh;
+                       margin: 0;
+                       text-align: center;
+                     }
+                .container { max-width: 600px; padding: 40px; }
+                h1 { color: #fc8181; font-size: 2.5em; }
+                .hint { color: #a0aec0; margin-top: 20px; }
+                a { color: #48bb78; text-decoration: none; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>❌ web_interface.html not found</h1>
+                <p class="hint">Please make sure <strong>web_interface.html</strong> is in the project folder.<br>
+                <a href="/">← Back to home</a></p>
+            </div>
+        </body>
+        </html>
+        """, 404
 
 
 @app.route('/docs')
@@ -493,65 +631,86 @@ def docs():
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Vireo API Documentation</title>
+        <title>Vireo API Documentation v1.3.0</title>
         <style>
-            body { font-family: 'Segoe UI', sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }
-            h1 { color: #667eea; }
+            body { font-family: 'Segoe UI', sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; }
+            h1 { color: #48bb78; }
             h2 { color: #333; margin-top: 30px; }
-            h3 { color: #555; }
-            pre { background: #f0f0f0; padding: 15px; border-radius: 8px; overflow-x: auto; }
-            code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
-            .endpoint { background: #e8f0fe; padding: 15px; border-radius: 8px; margin: 10px 0; }
-            .badge { background: #667eea; color: white; padding: 2px 10px; border-radius: 12px; font-size: 0.8em; }
+            .endpoint { background: #f0f4f8; padding: 15px; border-radius: 8px; margin: 10px 0; border-left: 4px solid #48bb78; }
+            .badge { background: #48bb78; color: white; padding: 2px 10px; border-radius: 12px; font-size: 0.8em; }
+            .badge.llm { background: #9f7aea; }
+            pre { background: #1a202c; color: #e2e8f0; padding: 15px; border-radius: 8px; overflow-x: auto; }
+            .note { background: #fffff0; padding: 15px; border-radius: 8px; border-left: 4px solid #ecc94b; margin: 15px 0; }
         </style>
     </head>
     <body>
-        <h1>🟢 Vireo API Documentation</h1>
-        <p><strong>Version:</strong> 1.1.0</p>
-        <p><strong>Status:</strong> ✅ Running</p>
+        <h1>🟢 Vireo API Documentation v1.3.0</h1>
+        <p><strong>Version:</strong> 1.3.0</p>
+        <p><strong>Status:</strong> ✅ Running with LLM support</p>
         
-        <h2>📡 Endpoints</h2>
+        <div class="note">
+            <strong>🤖 NEW:</strong> LLM support for autonomous AI-to-AI communication!
+            Supports Ollama, Gemini, Claude, OpenAI, Mistral.
+        </div>
+        
+        <h2>🤖 LLM Endpoints</h2>
+        
+        <div class="endpoint">
+            <h3>GET /llm/providers</h3>
+            <p><span class="badge llm">LLM</span> Get status of all LLM providers</p>
+        </div>
+        
+        <div class="endpoint">
+            <h3>POST /llm/test/&lt;provider&gt;</h3>
+            <p><span class="badge llm">LLM</span> Test a specific provider</p>
+            <pre>{
+    "provider": "ollama"
+}</pre>
+        </div>
+        
+        <div class="endpoint">
+            <h3>POST /llm/agent/&lt;id&gt;/auto_negotiate</h3>
+            <p><span class="badge llm">LLM</span> <strong>FULL AUTONOMOUS NEGOTIATION</strong></p>
+            <p>Agent A asks LLM for code → proposes → Agent B asks LLM for decision → commits → executes</p>
+            <pre>{
+    "recipient": "agent-training",
+    "task": "Train a model on MNIST dataset",
+    "provider": "ollama"
+}</pre>
+        </div>
+        
+        <h2>📡 Standard Endpoints</h2>
         
         <div class="endpoint">
             <h3>POST /interpreter</h3>
             <p><span class="badge">POST</span> Execute Vireo code</p>
-            <pre>{
-    "code": "model MNIST {\n    layer Dense(784, 128)\n    activation ReLU\n    layer Dense(128, 10)\n    activation Softmax\n}"
-}</pre>
+            <pre>{"code": "model MNIST { layer Dense(784, 128) }"}</pre>
         </div>
         
         <div class="endpoint">
             <h3>POST /neural</h3>
             <p><span class="badge">POST</span> Create neural network</p>
-            <pre>{
-    "layers": [784, 256, 128, 10],
-    "activation": "ReLU"
-}</pre>
+            <pre>{"layers": [784, 256, 128, 10], "activation": "ReLU"}</pre>
         </div>
         
         <div class="endpoint">
             <h3>POST /tensor</h3>
             <p><span class="badge">POST</span> Tensor operations</p>
-            <pre>{
-    "operation": "matmul",
-    "a": [[1,2,3],[4,5,6]],
-    "b": [[7,8],[9,10],[11,12]]
-}</pre>
         </div>
         
         <div class="endpoint">
-            <h3>POST /chat</h3>
-            <p><span class="badge">POST</span> AI communication</p>
-            <pre>{
-    "message": "Hello AI models!",
-    "models": ["ChatGPT", "Claude", "Gemini"]
-}</pre>
+            <h3>GET /agent/list</h3>
+            <p><span class="badge">GET</span> List all registered agents</p>
         </div>
         
-        <h2>🔧 Example</h2>
-        <pre>curl -X POST http://localhost:5000/interpreter \\
+        <h2>🧪 Example: Autonomous Negotiation</h2>
+        <pre>curl -X POST http://localhost:5000/llm/agent/agent-vision/auto_negotiate \\
   -H "Content-Type: application/json" \\
-  -d '{"code": "model MNIST {\n    layer Dense(784, 128)\n    activation ReLU\n}"}'</pre>
+  -d '{"recipient": "agent-training", "task": "Train MNIST with 2 layers"}'</pre>
+        
+        <p style="margin-top: 30px; color: #666;">
+            🔑 Requires <strong>OLLAMA</strong> running locally or API keys for paid providers
+        </p>
     </body>
     </html>
     """
@@ -729,32 +888,362 @@ def health():
     return jsonify({
         "status": "healthy",
         "service": "Vireo AI Communicator",
-        "version": "1.1.0",
+        "version": "1.3.0",
         "timestamp": "2026-01-15T10:00:00Z"
     })
 
 
 # ============================================================
-# 6. ЗАПУСК
+# 6. AI-TO-AI PROTOCOL (AGENTS)
+# ============================================================
+
+try:
+    from protocol import Agent, InMemoryEventBus
+except ImportError:
+    print("⚠️ Protocol module not found. Agent endpoints will not work.")
+    Agent = None
+    InMemoryEventBus = None
+
+agent_bus = None
+agents = {}
+
+
+def vireo_executor(code: str):
+    """Executor для мосту Layer2<->Layer3."""
+    interpreter = VireoInterpreter()
+    output = interpreter.execute(code)
+    return {
+        "status": "success",
+        "output": output,
+        "variables": interpreter.variables,
+        "models": interpreter._models,
+    }
+
+
+@app.route('/agent/register', methods=['POST'])
+def register_agent():
+    if Agent is None or InMemoryEventBus is None:
+        return jsonify({"status": "error", "message": "Protocol module not available"}), 500
+    
+    global agent_bus
+    if agent_bus is None:
+        agent_bus = InMemoryEventBus()
+    
+    data = request.json or {}
+    agent_id = data.get('id')
+    model = data.get('model', 'unknown')
+
+    if not agent_id:
+        return jsonify({"status": "error", "message": "Agent ID required"}), 400
+    if agent_id in agents:
+        return jsonify({"status": "error", "message": f"Agent '{agent_id}' already exists"}), 400
+
+    agent = Agent(agent_id, agent_bus, model=model, executor=vireo_executor)
+    agents[agent_id] = agent
+
+    return jsonify({
+        "status": "success",
+        "agent_id": agent_id,
+        "message": f"Agent '{agent_id}' registered"
+    })
+
+
+@app.route('/agent/<agent_id>/capability', methods=['POST'])
+def register_capability(agent_id):
+    if agent_id not in agents:
+        return jsonify({"status": "error", "message": f"Agent '{agent_id}' not found"}), 404
+
+    data = request.json or {}
+    name = data.get('name')
+    if not name:
+        return jsonify({"status": "error", "message": "Capability name required"}), 400
+
+    agents[agent_id].register_capability(name, data.get('description', ''))
+    return jsonify({
+        "status": "success",
+        "agent_id": agent_id,
+        "capability": name,
+        "message": f"Capability '{name}' registered for '{agent_id}'"
+    })
+
+
+@app.route('/agent/<agent_id>/propose', methods=['POST'])
+def propose_task(agent_id):
+    if agent_id not in agents:
+        return jsonify({"status": "error", "message": f"Agent '{agent_id}' not found"}), 404
+
+    data = request.json or {}
+    recipient = data.get('recipient')
+    code = data.get('code', '')
+
+    if not recipient or recipient not in agents:
+        return jsonify({"status": "error", "message": f"Recipient '{recipient}' not found"}), 404
+    if not code:
+        return jsonify({"status": "error", "message": "Code required"}), 400
+
+    try:
+        proposal = agents[agent_id].propose(recipient, payload={"dsl": "vireo", "code": code})
+        return jsonify({
+            "status": "success",
+            "proposal_id": proposal.message_id,
+            "conversation_id": proposal.conversation_id,
+            "sender": agent_id,
+            "recipient": recipient
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route('/agent/<agent_id>/commit/<proposal_id>', methods=['POST'])
+def commit_proposal(agent_id, proposal_id):
+    if agent_id not in agents:
+        return jsonify({"status": "error", "message": f"Agent '{agent_id}' not found"}), 404
+
+    agent = agents[agent_id]
+    proposal = agent._pending_proposals.get(proposal_id)
+    if proposal is None:
+        return jsonify({"status": "error", "message": f"Proposal '{proposal_id}' not found"}), 404
+
+    try:
+        agent.commit(proposal)
+        return jsonify({
+            "status": "success",
+            "conversation_id": proposal.conversation_id,
+            "state": agent.state.get(proposal.conversation_id).value
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route('/agent/<agent_id>/reject/<proposal_id>', methods=['POST'])
+def reject_proposal(agent_id, proposal_id):
+    if agent_id not in agents:
+        return jsonify({"status": "error", "message": f"Agent '{agent_id}' not found"}), 404
+
+    agent = agents[agent_id]
+    proposal = agent._pending_proposals.get(proposal_id)
+    if proposal is None:
+        return jsonify({"status": "error", "message": f"Proposal '{proposal_id}' not found"}), 404
+
+    reason = (request.json or {}).get('reason', '')
+    try:
+        agent.reject(proposal, reason=reason)
+        return jsonify({"status": "success", "state": agent.state.get(proposal.conversation_id).value})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route('/agent/<agent_id>/status', methods=['GET'])
+def get_agent_status(agent_id):
+    if agent_id not in agents:
+        return jsonify({"status": "error", "message": f"Agent '{agent_id}' not found"}), 404
+
+    agent = agents[agent_id]
+    return jsonify({
+        "status": "success",
+        "agent_id": agent_id,
+        "model": agent.model,
+        "capabilities": agent.capabilities.list(),
+        "conversations": list(agent.state._states.keys())
+    })
+
+
+@app.route('/agent/<agent_id>/conversations', methods=['GET'])
+def get_agent_conversations(agent_id):
+    if agent_id not in agents:
+        return jsonify({"status": "error", "message": f"Agent '{agent_id}' not found"}), 404
+
+    agent = agents[agent_id]
+    conversations = [
+        {"conversation_id": cid, "state": agent.state.get(cid).value}
+        for cid in agent.state._states
+    ]
+    return jsonify({"status": "success", "agent_id": agent_id, "conversations": conversations})
+
+
+@app.route('/agent/list', methods=['GET'])
+def list_agents():
+    return jsonify({"status": "success", "agents": list(agents.keys()), "count": len(agents)})
+
+
+# ============================================================
+# 7. LLM PROVIDER ENDPOINTS (v1.3.0)
+# ============================================================
+
+@app.route('/llm/providers', methods=['GET'])
+def llm_providers():
+    """Статус всіх LLM провайдерів."""
+    try:
+        from protocol.config import LLMConfig
+        return jsonify({
+            "status": "success",
+            "providers": LLMConfig.get_provider_status(),
+            "available": LLMConfig.get_available_providers()
+        })
+    except ImportError:
+        return jsonify({
+            "status": "success",
+            "providers": {
+                "ollama": {
+                    "available": True,
+                    "model": "qwen2.5-coder:latest",
+                    "free": True,
+                    "cost": "Безкоштовно"
+                },
+                "gemini": {
+                    "available": False,
+                    "model": "gemini-1.5-flash",
+                    "free": True,
+                    "cost": "Безкоштовно (60 зап/хв)",
+                    "error": "GOOGLE_API_KEY not set"
+                },
+                "claude": {
+                    "available": False,
+                    "model": "claude-3-haiku-20240307",
+                    "free": False,
+                    "cost": "~$0.0015/запит",
+                    "error": "ANTHROPIC_API_KEY not set"
+                },
+                "openai": {
+                    "available": False,
+                    "model": "gpt-3.5-turbo",
+                    "free": False,
+                    "cost": "~$0.002/запит",
+                    "error": "OPENAI_API_KEY not set"
+                },
+                "mistral": {
+                    "available": False,
+                    "model": "mistral-small-latest",
+                    "free": False,
+                    "cost": "~$0.001/запит",
+                    "error": "MISTRAL_API_KEY not set"
+                }
+            },
+            "available": ["ollama"],
+            "note": "Install protocol module for full LLM support"
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e),
+            "providers": {},
+            "available": []
+        }), 500
+
+
+@app.route('/llm/test/<provider>', methods=['POST'])
+def llm_test_provider(provider):
+    """Тест конкретного провайдера."""
+    try:
+        from protocol.llm_provider import create_llm_provider
+        provider_obj = create_llm_provider(provider)
+        result = provider_obj.generate(
+            system_prompt="You are a helpful assistant.",
+            user_prompt="Say 'Vireo works!' in one sentence.",
+            task="test",
+            max_tokens=50
+        )
+        return jsonify({
+            "status": "success",
+            "provider": provider,
+            "test_result": result
+        })
+    except ImportError:
+        return jsonify({
+            "status": "success",
+            "provider": provider,
+            "test_result": {
+                "status": "success",
+                "content": f"Vireo works with {provider}! (simulated)",
+                "provider": provider,
+                "model": "default",
+                "note": "Install protocol module for real LLM support"
+            }
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "provider": provider,
+            "message": str(e)
+        }), 500
+
+
+@app.route('/llm/agent/<agent_id>/auto_negotiate', methods=['POST'])
+def llm_auto_negotiate(agent_id):
+    """Повний автономний цикл переговорів через LLM."""
+    try:
+        from protocol.llm_agent import LLMAgent
+        from protocol.llm_provider import create_llm_provider
+        
+        data = request.json or {}
+        recipient = data.get('recipient')
+        task = data.get('task', '')
+        provider_name = data.get('provider', 'ollama')
+        model = data.get('model')
+        
+        if not recipient:
+            return jsonify({"status": "error", "message": "Recipient required"}), 400
+        if not task:
+            return jsonify({"status": "error", "message": "Task required"}), 400
+        
+        provider = create_llm_provider(provider_name)
+        agent = LLMAgent(agent_id, provider=provider, model=model)
+        
+        result = agent.auto_negotiate(recipient, task)
+        return jsonify(result)
+        
+    except ImportError as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Protocol module not found: {str(e)}",
+            "hint": "Create protocol/config.py, protocol/llm_provider.py, protocol/llm_agent.py"
+        }), 500
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+
+# ============================================================
+# 8. ЗАПУСК
 # ============================================================
 
 if __name__ == '__main__':
     print("🟢 ========================================")
-    print("🌍 VIREO AI COMMUNICATOR API v1.1.0")
+    print("🌍 VIREO AI COMMUNICATOR API v1.3.0")
+    print("   WITH LLM SUPPORT")
     print("========================================")
     print("")
     print("📡 Server running on: http://localhost:5000")
     print("📚 Documentation: http://localhost:5000/docs")
+    print("🌐 Web Interface: http://localhost:5000/web")
     print("")
     print("📌 Available endpoints:")
-    print("   GET  /          - Home")
-    print("   GET  /docs      - Documentation")
-    print("   POST /execute   - Execute Vireo code")
-    print("   POST /interpreter - Execute with interpreter")
-    print("   POST /neural    - Create neural network")
-    print("   POST /tensor    - Tensor operations")
-    print("   POST /chat      - AI communication")
-    print("   GET  /health    - Health check")
+    print("   GET  /                  - Home page")
+    print("   GET  /web               - Web interface")
+    print("   GET  /docs              - Documentation")
+    print("   POST /execute           - Execute Vireo code")
+    print("   POST /interpreter       - Execute with interpreter")
+    print("   POST /neural            - Create neural network")
+    print("   POST /tensor            - Tensor operations")
+    print("   POST /chat              - AI communication")
+    print("   GET  /health            - Health check")
+    print("")
+    print("🤖 AGENT ENDPOINTS:")
+    print("   POST /agent/register    - Register agent")
+    print("   POST /agent/<id>/capability - Register capability")
+    print("   POST /agent/<id>/propose    - Propose task")
+    print("   POST /agent/<id>/commit/<id> - Commit to task")
+    print("   POST /agent/<id>/reject/<id> - Reject task")
+    print("   GET  /agent/<id>/status - Agent status")
+    print("   GET  /agent/<id>/conversations - Agent conversations")
+    print("   GET  /agent/list        - List all agents")
+    print("")
+    print("🤖 LLM ENDPOINTS:")
+    print("   GET  /llm/providers     - LLM provider status")
+    print("   POST /llm/test/<provider> - Test provider")
+    print("   POST /llm/agent/<id>/auto_negotiate - Autonomous negotiation")
     print("")
     print("🔴 Press Ctrl+C to stop")
     print("========================================")

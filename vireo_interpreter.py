@@ -10,6 +10,7 @@
 # - transpose(1D) backward
 # - matmul(1D) gradient
 # - Numerical stability improvements
+# - Fixed _execute_line indentation
 # ============================================================
 
 import re
@@ -1611,21 +1612,28 @@ class VireoInterpreter:
                 self.variables[name] = value
                 return f"{name} = {value}"
             return f"{name} = None"
+        
         if line.startswith('print(') and line.endswith(')'):
             value = line[6:-1]
             return self._evaluate(value)
+        
         if line.startswith('print "'):
             return line[6:-1]
+        
         if line.startswith('return '):
             return f"Return: {self._evaluate(line[7:])}"
+        
         if line.startswith('@neural'):
             return "🧠 Neural network decorator applied"
-        if line.startswith('fn ') and '(' in line):
+        
+        if line.startswith('fn ') and '(' in line:
             func_name = line[3:line.index('(')].strip()
             self.functions[func_name] = line
             return f"Function {func_name} defined"
+        
         if 'Tensor' in line:
             return self._create_tensor(line)
+        
         result = self._evaluate(line)
         return result
     

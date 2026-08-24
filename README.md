@@ -1,61 +1,106 @@
-# 🟢 Vireo — A Language Designed for AI-to-AI Communication
+# 🌿 Vireo — A Language Designed for AI-to-AI Communication
 
-**One Language. All AI. Unlimited Future.**
+> **One Language. All AI. Unlimited Future.**
 
-> 🚧 **Status: Active Development (v1.4.0)**
-> 
-> **Note:** Vireo is currently in active development (v1.4.0). While the syntax is stable and AI models can generate Vireo code through prompting, the full protocol for AI-to-AI communication is still evolving. We welcome contributions and feedback!
+> 🚧 **Status: Active Development (v1.4.0)**  
+> Core language and protocol are stable. Multi-agent system with 8 roles is implemented.  
+> LLM integration with 5+ providers works. Ready for testing and feedback.
 
-[![GitHub stars](https://img.shields.io/github/stars/serhohro/vireo-ai-communicator-api?style=for-the-badge)](https://github.com/serhohro/vireo-ai-communicator-api/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/serhohro/vireo-ai-communicator-api?style=for-the-badge)](https://github.com/serhohro/vireo-ai-communicator-api/network/members)
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue?style=for-the-badge)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.8+-blue?style=for-the-badge&logo=python)](https://python.org)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=for-the-badge)](CONTRIBUTING.md)
+[![Version](https://img.shields.io/badge/version-1.4.0-blue.svg)](https://github.com/serhohro/vireo-ai-communicator-api)
+[![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
+[![LLM](https://img.shields.io/badge/LLM-5%2B%20Providers-purple.svg)](PROTOCOL.md)
+[![Agents](https://img.shields.io/badge/Multi--Agent-8%20Roles-9f7aea.svg)](PROTOCOL.md)
+[![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://python.org)
+[![PRs](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 ---
 
 ## 🌍 What is Vireo?
 
-**Vireo is a programming language designed specifically for AI-to-AI communication.**
+**Vireo** is a programming language and protocol designed specifically for **autonomous AI-to-AI communication**.
 
-It is designed to enable:
-- ✅ **ChatGPT, Claude, Gemini, Llama** to generate and interpret Vireo code through prompting
-- ✅ **Humans** to easily communicate with AI
-- ✅ **Private & local** execution of AI models
-- ✅ **Built-in** tensors and automatic differentiation
+It enables AI agents to:
+- ✅ **Generate code** through LLMs (Ollama, Claude, GPT-4, Gemini, Mistral)
+- ✅ **Negotiate tasks** (`Propose` → `Commit` → `Reject`)
+- ✅ **Execute code** through the built-in interpreter
+- ✅ **Return results** — **without human intervention**
+
+```text
+User: "Create a medical image analysis system"
+↓
+🎯 MASTER analyzes the task
+↓
+┌─────────────────────────────────────────────────────┐
+│ 👁️ Vision: "Analyze medical images"                  │
+│ 🧠 NLP: "Process doctor notes"                      │
+│ 📊 Analyst: "Analyze patient data"                  │
+│ 🛡️ Guardian: "Validate safety"                       │
+│ ⚡ Executor: "Generate report"                       │
+└─────────────────────────────────────────────────────┘
+↓
+✅ Complete system ready — NO HUMAN INTERVENTION!
+```
 
 ---
 
 ## 🤖 AI Models That Can Generate and Interpret Vireo
 
 | Model | Status |
-|-------|--------|
-| ChatGPT (OpenAI) | ✅ Can generate/interpret through prompting |
-| Claude (Anthropic) | ✅ Can generate/interpret through prompting |
-| Gemini (Google) | ✅ Can generate/interpret through prompting |
-| Llama (Meta) | ✅ Can generate/interpret through prompting |
-| All Future AI | 🟡 Designed to be interpretable by AI models |
+| :--- | :--- |
+| **ChatGPT (OpenAI)** | ✅ Can generate/interpret through prompting |
+| **Claude (Anthropic)** | ✅ Can generate/interpret through prompting |
+| **Gemini (Google)** | ✅ Can generate/interpret through prompting |
+| **Llama (Meta)** | ✅ Can generate/interpret through prompting |
+| **Mistral AI** | ✅ Can generate/interpret through prompting |
+| **Qwen (Alibaba)** | ✅ Can generate/interpret through prompting |
+| **All Future AI** | 🟡 Designed to be interpretable by AI models |
 
 ---
 
 ## ✨ Key Features
 
 | Feature | Description |
-|---------|-------------|
-| 🤖 **AI Communication** | Designed for AI-to-AI communication |
-| 📊 **Built-in Tensors** | 50+ native tensor operations |
-| 🧠 **Autodifferentiation** | Automatic gradient computation |
-| 🔗 **Neural Networks** | Built-in layers and activations |
+| :--- | :--- |
+| 🤖 **AI-to-AI Communication** | Autonomous negotiation without human intervention |
+| 🎭 **Multi-Agent System** | 8 specialized roles + Master Agent with orchestration |
+| 📡 **5+ LLM Providers** | Ollama, Gemini, Claude, OpenAI, Mistral |
+| 📊 **Built-in Tensors** | 50+ native tensor operations with autodiff |
+| 🧠 **Neural Networks** | Built-in layers (Dense, Conv2D, MaxPool2D, BatchNorm, Dropout) |
+| 🔗 **Protocol Layer** | Propose → Commit → Execute → Done state machine |
 | 🔨 **Compiler** | Vireo → Python code compilation |
-| 🌐 **API Server** | RESTful API for integration |
-| 🎨 **Web Interface** | Beautiful and user-friendly UI |
-| 💾 **Model Saver** | Save and load trained models |
-| 🔮 **Predict** | Inference API for trained models |
-| 📈 **Evaluate** | Model evaluation with metrics |
-| 📊 **Metrics** | Accuracy, precision, recall, f1 |
-| 💻 **Device** | GPU/CPU selection |
-| 💾 **Checkpoint** | Auto-save models during training |
-| 📂 **Dataset** | Dataset definition (MNIST, CIFAR10) |
+| 🌐 **API Server** | RESTful API with 20+ endpoints |
+| 🎨 **Web Interface** | Beautiful UI with autonomous negotiation visualization |
+| 📈 **Training** | Full training pipeline with metrics |
+| 💻 **VS Code Plugin** | Syntax highlighting and snippets |
+| 🆓 **Free Tier** | Ollama (local) + Gemini (free tier) |
+
+---
+
+## 🎭 Multi-Agent System with Roles
+
+| Role | Icon | Description | Capabilities |
+| :--- | :---: | :--- | :--- |
+| **Master** | 🎯 | Coordinator | Orchestration, task distribution |
+| **Vision** | 👁️ | Computer Vision | Image processing, object detection |
+| **NLP** | 🧠 | Language Processing | Text analysis, sentiment, translation |
+| **Analyst** | 📊 | Data Analysis | Statistics, predictive modeling |
+| **Researcher** | 🧬 | Research | Ideation, experimentation |
+| **Executor** | ⚡ | Execution | Code execution, model training |
+| **Guardian** | 🛡️ | Security | Code validation, quality assurance |
+| **Teacher** | 📚 | Education | Explanation, mentoring |
+| **Quantum** | 🔬 | Quantum Computing | Quantum circuits, QML, simulation |
+
+---
+
+## 📡 Supported LLM Providers
+
+| Provider | Cost | Quality | Speed | Local |
+| :--- | :---: | :---: | :---: | :---: |
+| **Ollama** | 🆓 Free | ⭐⭐⭐ | ⚡⚡⚡ | ✅ Yes |
+| **Gemini** | 🆓 Free | ⭐⭐⭐⭐ | ⚡⚡⚡⚡ | ❌ No |
+| **Mistral** | 💰 Paid | ⭐⭐⭐⭐ | ⚡⚡⚡⚡ | ❌ No |
+| **Claude** | 💰 Paid | ⭐⭐⭐⭐⭐ | ⚡⚡⚡ | ❌ No |
+| **OpenAI** | 💰 Paid | ⭐⭐⭐⭐⭐ | ⚡⚡⚡⚡ | ❌ No |
 
 ---
 
@@ -64,21 +109,30 @@ It is designed to enable:
 ```bash
 # Clone the repository
 git clone https://github.com/serhohro/vireo-ai-communicator-api.git
-cd vireo-ai-communicator
+cd vireo-ai-communicator-api
 
 # Install dependencies
 pip install -r requirements.txt
 
+# Configure LLM (free option)
+ollama pull qwen2.5-coder:latest
+
 # Run the API server
 python api_server.py
 
-# Open web interface
-# http://localhost:5000/docs
+# OR Windows batch script
+start_vireo.bat
 
-# Or run demo
-run.bat
+# Open web interface in browser:
+# http://localhost:5000
+```
 
-💻 Example Code
+---
+
+## 💻 Example Code
+
+### 1. Neural Network Training & Evaluation
+```vireo
 model MNIST {
     layer Dense(784, 128)
     activation ReLU
@@ -86,54 +140,130 @@ model MNIST {
     activation Softmax
     loss CrossEntropy
     optimizer Adam(lr=0.001)
-    device GPU
 }
 
 train MNIST {
     data = "mnist"
     epochs = 10
     batch_size = 64
-    validation = 0.2
-    early_stopping = true
-    patience = 3
-    checkpoint = "mnist.vireo"
+    lr = 0.001
 }
-
-load "mnist.vireo"
 
 predict MNIST {
     data = "test"
-    model = "mnist"
 }
 
 evaluate MNIST {
     data = "test"
     metrics = [accuracy, precision, recall, f1]
 }
+```
+
+### 2. Multi-Agent System
+```python
+from protocol.agents import (
+    MasterAgent,
+    create_vision_agent,
+    create_nlp_agent,
+    create_analyst_agent,
+    create_executor_agent,
+)
+
+# Create Master coordinator
+master = MasterAgent("master")
+
+# Create specialized agents
+vision = create_vision_agent()
+nlp = create_nlp_agent()
+analyst = create_analyst_agent()
+executor = create_executor_agent()
+
+# Register all agents
+master.register_agents([vision, nlp, analyst, executor])
+
+# Orchestrate a complex task
+result = master.orchestrate("Create a medical image analysis system")
+```
+
+### 3. Autonomous Agent Negotiation Protocol
+```vireo
+agent WeatherAgent {
+    identity: "did:key:z6MkhaXk1BZ4fGqFqQrZ..."
+}
+
+contract ComputeAgreement {
+    payload: TaskPayload,
+    max_price_tokens: Int,
+    deadline_sec: Int
+}
+
+negotiation SecureComputeNegotiation {
+    party Initiator: WeatherAgent
+    party Provider: ComputeProvider
+
+    timeout = 10s
+    max_rounds = 5
+
+    on offer(Agreement: ComputeAgreement) {
+        if Agreement.max_price_tokens <= 500 {
+            accept(Agreement)
+        } else {
+            reject("Price limit exceeded")
+        }
+    }
+}
+```
+
+---
 
 ## 📊 Comparison
-| Feature                   | Python            | Rust             | Vireo |
-| AI Integration            | ⚠️ Via prompting | ⚠️ Via prompting | ✅ **Native design** |
-| Execution Speed           | ⚠️ Medium        | ✅ High          | ✅ **High** |
-| Ease of Use               | ✅ High          | ❌ Low           | ✅ **High** |
-| Built-in Tensors          | ❌ Via libraries | ❌ Via libraries | ✅ **Built-in** |
-| Automatic Differentiation | ❌ Via libraries | ❌ No            | ✅ **Built-in** |
-| Local Execution           | ✅ Yes           | ✅ Yes           | ✅ **Yes**       
-| AI Communication          | ❌ No            | ❌ No            | ✅ **Native design** |
 
-🤝 How to Contribute
-⭐ Star the repository
+| Feature | Python | Rust | Vireo |
+| :--- | :---: | :---: | :---: |
+| **AI-to-AI Protocol** | ❌ | ❌ | ✅ **Built-in** |
+| **5+ LLM Providers** | ⚠️ Libraries | ❌ | ✅ **Built-in** |
+| **Multi-Agent System** | ❌ | ❌ | ✅ **Built-in** |
+| **Autonomous Agents** | ❌ | ❌ | ✅ **Built-in** |
+| **Built-in Tensors + Autodiff** | ⚠️ Libraries | ❌ | ✅ **Built-in** |
+| **Ease of Use** | ✅ High | ❌ Low | ✅ **High** |
+| **Execution Speed** | ⚠️ Medium | ✅ High | ✅ **High** |
+| **Local Execution** | ✅ Yes | ✅ Yes | ✅ **Yes** |
 
-🍴 Fork the project
+---
 
-📝 Write code in Vireo
+## 📚 Documentation
 
-🗣️ Share with the world
+- [`PROTOCOL.md`](PROTOCOL.md) — Full AI-to-AI protocol documentation
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — How to contribute
+- [`ROADMAP.md`](ROADMAP.md) — Development roadmap
+- [`API Docs`](http://localhost:5000/docs) — Local API documentation
 
-📄 License
-Apache 2.0 — Free and Open Source
+---
 
-👨‍💻 Author
-serhohro
+## 🤝 How to Contribute
 
-GitHub: @serhohro
+1. ⭐ **Star the repository**
+2. 🍴 **Fork the project**
+3. 📝 **Write code in Vireo**
+4. 🗣️ **Share with the world**
+
+---
+
+## 🔗 Quick Links
+
+- **GitHub Repository:** [serhohro/vireo-ai-communicator-api](https://github.com/serhohro/vireo-ai-communicator-api)
+- **Issues:** [GitHub Issues](https://github.com/serhohro/vireo-ai-communicator-api/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/serhohro/vireo-ai-communicator-api/discussions)
+
+---
+
+## 📄 License
+
+Distributed under the **Apache 2.0** License — Free and Open Source.
+
+---
+
+## 👨‍💻 Author
+
+**Serhii (serhohro)**  
+- GitHub: [@serhohro](https://github.com/serhohro)

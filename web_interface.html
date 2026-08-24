@@ -1,306 +1,974 @@
 <!DOCTYPE html>
-<html lang="en">
+<!-- [file name]: web_interface.html -->
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🟢 Vireo AI Communicator</title>
+    <title>🌿 Vireo — AI-to-AI Communication Language</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* ============================================================
+           СТИЛІ
+           ============================================================ */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 20px;
+            color: #e2e8f0;
         }
         
         .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            max-width: 900px;
-            width: 100%;
-            padding: 40px;
-            animation: slideUp 0.5s ease;
+            max-width: 1300px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
         
-        @keyframes slideUp {
-            from { transform: translateY(50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        
+        /* ===== HEADER ===== */
         .header {
             text-align: center;
+            padding-bottom: 30px;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
             margin-bottom: 30px;
         }
         
         .header h1 {
-            font-size: 2.5em;
-            color: #333;
+            font-size: 2.8em;
+            background: linear-gradient(135deg, #48bb78, #667eea);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
-        .header h1 span {
-            color: #667eea;
+        .header .subtitle {
+            color: #a0aec0;
+            font-size: 1.2em;
+            margin-top: 8px;
         }
         
-        .header p {
-            color: #777;
+        .header .subtitle span {
+            color: #48bb78;
+            font-weight: 600;
+        }
+        
+        /* ===== СТАТУС БАДЖІ ===== */
+        .badge-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        
+        .badge {
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .badge.green { background: rgba(72, 187, 120, 0.2); color: #48bb78; border: 1px solid #48bb78; }
+        .badge.purple { background: rgba(102, 126, 234, 0.2); color: #9f7aea; border: 1px solid #9f7aea; }
+        .badge.orange { background: rgba(237, 137, 54, 0.2); color: #ed8936; border: 1px solid #ed8936; }
+        .badge.blue { background: rgba(66, 153, 225, 0.2); color: #63b3ed; border: 1px solid #63b3ed; }
+        .badge.gold { background: rgba(236, 201, 75, 0.2); color: #ecc94b; border: 1px solid #ecc94b; }
+        .badge.red { background: rgba(245, 101, 101, 0.2); color: #fc8181; border: 1px solid #fc8181; }
+        .badge.role { background: rgba(159, 122, 234, 0.2); color: #9f7aea; border: 1px solid #9f7aea; }
+        .badge.dev { background: rgba(236, 201, 75, 0.2); color: #ecc94b; border: 1px solid #ecc94b; }
+        
+        /* ===== СТАТУСНА ПАНЕЛЬ ===== */
+        .status-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        
+        .status-item {
+            text-align: center;
+            padding: 8px;
+        }
+        
+        .status-item .label {
+            font-size: 0.7em;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .status-item .value {
             font-size: 1.1em;
-            margin-top: 10px;
+            font-weight: 600;
+            margin-top: 2px;
         }
         
+        .status-item .value.online { color: #48bb78; }
+        .status-item .value.offline { color: #fc8181; }
+        .status-item .value.ready { color: #63b3ed; }
+        
+        /* ===== ТАБИ ===== */
         .tabs {
             display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
+            gap: 8px;
+            margin-bottom: 25px;
             flex-wrap: wrap;
         }
         
         .tab {
-            padding: 12px 24px;
-            background: #f0f0f0;
+            padding: 10px 22px;
+            background: rgba(255,255,255,0.08);
             border: none;
             border-radius: 10px;
             cursor: pointer;
-            font-size: 1em;
+            font-size: 0.95em;
+            font-weight: 500;
             transition: all 0.3s;
+            color: #a0aec0;
             flex: 1;
-            min-width: 100px;
+            min-width: 80px;
         }
         
         .tab:hover {
-            background: #e0e0e0;
+            background: rgba(255,255,255,0.15);
+            color: #e2e8f0;
         }
         
         .tab.active {
-            background: #667eea;
+            background: linear-gradient(135deg, #48bb78, #667eea);
             color: white;
+            box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
         }
         
+        /* ===== КОНТЕНТ ===== */
         .tab-content {
             display: none;
-            animation: fadeIn 0.3s ease;
+            animation: fadeIn 0.4s ease;
         }
         
-        .tab-content.active {
-            display: block;
-        }
+        .tab-content.active { display: block; }
         
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .section-title {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #e2e8f0;
+        }
+        
+        .section-title .icon { margin-right: 10px; }
+        
+        /* ===== ФОРМИ ===== */
+        textarea, input, select {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.08);
+            border: 2px solid rgba(255,255,255,0.12);
+            border-radius: 10px;
+            color: #e2e8f0;
+            font-size: 0.95em;
+            transition: all 0.3s;
+            font-family: 'Courier New', monospace;
+        }
+        
+        textarea:focus, input:focus, select:focus {
+            outline: none;
+            border-color: #48bb78;
+            background: rgba(255,255,255,0.12);
+            box-shadow: 0 0 20px rgba(72, 187, 120, 0.1);
         }
         
         textarea {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 1em;
-            font-family: 'Courier New', monospace;
+            min-height: 120px;
             resize: vertical;
-            min-height: 150px;
-            transition: border-color 0.3s;
-        }
-        
-        textarea:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        button {
-            margin-top: 15px;
-            padding: 14px 30px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: all 0.3s;
-            width: 100%;
-        }
-        
-        button:hover {
-            background: #5a67d8;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
-        }
-        
-        button:active {
-            transform: translateY(0);
-        }
-        
-        .result {
-            margin-top: 20px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            border-left: 4px solid #667eea;
-            min-height: 60px;
-        }
-        
-        .result pre {
             font-family: 'Courier New', monospace;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            margin: 0;
         }
         
-        .status {
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 0.9em;
+        select option {
+            background: #1a202c;
+            color: #e2e8f0;
         }
         
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
-        .badges {
+        .input-row {
             display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 20px;
+            gap: 12px;
+            margin-top: 10px;
             flex-wrap: wrap;
         }
         
-        .badge {
-            padding: 5px 15px;
-            background: #e0e0e0;
-            border-radius: 20px;
-            font-size: 0.8em;
-            color: #555;
+        .input-row > * { flex: 1; min-width: 150px; }
+        
+        /* ===== КНОПКИ ===== */
+        .btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
         }
         
-        .footer {
-            text-align: center;
-            margin-top: 30px;
-            color: #999;
+        .btn-primary {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(72, 187, 120, 0.3);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #667eea, #5a67d8);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #fc8181, #e53e3e);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(245, 101, 101, 0.3);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #ecc94b, #d69e2e);
+            color: #1a202c;
+        }
+        
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(236, 201, 75, 0.3);
+        }
+        
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.85em;
+            margin-top: 0;
+        }
+        
+        .btn-block { width: 100%; }
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+        
+        /* ===== РЕЗУЛЬТАТ ===== */
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            border-left: 4px solid #48bb78;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
             font-size: 0.9em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
         
-        .footer a {
-            color: #667eea;
-            text-decoration: none;
+        .result pre {
+            margin: 0;
+            color: #e2e8f0;
         }
         
+        .result .error {
+            color: #fc8181;
+            border-left-color: #fc8181;
+        }
+        
+        .result .success {
+            color: #48bb78;
+            border-left-color: #48bb78;
+        }
+        
+        /* ===== ЛОАДЕР ===== */
         .loader {
             display: none;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top: 3px solid #48bb78;
             border-radius: 50%;
             width: 30px;
             height: 30px;
             animation: spin 1s linear infinite;
-            margin: 10px auto;
+            margin: 15px auto;
         }
         
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* ===== КАРТКИ АГЕНТІВ ===== */
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 15px 0;
+        }
+        
+        .agent-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        
+        .agent-card h4 {
+            color: #48bb78;
+            margin-bottom: 10px;
+        }
+        
+        .agent-card .capability-item {
+            display: inline-block;
+            background: rgba(72, 187, 120, 0.15);
+            color: #48bb78;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            margin: 3px 4px 3px 0;
+        }
+        
+        /* ===== ROLE CARDS ===== */
+        .role-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .role-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: all 0.3s;
+        }
+        
+        .role-card:hover {
+            border-color: #9f7aea;
+            transform: translateY(-2px);
+        }
+        
+        .role-card .role-icon { font-size: 2em; }
+        .role-card .role-name { font-size: 0.85em; font-weight: 600; margin-top: 5px; }
+        .role-card .role-desc { font-size: 0.7em; color: #a0aec0; }
+        
+        /* ===== TASK PRESETS ===== */
+        .task-presets {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .task-preset {
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8em;
+            text-align: center;
+            transition: all 0.3s;
+            color: #a0aec0;
+        }
+        
+        .task-preset:hover {
+            background: rgba(72, 187, 120, 0.15);
+            border-color: #48bb78;
+            color: #e2e8f0;
+        }
+        
+        /* ===== ФУТЕР ===== */
+        .footer {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            margin-top: 30px;
+            color: #718096;
+            font-size: 0.9em;
+        }
+        
+        .footer a {
+            color: #48bb78;
+            text-decoration: none;
+        }
+        
+        .footer a:hover { text-decoration: underline; }
+        
+        /* ===== АДАПТИВ ===== */
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .header h1 { font-size: 2em; }
+            .tabs .tab { font-size: 0.8em; padding: 8px 12px; }
+            .badge-container .badge { font-size: 0.65em; padding: 4px 12px; }
+            .role-grid { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+            .task-presets { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); }
+        }
+        
+        /* ===== СКРОЛ ===== */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #48bb78;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #38a169;
+        }
+        
+        /* ===== КНОПКА КОПІЮВАННЯ ===== */
+        .copy-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #a0aec0;
+            padding: 4px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75em;
+            float: right;
+        }
+        
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.2);
+            color: #e2e8f0;
+        }
+        
+        /* ===== АВТОНОМНИЙ ПРОЦЕС ===== */
+        .process-step {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            margin: 5px 0;
+            border-left: 3px solid #48bb78;
+        }
+        
+        .process-step .step-num {
+            background: #48bb78;
+            color: #1a202c;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8em;
+            flex-shrink: 0;
+        }
+        
+        .process-step .step-desc {
+            flex: 1;
+        }
+        
+        .process-step .step-status {
+            font-size: 0.8em;
+            padding: 2px 10px;
+            border-radius: 12px;
+        }
+        
+        .process-step .step-status.done { background: rgba(72, 187, 120, 0.2); color: #48bb78; }
+        .process-step .step-status.pending { background: rgba(237, 137, 54, 0.2); color: #ed8936; }
+        .process-step .step-status.error { background: rgba(245, 101, 101, 0.2); color: #fc8181; }
+
+        /* ===== ВИБІР ПРОВАЙДЕРА З QWEN ===== */
+        .provider-option-qwen {
+            color: #48bb78;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- ============================================================
+        HEADER
+        ============================================================ -->
         <div class="header">
-            <h1>🟢 <span>Vireo</span> AI Communicator</h1>
-            <p>The World's First AI-to-AI Communication Language</p>
-            <div class="badges">
-                <span class="badge">✅ ChatGPT</span>
-                <span class="badge">✅ Claude</span>
-                <span class="badge">✅ Gemini</span>
-                <span class="badge">⚡ Local</span>
+            <h1>🌿 Vireo</h1>
+            <div class="subtitle">
+                <span>A Language Designed for AI-to-AI Communication</span>
+            </div>
+            
+            <div class="badge-container">
+                <span class="badge green">✅ Real AI-to-AI</span>
+                <span class="badge purple">🧠 5+ LLM Providers</span>
+                <span class="badge orange">🔄 Autonomous Agents</span>
+                <span class="badge blue">🆓 Free Tier Available</span>
+                <span class="badge role">🎭 Multi-Agent Roles</span>
+                <span class="badge dev">🚧 Active Development v1.4.0</span>
+            </div>
+            
+            <!-- Статусна панель -->
+            <div class="status-panel" id="statusPanel">
+                <div class="status-item">
+                    <div class="label">🤖 Агенти</div>
+                    <div class="value" id="agentCount">0</div>
+                </div>
+                <div class="status-item">
+                    <div class="label">📡 Провайдер</div>
+                    <div class="value" id="currentProvider">—</div>
+                </div>
+                <div class="status-item">
+                    <div class="label">🔄 Режим</div>
+                    <div class="value" id="currentMode">—</div>
+                </div>
+                <div class="status-item">
+                    <div class="label">💰 Вартість</div>
+                    <div class="value" id="costStatus">🆓</div>
+                </div>
             </div>
         </div>
 
+        <!-- ============================================================
+        ТАБИ
+        ============================================================ -->
         <div class="tabs">
-            <button class="tab active" data-tab="execute">▶️ Execute</button>
+            <button class="tab active" data-tab="autonomous">🤖 Autonomous</button>
+            <button class="tab" data-tab="agents">🧠 Agents</button>
+            <button class="tab" data-tab="execute">▶️ Execute</button>
             <button class="tab" data-tab="neural">🧠 Neural</button>
-            <button class="tab" data-tab="tensor">📊 Tensor</button>
+            <button class="tab" data-tab="providers">📡 Providers</button>
             <button class="tab" data-tab="chat">💬 Chat</button>
+            <button class="tab" data-tab="roles">🎭 Roles</button>
+            <button class="tab" data-tab="security">🔐 Security</button>
         </div>
 
-        <!-- TAB 1: Execute -->
-        <div class="tab-content active" id="execute">
-            <h3>▶️ Execute Vireo Code</h3>
-            <textarea id="codeInput" placeholder="Enter Vireo code here...">fn main() {
-    print('Hello Vireo!')
-    return 'Vireo is amazing!'
-}</textarea>
-            <button onclick="executeCode()">🚀 Execute</button>
+        <!-- ============================================================
+        TAB 1: AUTONOMOUS
+        ============================================================ -->
+        <div class="tab-content active" id="autonomous">
+            <div class="section-title">
+                <span class="icon">🤖</span> Autonomous AI-to-AI Communication
+                <span style="font-size:0.6em; color:#48bb78; font-weight:400;"> — No human intervention</span>
+            </div>
+            
+            <p style="color:#a0aec0; margin-bottom:15px;">
+                Two AI agents negotiate and execute tasks <strong style="color:#48bb78;">completely autonomously</strong>.
+                No button clicking between steps. Real LLM decisions.
+            </p>
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:20px;">
+                <div>
+                    <label style="color:#a0aec0; font-size:0.85em;">🤖 Agent (Proposer)</label>
+                    <input type="text" id="autoSender" value="agent-vision" style="margin-top:4px;">
+                </div>
+                <div>
+                    <label style="color:#a0aec0; font-size:0.85em;">🤖 Agent (Executor)</label>
+                    <input type="text" id="autoRecipient" value="agent-training" style="margin-top:4px;">
+                </div>
+            </div>
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:20px;">
+                <div>
+                    <label style="color:#a0aec0; font-size:0.85em;">📡 LLM Provider</label>
+                    <select id="autoProvider" style="margin-top:4px;">
+                        <option value="ollama">🆓 Ollama (local)</option>
+                        <option value="qwen" class="provider-option-qwen">🆓 Qwen2.5-Coder (local, code)</option>
+                        <option value="gemini">🆓 Gemini (free tier)</option>
+                        <option value="mistral">💰 Mistral AI</option>
+                        <option value="claude">💰 Claude</option>
+                        <option value="openai">💰 OpenAI GPT-4</option>
+                        <option value="hybrid">🔄 Hybrid (auto-select)</option>
+                    </select>
+                    <div style="font-size:0.7em; color:#718096; margin-top:4px;">
+                        💡 <span style="color:#48bb78;">Qwen2.5-Coder</span> — спеціалізована на генерації коду
+                    </div>
+                </div>
+                <div>
+                    <label style="color:#a0aec0; font-size:0.85em;">📝 Task Description</label>
+                    <input type="text" id="autoTask" value="Create a neural network for MNIST classification with 2 layers" style="margin-top:4px;">
+                </div>
+            </div>
+            
+            <button class="btn btn-primary btn-block" onclick="startAutonomous()" id="autoStartBtn">
+                🚀 Start Autonomous Negotiation
+            </button>
+            
+            <div id="autoProcess" style="display:none; margin-top:20px;">
+                <div class="process-step" id="step1">
+                    <span class="step-num">1</span>
+                    <span class="step-desc">📝 Agent proposes task via LLM</span>
+                    <span class="step-status pending" id="step1Status">⏳ Pending</span>
+                </div>
+                <div class="process-step" id="step2">
+                    <span class="step-num">2</span>
+                    <span class="step-desc">🤖 Agent receives proposal</span>
+                    <span class="step-status pending" id="step2Status">⏳ Pending</span>
+                </div>
+                <div class="process-step" id="step3">
+                    <span class="step-num">3</span>
+                    <span class="step-desc">🧠 Agent decides via LLM (commit/reject)</span>
+                    <span class="step-status pending" id="step3Status">⏳ Pending</span>
+                </div>
+                <div class="process-step" id="step4">
+                    <span class="step-num">4</span>
+                    <span class="step-desc">⚡ Code execution via Vireo Runtime</span>
+                    <span class="step-status pending" id="step4Status">⏳ Pending</span>
+                </div>
+                <div class="process-step" id="step5">
+                    <span class="step-num">5</span>
+                    <span class="step-desc">✅ Result delivered</span>
+                    <span class="step-status pending" id="step5Status">⏳ Pending</span>
+                </div>
+            </div>
+            
+            <div class="loader" id="autoLoader"></div>
+            <div class="result" id="autoResult">
+                <pre>🤖 Ready for autonomous AI-to-AI communication.</pre>
+            </div>
+            
+            <div style="margin-top:15px; padding:15px; background:rgba(72,187,120,0.08); border-radius:10px; border:1px solid rgba(72,187,120,0.2);">
+                <p style="color:#48bb78; font-size:0.9em;">
+                    ✅ <strong>Real AI-to-AI:</strong> Both decisions are made by LLM, not humans.
+                    No button clicking between proposal, commit, and execution.
+                </p>
+            </div>
+        </div>
+
+        <!-- ============================================================
+        TAB 2: AGENTS
+        ============================================================ -->
+        <div class="tab-content" id="agents">
+            <div class="section-title"><span class="icon">🧠</span> Agents Management</div>
+            
+            <div class="agent-grid">
+                <div class="agent-card">
+                    <h4>🤖 Agent 1 (Proposer)</h4>
+                    <input type="text" id="agent1Id" value="agent-vision" style="margin-bottom:8px;">
+                    <input type="text" id="agent1Model" value="qwen2.5-coder:latest" style="margin-bottom:8px;">
+                    <div class="btn-group">
+                        <button class="btn btn-secondary btn-sm" onclick="registerAgent('1')">📝 Register</button>
+                        <button class="btn btn-warning btn-sm" onclick="addCapability('1')">📌 Add Capability</button>
+                    </div>
+                    <div style="margin-top:8px;">
+                        <input type="text" id="agent1Capability" placeholder="Capability name" style="font-size:0.85em;">
+                    </div>
+                </div>
+                
+                <div class="agent-card">
+                    <h4>🤖 Agent 2 (Executor)</h4>
+                    <input type="text" id="agent2Id" value="agent-training" style="margin-bottom:8px;">
+                    <input type="text" id="agent2Model" value="qwen2.5-coder:latest" style="margin-bottom:8px;">
+                    <div class="btn-group">
+                        <button class="btn btn-secondary btn-sm" onclick="registerAgent('2')">📝 Register</button>
+                        <button class="btn btn-warning btn-sm" onclick="addCapability('2')">📌 Add Capability</button>
+                    </div>
+                    <div style="margin-top:8px;">
+                        <input type="text" id="agent2Capability" placeholder="Capability name" style="font-size:0.85em;">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn btn-primary btn-sm" onclick="listAgents()">📋 List Agents</button>
+                <button class="btn btn-secondary btn-sm" onclick="getAgentStatus()">🔍 Get Status</button>
+            </div>
+            
+            <div class="loader" id="agentLoader"></div>
+            <div class="result" id="agentResult">
+                <pre>📋 Agents ready. Register agents to start.</pre>
+            </div>
+        </div>
+
+        <!-- ============================================================
+        TAB 3: EXECUTE
+        ============================================================ -->
+        <div class="tab-content" id="execute">
+            <div class="section-title"><span class="icon">▶️</span> Execute Vireo Code</div>
+            
+            <textarea id="codeInput" placeholder="Enter Vireo code here...">// Прості обчислення
+let x = 5
+let y = 10
+let sum = x + y
+print(sum)
+
+// Функція
+fn add(a, b) {
+    return a + b
+}
+
+let result = add(7, 3)
+print(result)
+
+// Тензори
+let t = Tensor([1, 2, 3, 4, 5])
+let t2 = Tensor([5, 4, 3, 2, 1])
+let sum_t = t + t2
+print(sum_t)</textarea>
+            
+            <button class="btn btn-primary" onclick="executeCode()">🚀 Execute</button>
+            
             <div class="loader" id="executeLoader"></div>
             <div class="result" id="executeResult">
-                <pre>Ready to execute Vireo code...</pre>
+                <pre>💻 Ready to execute Vireo code...</pre>
             </div>
         </div>
 
-        <!-- TAB 2: Neural -->
+        <!-- ============================================================
+        TAB 4: NEURAL
+        ============================================================ -->
         <div class="tab-content" id="neural">
-            <h3>🧠 Neural Network</h3>
-            <textarea id="neuralInput" placeholder="Define neural network layers...">{
+            <div class="section-title"><span class="icon">🧠</span> Neural Network</div>
+            <p style="color:#a0aec0; margin-bottom:15px;">
+                Create a neural network with specified layers and activation functions.
+            </p>
+            <textarea id="neuralInput" placeholder="Define neural network layers..." style="min-height:120px;">{
     "layers": [784, 256, 128, 10],
     "activation": "ReLU"
 }</textarea>
-            <button onclick="executeNeural()">🧠 Create Network</button>
+            <button class="btn btn-primary" onclick="executeNeural()">🧠 Create Network</button>
             <div class="loader" id="neuralLoader"></div>
             <div class="result" id="neuralResult">
                 <pre>Ready to create neural network...</pre>
             </div>
         </div>
 
-        <!-- TAB 3: Tensor -->
-        <div class="tab-content" id="tensor">
-            <h3>📊 Tensor Operations</h3>
-            <textarea id="tensorInput" placeholder="Define tensor operation...">{
-    "operation": "matmul",
-    "a": [[1,2,3],[4,5,6]],
-    "b": [[7,8],[9,10],[11,12]]
-}</textarea>
-            <button onclick="executeTensor()">📊 Calculate</button>
-            <div class="loader" id="tensorLoader"></div>
-            <div class="result" id="tensorResult">
-                <pre>Ready for tensor operations...</pre>
+        <!-- ============================================================
+        TAB 5: PROVIDERS
+        ============================================================ -->
+        <div class="tab-content" id="providers">
+            <div class="section-title"><span class="icon">📡</span> LLM Providers</div>
+            
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:15px; margin-bottom:20px;" id="providerCards">
+                <!-- Заповнюється JS -->
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn btn-secondary btn-sm" onclick="refreshProviders()">🔄 Refresh</button>
+                <button class="btn btn-primary btn-sm" onclick="testProvider()">🧪 Test Provider</button>
+            </div>
+            
+            <div class="loader" id="providerLoader"></div>
+            <div class="result" id="providerResult">
+                <pre>📡 Select a provider to test...</pre>
             </div>
         </div>
 
-        <!-- TAB 4: Chat -->
+        <!-- ============================================================
+        TAB 6: CHAT
+        ============================================================ -->
         <div class="tab-content" id="chat">
-            <h3>💬 AI Communication</h3>
-            <textarea id="chatInput" placeholder="Send message to AI models...">{
-    "message": "Hello AI models! Let's communicate in Vireo!",
-    "models": ["ChatGPT", "Claude", "Gemini"]
-}</textarea>
-            <button onclick="executeChat()">💬 Send</button>
+            <div class="section-title"><span class="icon">💬</span> AI Communication Chat</div>
+            
+            <textarea id="chatInput" placeholder="Send message to AI models..." style="min-height:80px;">Hello AI models! Let's communicate in Vireo!</textarea>
+            
+            <div class="input-row">
+                <select id="chatModels" multiple style="height:60px;">
+                    <option value="ChatGPT" selected>ChatGPT (OpenAI)</option>
+                    <option value="Claude" selected>Claude (Anthropic)</option>
+                    <option value="Gemini" selected>Gemini (Google)</option>
+                    <option value="Mistral">Mistral AI</option>
+                    <option value="Ollama">Ollama (local)</option>
+                    <option value="Qwen2.5-Coder">Qwen2.5-Coder (local)</option>
+                </select>
+            </div>
+            
+            <button class="btn btn-secondary" onclick="sendChat()">💬 Send</button>
+            
             <div class="loader" id="chatLoader"></div>
             <div class="result" id="chatResult">
-                <pre>Ready to start AI communication...</pre>
+                <pre>💬 Ready for AI communication...</pre>
             </div>
         </div>
 
+        <!-- ============================================================
+        TAB 7: ROLES
+        ============================================================ -->
+        <div class="tab-content" id="roles">
+            <div class="section-title"><span class="icon">🎭</span> Multi-Agent Roles</div>
+            
+            <p style="color:#a0aec0; margin-bottom:15px;">
+                Create specialized agents with different roles for multi-agent collaboration.
+                Each role has specific capabilities and expertise.
+            </p>
+            
+            <div class="role-grid">
+                <div class="role-card">
+                    <div class="role-icon">👁️</div>
+                    <div class="role-name">Vision</div>
+                    <div class="role-desc">Computer vision</div>
+                    <button class="btn btn-secondary btn-sm" onclick="createAgent('vision')" style="width:100%; margin-top:8px;">Create</button>
+                </div>
+                <div class="role-card">
+                    <div class="role-icon">🧠</div>
+                    <div class="role-name">NLP</div>
+                    <div class="role-desc">Language processing</div>
+                    <button class="btn btn-secondary btn-sm" onclick="createAgent('nlp')" style="width:100%; margin-top:8px;">Create</button>
+                </div>
+                <div class="role-card">
+                    <div class="role-icon">📊</div>
+                    <div class="role-name">Analyst</div>
+                    <div class="role-desc">Data analysis</div>
+                    <button class="btn btn-secondary btn-sm" onclick="createAgent('analyst')" style="width:100%; margin-top:8px;">Create</button>
+                </div>
+                <div class="role-card">
+                    <div class="role-icon">🧬</div>
+                    <div class="role-name">Researcher</div>
+                    <div class="role-desc">Ideation</div>
+                    <button class="btn btn-secondary btn-sm" onclick="createAgent('researcher')" style="width:100%; margin-top:8px;">Create</button>
+                </div>
+                <div class="role-card">
+                    <div class="role-icon">⚡</div>
+                    <div class="role-name">Executor</div>
+                    <div class="role-desc">Code execution</div>
+                    <button class="btn btn-secondary btn-sm" onclick="createAgent('executor')" style="width:100%; margin-top:8px;">Create</button>
+                </div>
+                <div class="role-card">
+                    <div class="role-icon">🛡️</div>
+                    <div class="role-name">Guardian</div>
+                    <div class="role-desc">Security</div>
+                    <button class="btn btn-secondary btn-sm" onclick="createAgent('guardian')" style="width:100%; margin-top:8px;">Create</button>
+                </div>
+                <div class="role-card">
+                    <div class="role-icon">📚</div>
+                    <div class="role-name">Teacher</div>
+                    <div class="role-desc">Education</div>
+                    <button class="btn btn-secondary btn-sm" onclick="createAgent('teacher')" style="width:100%; margin-top:8px;">Create</button>
+                </div>
+                <div class="role-card">
+                    <div class="role-icon">🔬</div>
+                    <div class="role-name">Quantum</div>
+                    <div class="role-desc">Quantum computing</div>
+                    <button class="btn btn-secondary btn-sm" onclick="createAgent('quantum')" style="width:100%; margin-top:8px;">Create</button>
+                </div>
+            </div>
+            
+            <div style="background:rgba(159,122,234,0.1); padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid rgba(159,122,234,0.2);">
+                <h4 style="color:#9f7aea;">🎯 Master Agent (Coordinator)</h4>
+                <p style="color:#a0aec0; font-size:0.9em;">Orchestrates all agents and distributes tasks automatically</p>
+                <button class="btn btn-primary btn-sm" onclick="createMaster()" style="width:auto; margin-top:10px;">🎯 Create Master</button>
+            </div>
+            
+            <div style="background:rgba(72,187,120,0.08); padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid rgba(72,187,120,0.2);">
+                <h4 style="color:#48bb78;">🔄 Task Presets</h4>
+                <div class="task-presets">
+                    <div class="task-preset" onclick="setTask('finance')">💰 Finance</div>
+                    <div class="task-preset" onclick="setTask('ecommerce')">🛒 E-Commerce</div>
+                    <div class="task-preset" onclick="setTask('social')">📱 Social</div>
+                    <div class="task-preset" onclick="setTask('education')">🎓 Education</div>
+                    <div class="task-preset" onclick="setTask('gaming')">🎮 Gaming</div>
+                    <div class="task-preset" onclick="setTask('sports')">⚽ Sports</div>
+                </div>
+                
+                <textarea id="orchestrateTask" placeholder="Enter task for multi-agent collaboration..." style="min-height:100px; margin-top:10px;">Create a complete financial prediction system:
+1. Analyze market data (Analyst)
+2. Predict trends (Researcher)
+3. Assess risks (Guardian)
+4. Generate report (Executor)</textarea>
+                <button class="btn btn-primary" onclick="startOrchestration()">🎯 Start Orchestration</button>
+            </div>
+            
+            <div class="loader" id="roleLoader"></div>
+            <div class="result" id="roleResult">
+                <pre>🎭 Select roles and start orchestration.</pre>
+            </div>
+        </div>
+
+        <!-- ============================================================
+        TAB 8: SECURITY (НОВА ВКЛАДКА)
+        ============================================================ -->
+        <div class="tab-content" id="security">
+            <div class="section-title"><span class="icon">🔐</span> Security & Trust</div>
+            
+            <p style="color:#a0aec0; margin-bottom:15px;">
+                Cryptographic security and trust layer for AI-to-AI communication.
+            </p>
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:20px;">
+                <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; border:1px solid rgba(255,255,255,0.08);">
+                    <h4 style="color:#48bb78;">🔑 Key Management</h4>
+                    <button class="btn btn-secondary btn-sm" onclick="generateKeys()" style="width:100%; margin-top:10px;">Generate Key Pair</button>
+                    <div id="keyResult" style="margin-top:10px; font-size:0.8em; color:#a0aec0;"></div>
+                </div>
+                
+                <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; border:1px solid rgba(255,255,255,0.08);">
+                    <h4 style="color:#48bb78;">🔏 Sign & Verify</h4>
+                    <textarea id="signMessage" placeholder="Message to sign..." style="min-height:60px; margin-top:10px;">Hello, Vireo!</textarea>
+                    <div style="display:flex; gap:10px; margin-top:10px;">
+                        <button class="btn btn-primary btn-sm" onclick="signMessage()" style="flex:1;">Sign</button>
+                        <button class="btn btn-secondary btn-sm" onclick="verifyMessage()" style="flex:1;">Verify</button>
+                    </div>
+                    <div id="signResult" style="margin-top:10px; font-size:0.8em; color:#a0aec0;"></div>
+                </div>
+            </div>
+            
+            <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; border:1px solid rgba(255,255,255,0.08);">
+                <h4 style="color:#48bb78;">🔒 Trust Protocol</h4>
+                <button class="btn btn-primary btn-sm" onclick="testTrustProtocol()">🧪 Test Trust Protocol</button>
+                <div id="trustResult" style="margin-top:10px; font-size:0.8em; color:#a0aec0;"></div>
+            </div>
+            
+            <div class="loader" id="securityLoader"></div>
+            <div class="result" id="securityResult">
+                <pre>🔐 Security layer ready.</pre>
+            </div>
+        </div>
+
+        <!-- ============================================================
+        FOOTER
+        ============================================================ -->
         <div class="footer">
-            <p>🚀 Powered by <strong>Vireo</strong> — The Language That Unites AI</p>
-            <p><a href="#">GitHub</a> · <a href="#">Documentation</a> · <a href="#">API</a></p>
+            <p>
+                🌿 <strong>Vireo</strong> — A Language Designed for AI-to-AI Communication
+            </p>
+            <p style="margin-top:5px; font-size:0.8em;">
+                <a href="https://github.com/serhohro/vireo-ai-communicator-api">GitHub</a> ·
+                <a href="http://localhost:5000/docs">Documentation</a> ·
+                <a href="http://localhost:5000">API</a> ·
+                <span style="color:#48bb78;">🤖 Real AI-to-AI</span> ·
+                <span style="color:#9f7aea;">🎭 Multi-Agent</span> ·
+                <span style="color:#ecc94b;">🚧 Active Development</span>
+            </p>
         </div>
     </div>
 
+    <!-- ============================================================
+    JAVASCRIPT
+    ============================================================ -->
     <script>
-        // Tab switching
+        const API_BASE = 'http://localhost:5000';
+        
+        // ============================================================
+        // ТАБИ
+        // ============================================================
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', function() {
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -309,102 +977,623 @@
                 document.getElementById(this.dataset.tab).classList.add('active');
             });
         });
-
-        // Execute Code
-        async function executeCode() {
-            const code = document.getElementById('codeInput').value;
-            const loader = document.getElementById('executeLoader');
-            const result = document.getElementById('executeResult');
+        
+        // ============================================================
+        // СТАТУС ПАНЕЛЬ
+        // ============================================================
+        async function updateStatus() {
+            try {
+                const resp = await fetch(`${API_BASE}/llm/providers`);
+                const data = await resp.json();
+                
+                if (data.status === 'success') {
+                    const providers = data.providers;
+                    let available = [];
+                    for (const [name, info] of Object.entries(providers)) {
+                        if (info.available) available.push(name);
+                    }
+                    
+                    document.getElementById('agentCount').textContent = 
+                        document.querySelectorAll('.agent-card').length;
+                    
+                    const providerSelect = document.getElementById('autoProvider');
+                    const currentProvider = providerSelect.value;
+                    document.getElementById('currentProvider').textContent = currentProvider;
+                    
+                    document.getElementById('currentMode').textContent = 
+                        available.length > 0 ? '✅ Auto' : '❌ No providers';
+                    
+                    const costInfo = {
+                        'ollama': '🆓 Free',
+                        'qwen': '🆓 Free',
+                        'gemini': '🆓 Free',
+                        'mistral': '💰 Paid',
+                        'claude': '💰 Paid',
+                        'openai': '💰 Paid'
+                    };
+                    document.getElementById('costStatus').textContent = 
+                        costInfo[currentProvider] || '—';
+                }
+            } catch (e) {
+                document.getElementById('agentCount').textContent = '⚠️';
+                document.getElementById('currentProvider').textContent = 'Offline';
+                document.getElementById('currentMode').textContent = '❌';
+                document.getElementById('costStatus').textContent = '⚠️';
+            }
+        }
+        
+        updateStatus();
+        setInterval(updateStatus, 5000);
+        
+        // ============================================================
+        // AUTONOMOUS
+        // ============================================================
+        async function startAutonomous() {
+            const sender = document.getElementById('autoSender').value;
+            const recipient = document.getElementById('autoRecipient').value;
+            const provider = document.getElementById('autoProvider').value;
+            const task = document.getElementById('autoTask').value;
             
+            const btn = document.getElementById('autoStartBtn');
+            const loader = document.getElementById('autoLoader');
+            const result = document.getElementById('autoResult');
+            const process = document.getElementById('autoProcess');
+            
+            process.style.display = 'block';
+            document.querySelectorAll('.step-status').forEach(el => {
+                el.textContent = '⏳ Pending';
+                el.className = 'step-status pending';
+            });
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ In Progress...';
             loader.style.display = 'block';
-            result.innerHTML = '<pre>Executing Vireo code...</pre>';
+            result.innerHTML = '<pre>🚀 Starting autonomous negotiation...\n\nThis may take a few seconds...</pre>';
             
             try {
-                const response = await fetch('http://localhost:5000/execute', {
+                let actualProvider = provider;
+                let model = '';
+                if (provider === 'qwen') {
+                    actualProvider = 'ollama';
+                    model = 'qwen2.5-coder:latest';
+                }
+                
+                await registerAgentInternal(sender, model || actualProvider);
+                await registerAgentInternal(recipient, model || actualProvider);
+                
+                document.getElementById('step1Status').textContent = '✅ Done';
+                document.getElementById('step1Status').className = 'step-status done';
+                
+                const resp = await fetch(`${API_BASE}/llm/agent/${sender}/auto_negotiate`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ code })
+                    body: JSON.stringify({
+                        recipient: recipient,
+                        task: task,
+                        provider: actualProvider,
+                        model: model
+                    })
                 });
-                const data = await response.json();
-                result.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                
+                const data = await resp.json();
+                
+                document.getElementById('step2Status').textContent = '✅ Done';
+                document.getElementById('step2Status').className = 'step-status done';
+                document.getElementById('step3Status').textContent = '✅ Done';
+                document.getElementById('step3Status').className = 'step-status done';
+                
+                if (data.status === 'success') {
+                    document.getElementById('step4Status').textContent = '✅ Done';
+                    document.getElementById('step4Status').className = 'step-status done';
+                    document.getElementById('step5Status').textContent = '✅ Done';
+                    document.getElementById('step5Status').className = 'step-status done';
+                    
+                    result.innerHTML = `<pre style="color:#48bb78;">✅ AUTONOMOUS NEGOTIATION COMPLETE!
+        
+        📊 RESULT:
+        ========================================
+        Sender:     ${data.sender}
+        Recipient:  ${data.recipient}
+        Decision:   ${data.decision?.decision?.toUpperCase() || 'N/A'}
+        Reason:     ${data.decision?.reason || 'N/A'}
+        Provider:   ${provider}
+        Human Intervention: ${data.human_intervention ? 'YES' : '❌ NONE'}
+        
+        📝 TASK:
+        ${task}
+        
+        💻 CODE EXECUTED:
+        ${data.proposal?.code || 'N/A'}
+        
+        ⚡ EXECUTION RESULT:
+        ${JSON.stringify(data.execution, null, 2).substring(0, 300)}...
+        
+        ========================================
+        🎉 Real AI-to-AI communication completed!</pre>`;
+                } else {
+                    document.getElementById('step4Status').textContent = '❌ Error';
+                    document.getElementById('step4Status').className = 'step-status error';
+                    
+                    result.innerHTML = `<pre style="color:#fc8181;">❌ ERROR: ${data.message || 'Unknown error'}
+        
+        ${JSON.stringify(data, null, 2)}</pre>`;
+                }
             } catch (error) {
-                result.innerHTML = `<pre>❌ Error: ${error.message}\n\nMake sure the API server is running!\nRun: python api_server.py</pre>`;
+                result.innerHTML = `<pre style="color:#fc8181;">❌ ERROR: ${error.message}
+        
+        Make sure the API server is running:
+        python api_server.py</pre>`;
             }
             
+            btn.disabled = false;
+            btn.textContent = '🚀 Start Autonomous Negotiation';
             loader.style.display = 'none';
         }
-
-        // Execute Neural
+        
+        async function registerAgentInternal(id, model) {
+            try {
+                await fetch(`${API_BASE}/agent/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, model })
+                });
+            } catch (e) {}
+        }
+        
+        // ============================================================
+        // NEURAL
+        // ============================================================
         async function executeNeural() {
             const data = document.getElementById('neuralInput').value;
             const loader = document.getElementById('neuralLoader');
             const result = document.getElementById('neuralResult');
             
             loader.style.display = 'block';
-            result.innerHTML = '<pre>Creating neural network...</pre>';
+            result.innerHTML = '<pre>🧠 Creating neural network...</pre>';
             
             try {
-                const response = await fetch('http://localhost:5000/neural', {
+                const resp = await fetch(`${API_BASE}/neural`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: data
                 });
-                const resultData = await response.json();
-                result.innerHTML = `<pre>${JSON.stringify(resultData, null, 2)}</pre>`;
+                const resultData = await resp.json();
+                result.innerHTML = `<pre>✅ Neural Network Created!\n${JSON.stringify(resultData, null, 2)}</pre>`;
             } catch (error) {
-                result.innerHTML = `<pre>❌ Error: ${error.message}\n\nMake sure the API server is running!\nRun: python api_server.py</pre>`;
+                result.innerHTML = `<pre>❌ Error: ${error.message}</pre>`;
             }
             
             loader.style.display = 'none';
         }
-
-        // Execute Tensor
-        async function executeTensor() {
-            const data = document.getElementById('tensorInput').value;
-            const loader = document.getElementById('tensorLoader');
-            const result = document.getElementById('tensorResult');
+        
+        // ============================================================
+        // AGENTS
+        // ============================================================
+        async function registerAgent(num) {
+            const id = document.getElementById(`agent${num}Id`).value;
+            const model = document.getElementById(`agent${num}Model`).value;
+            const loader = document.getElementById('agentLoader');
+            const result = document.getElementById('agentResult');
             
             loader.style.display = 'block';
-            result.innerHTML = '<pre>Calculating tensor operations...</pre>';
+            result.innerHTML = '<pre>📝 Registering agent...</pre>';
             
             try {
-                const response = await fetch('http://localhost:5000/tensor', {
+                const resp = await fetch(`${API_BASE}/agent/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: data
+                    body: JSON.stringify({ id, model })
                 });
-                const resultData = await response.json();
-                result.innerHTML = `<pre>${JSON.stringify(resultData, null, 2)}</pre>`;
-            } catch (error) {
-                result.innerHTML = `<pre>❌ Error: ${error.message}\n\nMake sure the API server is running!\nRun: python api_server.py</pre>`;
+                const data = await resp.json();
+                result.innerHTML = `<pre>✅ Agent registered!\n${JSON.stringify(data, null, 2)}</pre>`;
+                updateStatus();
+            } catch (e) {
+                result.innerHTML = `<pre>❌ Error: ${e.message}</pre>`;
             }
             
             loader.style.display = 'none';
         }
-
-        // Execute Chat
-        async function executeChat() {
-            const data = document.getElementById('chatInput').value;
+        
+        async function addCapability(num) {
+            const id = document.getElementById(`agent${num}Id`).value;
+            const cap = document.getElementById(`agent${num}Capability`).value;
+            const loader = document.getElementById('agentLoader');
+            const result = document.getElementById('agentResult');
+            
+            if (!cap) {
+                result.innerHTML = '<pre>❌ Please enter a capability name</pre>';
+                return;
+            }
+            
+            loader.style.display = 'block';
+            result.innerHTML = '<pre>📌 Adding capability...</pre>';
+            
+            try {
+                const resp = await fetch(`${API_BASE}/agent/${id}/capability`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: cap, description: `${cap} capability` })
+                });
+                const data = await resp.json();
+                result.innerHTML = `<pre>✅ Capability added!\n${JSON.stringify(data, null, 2)}</pre>`;
+                document.getElementById(`agent${num}Capability`).value = '';
+            } catch (e) {
+                result.innerHTML = `<pre>❌ Error: ${e.message}</pre>`;
+            }
+            
+            loader.style.display = 'none';
+        }
+        
+        async function listAgents() {
+            const result = document.getElementById('agentResult');
+            result.innerHTML = '<pre>📋 Getting agent list...</pre>';
+            
+            try {
+                const resp = await fetch(`${API_BASE}/agent/list`);
+                const data = await resp.json();
+                result.innerHTML = `<pre>📋 Agents:\n${JSON.stringify(data, null, 2)}</pre>`;
+                updateStatus();
+            } catch (e) {
+                result.innerHTML = `<pre>❌ Error: ${e.message}</pre>`;
+            }
+        }
+        
+        async function getAgentStatus() {
+            const id = document.getElementById('agent1Id').value;
+            const result = document.getElementById('agentResult');
+            result.innerHTML = '<pre>🔍 Getting status...</pre>';
+            
+            try {
+                const resp = await fetch(`${API_BASE}/agent/${id}/status`);
+                const data = await resp.json();
+                result.innerHTML = `<pre>🔍 Status for ${id}:\n${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                result.innerHTML = `<pre>❌ Error: ${e.message}</pre>`;
+            }
+        }
+        
+        // ============================================================
+        // EXECUTE
+        // ============================================================
+        async function executeCode() {
+            const code = document.getElementById('codeInput').value;
+            const loader = document.getElementById('executeLoader');
+            const result = document.getElementById('executeResult');
+            
+            loader.style.display = 'block';
+            result.innerHTML = '<pre>⏳ Executing...</pre>';
+            
+            try {
+                const resp = await fetch(`${API_BASE}/interpreter`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code })
+                });
+                const data = await resp.json();
+                result.innerHTML = `<pre>✅ Execution result:\n${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                result.innerHTML = `<pre>❌ Error: ${e.message}</pre>`;
+            }
+            
+            loader.style.display = 'none';
+        }
+        
+        // ============================================================
+        // PROVIDERS
+        // ============================================================
+        async function refreshProviders() {
+            const result = document.getElementById('providerResult');
+            const loader = document.getElementById('providerLoader');
+            
+            loader.style.display = 'block';
+            result.innerHTML = '<pre>📡 Getting provider status...</pre>';
+            
+            try {
+                const resp = await fetch(`${API_BASE}/llm/providers`);
+                const data = await resp.json();
+                
+                if (data.status === 'success') {
+                    const html = Object.entries(data.providers).map(([name, info]) => {
+                        const icon = info.available ? '✅' : '❌';
+                        const freeIcon = info.free ? '🆓' : '💰';
+                        return `   ${icon} ${freeIcon} ${name.toUpperCase()}
+              Model: ${info.model || 'N/A'}
+              Cost: ${info.cost || 'N/A'}
+              ${info.available ? '✅ Available' : '❌ Not available'}`;
+                    }).join('\n');
+                    
+                    result.innerHTML = `<pre>📡 PROVIDER STATUS
+        ========================================
+        ${html}
+        ========================================
+        Available: ${data.available ? data.available.join(', ') : 'None'}</pre>`;
+                } else {
+                    result.innerHTML = `<pre>❌ Error: ${data.message || 'Unknown'}</pre>`;
+                }
+            } catch (e) {
+                result.innerHTML = `<pre>❌ Error: ${e.message}
+        
+        Make sure the API server is running:
+        python api_server.py</pre>`;
+            }
+            
+            loader.style.display = 'none';
+        }
+        
+        async function testProvider() {
+            const provider = document.getElementById('autoProvider').value;
+            const result = document.getElementById('providerResult');
+            
+            result.innerHTML = `<pre>🧪 Testing ${provider}...</pre>`;
+            
+            try {
+                const resp = await fetch(`${API_BASE}/llm/test/${provider}`, {
+                    method: 'POST'
+                });
+                const data = await resp.json();
+                result.innerHTML = `<pre>🧪 Test result for ${provider}:\n${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (e) {
+                result.innerHTML = `<pre>❌ Error: ${e.message}</pre>`;
+            }
+        }
+        
+        // ============================================================
+        // CHAT
+        // ============================================================
+        async function sendChat() {
+            const message = document.getElementById('chatInput').value;
+            const modelsSelect = document.getElementById('chatModels');
+            const models = Array.from(modelsSelect.selectedOptions).map(o => o.value);
             const loader = document.getElementById('chatLoader');
             const result = document.getElementById('chatResult');
             
             loader.style.display = 'block';
-            result.innerHTML = '<pre>Starting AI communication...</pre>';
+            result.innerHTML = '<pre>💬 Sending message...</pre>';
             
             try {
-                const response = await fetch('http://localhost:5000/chat', {
+                const resp = await fetch(`${API_BASE}/chat`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: data
+                    body: JSON.stringify({ message, models })
                 });
-                const resultData = await response.json();
-                result.innerHTML = `<pre>${JSON.stringify(resultData, null, 2)}</pre>`;
-            } catch (error) {
-                result.innerHTML = `<pre>❌ Error: ${error.message}\n\nMake sure the API server is running!\nRun: python api_server.py</pre>`;
+                const data = await resp.json();
+                result.innerHTML = `<pre>💬 AI COMMUNICATION
+        ========================================
+        Message: ${message}
+        
+        Responses:
+        ${data.responses?.map(r => `   ${r.model}: ${r.response}`).join('\n') || 'No responses'}
+        ========================================
+        Status: ${data.communication_established ? '✅ Connected' : '❌ Failed'}</pre>`;
+            } catch (e) {
+                result.innerHTML = `<pre>❌ Error: ${e.message}</pre>`;
             }
             
             loader.style.display = 'none';
         }
+        
+        // ============================================================
+        // ROLES
+        // ============================================================
+        const TASK_PRESETS = {
+            finance: `Create a financial prediction system:
+1. Analyze market trends (Analyst)
+2. Predict stock movements (Researcher)
+3. Assess risk factors (Guardian)
+4. Generate investment report (Executor)`,
+            ecommerce: `Build an e-commerce recommendation system:
+1. Analyze user behavior (Analyst)
+2. Build recommendation model (Researcher)
+3. Validate recommendations (Guardian)
+4. Deploy recommendation engine (Executor)`,
+            social: `Create a social media analytics system:
+1. Analyze sentiment (NLP)
+2. Detect trends (Analyst)
+3. Generate content ideas (Researcher)
+4. Create report (Executor)`,
+            education: `Build an adaptive learning system:
+1. Analyze student performance (Analyst)
+2. Design learning paths (Teacher)
+3. Generate personalized content (Researcher)
+4. Create progress report (Executor)`,
+            gaming: `Create a game AI system:
+1. Design game strategy (Researcher)
+2. Build AI opponents (Vision)
+3. Balance game mechanics (Analyst)
+4. Optimize performance (Executor)`,
+            sports: `Build a sports analytics system:
+1. Analyze player performance (Analyst)
+2. Predict match outcomes (Researcher)
+3. Design training programs (Teacher)
+4. Generate scouting report (Executor)`
+        };
+        
+        function setTask(taskKey) {
+            const task = TASK_PRESETS[taskKey];
+            if (task) {
+                document.getElementById('orchestrateTask').value = task;
+                document.getElementById('roleResult').innerHTML = `<pre>✅ Task loaded: ${taskKey.toUpperCase()}\n${task}</pre>`;
+            }
+        }
+        
+        async function createAgent(role) {
+            const loader = document.getElementById('roleLoader');
+            const result = document.getElementById('roleResult');
+            
+            loader.style.display = 'block';
+            result.innerHTML = `<pre>🎭 Creating ${role} agent...</pre>`;
+            
+            try {
+                const response = await fetch(`${API_BASE}/agent/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: `agent-${role}`,
+                        model: 'qwen2.5-coder:latest'
+                    })
+                });
+                const data = await response.json();
+                result.innerHTML = `<pre>✅ ${role} agent created!\n${JSON.stringify(data, null, 2)}</pre>`;
+                updateStatus();
+            } catch (error) {
+                result.innerHTML = `<pre>❌ Error: ${error.message}</pre>`;
+            }
+            
+            loader.style.display = 'none';
+        }
+        
+        async function createMaster() {
+            const loader = document.getElementById('roleLoader');
+            const result = document.getElementById('roleResult');
+            
+            loader.style.display = 'block';
+            result.innerHTML = '<pre>🎯 Creating Master agent...</pre>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/agent/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: 'master',
+                        model: 'qwen2.5-coder:latest'
+                    })
+                });
+                const data = await response.json();
+                result.innerHTML = `<pre>✅ Master agent created!\n${JSON.stringify(data, null, 2)}</pre>`;
+                updateStatus();
+            } catch (error) {
+                result.innerHTML = `<pre>❌ Error: ${error.message}</pre>`;
+            }
+            
+            loader.style.display = 'none';
+        }
+        
+        async function startOrchestration() {
+            const task = document.getElementById('orchestrateTask').value;
+            const loader = document.getElementById('roleLoader');
+            const result = document.getElementById('roleResult');
+            
+            if (!task) {
+                result.innerHTML = '<pre>❌ Please enter a task</pre>';
+                return;
+            }
+            
+            loader.style.display = 'block';
+            result.innerHTML = '<pre>🔄 Starting orchestration...</pre>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/llm/agent/master/auto_negotiate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        recipient: 'master',
+                        task: task
+                    })
+                });
+                const data = await response.json();
+                result.innerHTML = `<pre>✅ Orchestration complete!\n${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                result.innerHTML = `<pre>❌ Error: ${error.message}</pre>`;
+            }
+            
+            loader.style.display = 'none';
+        }
+        
+        // ============================================================
+        // SECURITY
+        // ============================================================
+        async function generateKeys() {
+            const result = document.getElementById('keyResult');
+            result.textContent = '🔑 Generating key pair...';
+            
+            try {
+                const resp = await fetch(`${API_BASE}/crypto/generate_keys`, {
+                    method: 'POST'
+                });
+                const data = await resp.json();
+                result.innerHTML = `✅ Keys generated!<br>Public: ${data.public_key?.substring(0, 32)}...<br>Private: ${data.private_key?.substring(0, 32)}...`;
+            } catch (e) {
+                result.textContent = '❌ Error generating keys';
+            }
+        }
+        
+        async function signMessage() {
+            const message = document.getElementById('signMessage').value;
+            const result = document.getElementById('signResult');
+            result.textContent = '🔏 Signing...';
+            
+            try {
+                const resp = await fetch(`${API_BASE}/crypto/sign`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                const data = await resp.json();
+                result.innerHTML = `✅ Signed!<br>Signature: ${data.signature?.substring(0, 32)}...`;
+            } catch (e) {
+                result.textContent = '❌ Error signing message';
+            }
+        }
+        
+        async function verifyMessage() {
+            const message = document.getElementById('signMessage').value;
+            const result = document.getElementById('signResult');
+            result.textContent = '🔐 Verifying...';
+            
+            try {
+                const resp = await fetch(`${API_BASE}/crypto/verify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                const data = await resp.json();
+                result.innerHTML = data.valid ? '✅ Signature valid!' : '❌ Invalid signature';
+            } catch (e) {
+                result.textContent = '❌ Error verifying message';
+            }
+        }
+        
+        async function testTrustProtocol() {
+            const result = document.getElementById('trustResult');
+            result.textContent = '🧪 Testing trust protocol...';
+            
+            try {
+                const resp = await fetch(`${API_BASE}/crypto/test_trust`, {
+                    method: 'POST'
+                });
+                const data = await resp.json();
+                result.innerHTML = `✅ Trust protocol test complete!<br>Status: ${data.status}`;
+            } catch (e) {
+                result.textContent = '❌ Trust protocol test failed';
+            }
+        }
+        
+        // ============================================================
+        // INIT
+        // ============================================================
+        setTimeout(refreshProviders, 1000);
+        
+        document.getElementById('autoProvider').addEventListener('change', function() {
+            document.getElementById('currentProvider').textContent = this.value;
+            
+            const costInfo = {
+                'ollama': '🆓 Free',
+                'qwen': '🆓 Free',
+                'gemini': '🆓 Free',
+                'mistral': '💰 Paid',
+                'claude': '💰 Paid',
+                'openai': '💰 Paid',
+                'hybrid': '🔄 Auto'
+            };
+            document.getElementById('costStatus').textContent = costInfo[this.value] || '—';
+        });
+        
+        console.log('🌿 Vireo — A Language Designed for AI-to-AI Communication');
+        console.log('🤖 Real AI-to-AI communication with LLM agents');
+        console.log('🎭 Multi-Agent system with 8 specialized roles');
+        console.log('🔐 Security & Trust layer');
+        console.log('📡 Supported providers: Ollama, Qwen2.5-Coder, Gemini, Claude, OpenAI, Mistral');
+        console.log('🚧 Active Development v1.4.0');
     </script>
 </body>
 </html>
