@@ -235,7 +235,7 @@ negotiation SecureComputeNegotiation {
 - [`PROTOCOL.md`](PROTOCOL.md) — Full AI-to-AI protocol documentation
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — How to contribute
 - [`ROADMAP.md`](ROADMAP.md) — Development roadmap
-- [`API Docs`](http://localhost:5000/docs) — Local API documentation
+- [`API Docs`](http://localhost:5000/docs) — Local API documentation (Local API documentation (available after server start)
 
 ---
 
