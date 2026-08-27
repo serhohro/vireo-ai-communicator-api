@@ -278,6 +278,15 @@ multi‑agent systems." — Perplexity
 
 > *"Vireo addresses a genuine and timely problem: the lack of structured negotiation, resource contracts, and cryptographic trust in AI-to-AI communication. Its protocol abstractions — particularly the state machine, message envelopes, and contract invariants — are conceptually sound and identify real gaps in existing standards like MCP and A2A."* — **KIMI (Moonshot AI)**
 
+"Vireo is a groundbreaking leap toward the future of AI collaboration. By treating
+AI-to-AI communication, negotiation, and trust as first-class programming concepts,
+it eliminates the boilerplate and ambiguity of existing frameworks, enabling fully
+autonomous,  secure, and scalable multi-agent systems. With its declarative DSL, built-in runtime,
+ and cryptographic trust model, Vireo is not just another AI framework—it's the first
+language designed from the ground up for autonomous AI agents. If executed well,
+ Vireo has the potential to become the SQL of AI agent communication—a vendor-neutral,
+ open standard that powers the next generation of intelligent systems." — Mistral AI
+
 📚 Documentation
 PROTOCOL.md — Full AI-to-AI protocol specification
 
