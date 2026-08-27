@@ -148,6 +148,7 @@ executor = create_executor_agent()
 
 master.register_agents([vision, nlp, analyst, executor])
 result = master.orchestrate("Create a medical image analysis system")
+---
 📡 Supported LLM Providers
 Provider	Cost	   Quality	    Speed	      Local	Status
 Ollama	    🆓 Free	  ⭐⭐⭐	   ⚡⚡⚡	      ✅ Yes	✅
@@ -155,6 +156,7 @@ Gemini	    🆓 Free	  ⭐⭐⭐⭐	⚡⚡⚡⚡	  ❌ No	✅
 Mistral	    💰 Paid	  ⭐⭐⭐⭐	⚡⚡⚡⚡	  ❌ No	✅
 Claude	    💰 Paid	  ⭐⭐⭐⭐⭐	⚡⚡⚡	      ❌ No	✅
 OpenAI	    💰 Paid	  ⭐⭐⭐⭐⭐	⚡⚡⚡⚡	  ❌ No	✅
+---
 🔐 Security & Trust
 Vireo includes cryptographic primitives for secure AI-to-AI communication:
 
@@ -187,6 +189,7 @@ start_vireo.bat
 
 # 5. Open web interface
 # http://localhost:5000/web
+---
 💻 Example Code
 1. Neural Network Training
 vireo
@@ -243,6 +246,7 @@ negotiation SecureComputeNegotiation {
         }
     }
 }
+---
 📊 Comparison: Python vs Vireo
 Aspect	                    Python (PyTorch)	    Vireo
 Lines of Code	            30+ lines	            5 lines
@@ -252,6 +256,7 @@ Training Loop	            Manual	                Declarative
 Agent Communication	        ❌ Not built-in	        ✅ Built-in
 Cryptography	            ❌ External library	    ✅ Built-in Primitives
 Multi-Agent Orchestration	❌ Custom code needed	✅ Built-in (7+ roles + Master)
+---
 📚 Documentation
 PROTOCOL.md — Full AI-to-AI protocol specification
 
