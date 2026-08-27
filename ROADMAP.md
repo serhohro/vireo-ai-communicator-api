@@ -146,6 +146,13 @@ MCP / LangChain / CrewAI Adapters (Ecosystem Integration)-
 IETF / W3C Draft: A2A Interoperability Wire Format
 Standalone WASM Runtime + Vendor-Neutral Steering Foundation
 
+## 🎯 Strategic Priority: Protocol Decoupling
+Based on expert evaluation (Qwen), the highest priority is:
+1. **Prune the ML Scope** — Remove native tensor/NN operations from Vireo language
+2. **Prioritize the Protocol RFC** — Make PROTOCOL.md the most polished document
+3. **Deliver on Sandboxing** — Accelerate WASM/Rust runtime roadmap
+4. **Multi-Language SDKs** — Provide Python, TypeScript, and Rust SDKs
+
 ## 🔗 Links
 
 - [README.md](README.md) — Project overview
