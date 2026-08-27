@@ -143,10 +143,8 @@
 ---
  🎯 Strategic Path to Standardization
 MCP / LangChain / CrewAI Adapters (Ecosystem Integration)
-│
 ▼
 IETF / W3C Draft: A2A Interoperability Wire Format
-│
 ▼
 Standalone WASM Runtime + Vendor-Neutral Steering Foundation
 
