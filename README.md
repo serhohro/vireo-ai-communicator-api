@@ -263,6 +263,8 @@ By making state negotiation, cryptographic identity, and execution contracts nat
 to the programming model, it establishes an effective paradigm for verifiable,
 safe AI-to-AI communication."* — **Gemini**
 
+> *"Vireo addresses a fundamental gap in the emerging multi-agent ecosystem: the lack of a formal, enforceable layer for AI-to-AI negotiation and trust. By elevating contracts, resource limits, and cryptographic state transitions to first-class protocol primitives, Vireo moves autonomous coordination from fragile, framework-dependent conventions to mathematically verifiable agreements. Its success will hinge on decoupling this robust protocol from any single runtime, allowing it to become the universal 'handshake' for heterogeneous, cross-organizational AI agents."* — **Qwen**
+
 📚 Documentation
 PROTOCOL.md — Full AI-to-AI protocol specification
 
