@@ -259,7 +259,9 @@ Multi-Agent Orchestration	❌ Custom code needed	✅ Built-in (7+ roles + Master
 ---
 💬 Expert Reviews
 *"Vireo provides a remarkably clean and deterministic architecture for multi-agent orchestration.
-By making state negotiation, cryptographic identity, and execution contracts native to the programming model, it establishes an effective paradigm for verifiable, safe AI-to-AI communication."* — **Gemini**
+By making state negotiation, cryptographic identity, and execution contracts native
+to the programming model, it establishes an effective paradigm for verifiable,
+safe AI-to-AI communication."* — **Gemini**
 
 📚 Documentation
 PROTOCOL.md — Full AI-to-AI protocol specification
