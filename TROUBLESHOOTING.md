@@ -1,4 +1,3 @@
-markdown
 # 🔧 Vireo Troubleshooting Guide
 
 This guide helps you resolve common issues when running Vireo.
