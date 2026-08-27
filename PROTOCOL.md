@@ -1,203 +1,100 @@
-[file name]: PROTOCOL.md
-VIREO-A2A Protocol (Layer 3)
-🚧 Status: Protocol Ready — LLM Integration Working
-Current version demonstrates complete agent coordination infrastructure. Autonomous decisions via LLM API — implemented and tested.
+# VIREO-A2A Protocol (Layer 3)
 
-📋 Agent Coordination Protocol
+> 🧪 **Status: Protocol Foundations Implemented — LLM Integration Working**
+> Core protocol layers, state machine, capability discovery, contracts, and multi-agent orchestration are implemented.
+> LLM-driven autonomous negotiation works with 5+ providers.
+> Cryptographic primitives are in place; full protocol integration in progress.
+
+---
+
+## 📋 Agent Coordination Protocol
+
 This document describes the protocol layer added on top of the existing DSL (Layer 1) and Runtime (Layer 2).
 
-✅ Fully Implemented:
- Message envelope (message format)
- Speech acts (PROPOSE, COMMIT, REJECT, INFORM, NEGOTIATE)
- Dialogue state machine (NEW → PROPOSED → COMMITTED → DONE)
- Capability discovery (QUERY_CAPABILITIES / INFORM_CAPABILITIES)
- Context versioning (optimistic concurrency control)
- HMAC-SHA256 signatures
- InMemoryEventBus (transport)
- Multi-Agent System with Roles (8 specialized roles)
- LLM Integration (5+ providers)
- Autonomous negotiation (propose → commit → execute → done)
- Negotiate with counter-offers
- Contract system with resource invariants
- Guardian Agent for security validation
-🚧 In Development:
- Distributed transport (Redis/Kafka/NATS)
- Asymmetric signatures (Ed25519)
- Dialogue state persistence
- WebAssembly compilation
- Formal verification (TLA+)
-🎭 Multi-Agent System with Roles
-Agent Roles
-Vireo provides 8 specialized agent roles plus the Master coordinator:
+### ✅ Fully Implemented:
 
-Role	Icon	Description	Capabilities
-Master	🎯	Coordinator	Orchestration, task distribution, agent management
-Vision	👁️	Computer Vision	Image processing, object detection, face recognition
-NLP	🧠	Language Processing	Text analysis, sentiment, translation, entity extraction
-Analyst	📊	Data Analysis	Statistics, predictive modeling, visualization
-Researcher	🧬	Research	Ideation, experimentation, knowledge synthesis
-Executor	⚡	Execution	Code execution, model training, report generation
-Guardian	🛡️	Security	Code validation, quality assurance, risk assessment
-Teacher	📚	Education	Explanation, mentoring, knowledge sharing
-Quantum	🔬	Quantum Computing	Quantum circuits, QML, simulation, optimization
-How Multi-Agent Collaboration Works
-User: "Create a medical image analysis system" ↓ 🎯 MASTER analyzes the task ↓ ┌─────────────────────────────────────────────────────┐ │ 👁️ Vision: "Analyze medical images" │ │ 🧠 NLP: "Process doctor notes" │ │ 📊 Analyst: "Analyze patient data" │ │ 🛡️ Guardian: "Validate safety" │ │ ⚡ Executor: "Generate report" │ └─────────────────────────────────────────────────────┘ ↓ ✅ Complete system ready!
+- [x] Message envelope (message format)
+- [x] Speech acts (PROPOSE, COMMIT, REJECT, INFORM, NEGOTIATE)
+- [x] Dialogue state machine (NEW → PROPOSED → COMMITTED → DONE)
+- [x] Capability discovery (QUERY_CAPABILITIES / INFORM_CAPABILITIES)
+- [x] Context versioning (optimistic concurrency control)
+- [x] HMAC-SHA256 signatures
+- [x] InMemoryEventBus (transport)
+- [x] Multi-Agent System with Roles (7 specialized roles + Master, Quantum planned)
+- [x] LLM Integration (5+ providers)
+- [x] Autonomous negotiation (propose → commit → execute → done)
+- [x] Negotiate with counter-offers (partial)
+- [x] Contract system with resource invariants
+- [x] Guardian Agent for security validation
+- [x] Ed25519 cryptographic primitives (key generation, signing, verification)
 
-text
+### 🚧 In Development:
 
-Creating Agents with Roles
-from protocol.agents import (
-    MasterAgent,
-    create_vision_agent,
-    create_nlp_agent,
-    create_analyst_agent,
-    create_executor_agent,
-)
+- [ ] Distributed transport (Redis/Kafka/NATS) — code exists, integration partial
+- [ ] Ed25519 protocol integration — planned v1.5.0
+- [ ] Dialogue state persistence — planned v1.5.0
+- [ ] DID (Decentralized Identifiers) — partial, planned v1.5.0
+- [ ] WebAssembly compilation — mock, planned v1.6.0
+- [ ] Formal verification (TLA+) — planned v2.0.0
 
-# Create Master coordinator
-master = MasterAgent("master")
+---
 
-# Create specialized agents
-vision = create_vision_agent("agent-vision")
-nlp = create_nlp_agent("agent-nlp")
-analyst = create_analyst_agent("agent-analyst")
-executor = create_executor_agent("agent-executor")
+## 🎭 Multi-Agent System with Roles
 
-# Register all agents
-master.register_agents([vision, nlp, analyst, executor])
+### Agent Roles
 
-# Orchestrate a complex task
-result = master.orchestrate("Create a medical image analysis system")
-Custom Roles
-python
-from protocol.agents import AgentRole, RoleAgent
+Vireo provides **7 specialized agent roles** plus the **Master coordinator** (Quantum role planned):
 
-# Define custom role
-custom_role = AgentRole(
-    name="Custom",
-    description="Custom agent role",
-    capabilities=["custom_capability_1", "custom_capability_2"],
-    system_prompt_template="You are a Custom agent..."
-)
+| Role | Icon | Description | Status |
+|------|------|-------------|--------|
+| **Master** | 🎯 | Coordinator | ✅ |
+| **Vision** | 👁️ | Computer Vision | ✅ |
+| **NLP** | 🧠 | Language Processing | ✅ |
+| **Analyst** | 📊 | Data Analysis | ✅ |
+| **Researcher** | 🧬 | Research | ✅ |
+| **Executor** | ⚡ | Execution | ✅ |
+| **Guardian** | 🛡️ | Security | ✅ |
+| **Teacher** | 📚 | Education | ✅ |
+| **Quantum** | 🔬 | Quantum Computing | 🚧 Planned |
 
-# Create agent with custom role
-agent = RoleAgent("custom-agent", custom_role)
-📨 Message Format
-json
-{
-  "protocol": "VIREO-A2A",
-  "version": "1.0",
-  "message_id": "msg-a1b2c3d4",
-  "conversation_id": "conv-9956c9ec",
-  "sender": { "id": "agent-vision", "model": "gpt-5" },
-  "recipient": { "id": "agent-training", "model": null },
-  "intent": "propose",
-  "payload": {
-    "dsl": "vireo",
-    "code": "train MNIST { epochs: 10 }",
-    "reasoning": "Simple MNIST classifier"
-  },
-  "constraints": { "timeout_sec": 120, "max_tokens": 1000 },
-  "context_version": null,
-  "proposal_id": null,
-  "timestamp": 1787385246.235,
-  "signature": null
-}
-Compact Wire Format (Dual-Representation)
-json
-{
-  "p": "VIREO-A2A",
-  "v": "1.0",
-  "i": "msg-a1b2c3d4",
-  "c": "conv-9956c9ec",
-  "s": { "id": "agent-vision", "m": "gpt-5" },
-  "r": { "id": "agent-training", "m": null },
-  "t": "propose",
-  "d": { "code": "train MNIST { epochs: 10 }" }
-}
-🗣️ Speech Acts (Intent)
-Intent	Значение
-REQUEST	"выполни X"
-PROPOSE	"предлагаю сделать X"
-QUERY	"какой статус / значение X?"
-INFORM	"сообщаю факт / результат"
-REJECT	"отклоняю предложение/запрос"
-COMMIT	"принимаю предложение, обязуюсь выполнить"
-CANCEL	"отменяю ранее принятое обязательство"
-NEGOTIATE	"предлагаю изменить условия"
-QUERY_CAPABILITIES	"что ты умеешь?"
-INFORM_CAPABILITIES	"вот список моих возможностей"
-⚙️ Dialogue State Machine
-text
-NEW → PROPOSED → COMMITTED → RUNNING → DONE
-        │            │           │
-        ├→ REJECTED  ├→ CANCELLED├→ FAILED
-        ├→ TIMEOUT               ├→ TIMEOUT
-        └→ CANCELLED             └→ CANCELLED
-Each conversation_id has its own state. Invalid transitions (e.g., NEW → RUNNING bypassing PROPOSED/COMMITTED) throw InvalidTransition — this ensures both agents follow the same negotiation protocol.
+---
 
-Extended State Machine (with Negotiate)
-text
-PROPOSE → VALIDATE → REVIEW → COMMIT → EXECUTE → VERIFY → DONE
-                                  ↓
-                               REJECT
-                                  ↓
-                              TIMEOUT
-                                  ↓
-                              ROLLBACK
-🔐 Security & Trust
-HMAC Signatures (Symmetric)
-python
-from protocol import trust
+## 🔐 Security & Trust
 
-# Sign message
-trust.attach_signature(message, secret)
+Vireo includes cryptographic primitives for secure AI-to-AI communication:
 
-# Verify signature
-is_valid = trust.verify(message, secret)
-Nonce Protection (Replay Attacks)
-python
-from protocol.trust import NonceManager
+| Component | Status | Details |
+|-----------|--------|---------|
+| HMAC Signatures | ✅ Implemented | Symmetric signing |
+| Nonce Protection | ✅ Implemented | Replay attack prevention |
+| Ed25519 Primitives | ✅ Implemented | Key generation, signing, verification |
+| Ed25519 Protocol Integration | 🚧 In Development | Planned for v1.5.0 |
+| DID Implementation | 🚧 In Development | Planned for v1.5.0 |
+| Zero-Trust Protocol | 🚧 In Development | Planned for v1.5.0 |
+| State Persistence | 🔵 Planned | Planned for v1.5.0 |
 
-manager = NonceManager(ttl=60)
-nonce, timestamp = manager.generate()
-is_valid = manager.validate(nonce, timestamp)
-Permissions & Identity
-python
-from protocol.trust import Identity, Permission, TrustManager
+---
 
-# Create identity
-identity = Identity(
-    id="agent-vision",
-    public_key="0x1234...",
-    permissions=[Permission.READ, Permission.EXECUTE],
-    trust_level=0.9
-)
+## 📊 Comparison: Vireo vs MCP vs A2A
 
-# Register with TrustManager
-tm = TrustManager(secret="shared-secret")
-tm.register_identity(identity)
+| Feature | Vireo | MCP (Anthropic) | A2A (Google) |
+|---------|-------|-----------------|--------------|
+| Own Language | ✅ Yes | ❌ No | ❌ No |
+| Protocol | ✅ Yes | ✅ Yes | ✅ Yes |
+| Runtime | ✅ Yes | ❌ No | ❌ No |
+| Tensors + Autodiff | ✅ Yes | ❌ No | ❌ No |
+| Open Source | ✅ Yes | ✅ Yes | ❌ No |
+| Free | ✅ Yes | ✅ Yes | ❌ No |
+| Local Execution | ✅ Yes (Ollama) | ⚠️ Partial | ❌ No |
+| Multi-Agent Roles | ✅ Yes (7 roles + Master) | ❌ No | ✅ Yes |
+| Contracts | ✅ Yes | ❌ No | ❌ No |
+| Guardian Agent | ✅ Yes | ❌ No | ❌ No |
 
-# Check permissions
-if tm.check_permission("agent-vision", Permission.EXECUTE):
-    # Agent can execute
-    pass
-Zero-Trust Protocol
-python
-from protocol.trust import TrustManager
+---
 
-tm = TrustManager(secret="shared-secret", ttl=30)
+## 📋 Contracts (Resource Invariants)
 
-# Create trusted payload
-payload = tm.create_trusted_payload(
-    {"task": "weather_prediction"},
-    agent_id="agent-vision"
-)
-
-# Verify payload
-is_valid, data = tm.verify_trusted_payload(payload)
-📋 Contracts (Resource Invariants)
-python
+```python
 from protocol.contract import Contract, Proposal, create_default_contract
 
 # Create contract with limits
@@ -226,7 +123,7 @@ Status: ✅ Working with 5+ providers.
 3. Multi-Agent Demo with Roles ✅
 bash
 python protocol/examples/multi_agent_demo.py
-Master Agent coordinates 8 specialized agents.
+Master Agent coordinates 7+ specialized agents.
 
 4. Negotiation Demo 🆕
 bash
@@ -238,28 +135,18 @@ bash
 python protocol/examples/mcp_demo.py
 Integration with Model Context Protocol.
 
-📊 Comparison: Vireo vs MCP vs A2A
-Feature	Vireo	MCP (Anthropic)	A2A (Google)
-Own Language	✅ Yes	❌ No	❌ No
-Protocol	✅ Yes	✅ Yes	✅ Yes
-Runtime	✅ Yes	❌ No	❌ No
-Tensors + Autodiff	✅ Yes	❌ No	❌ No
-Open Source	✅ Yes	✅ Yes	❌ No
-Free	✅ Yes	✅ Yes	❌ No
-Local Execution	✅ Yes (Ollama)	⚠️ Partial	❌ No
-Multi-Agent Roles	✅ Yes (8 roles)	❌ No	✅ Yes
-Contracts	✅ Yes	❌ No	❌ No
-Guardian Agent	✅ Yes	❌ No	❌ No
 🚀 Next Version Priorities
-Distributed Transport — Redis/Kafka/NATS
+Ed25519 Protocol Integration — v1.5.0
 
-Full Negotiation Cycle — negotiate with counter-offers
+DID Implementation — v1.5.0
 
-Asymmetric Signatures — Ed25519
+Distributed Transport — Redis/Kafka/NATS (integration) — v1.5.0
 
-State Persistence — Save dialogue state
+State Persistence — v1.5.0
 
-WebAssembly — WASM compilation for sandboxed execution
+WebAssembly — v1.6.0
+
+Formal Verification (TLA+) — v2.0.0
 
 🔗 Links
 PROTOCOL.md (main)
