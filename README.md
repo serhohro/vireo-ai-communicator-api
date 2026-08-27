@@ -150,8 +150,8 @@ master.register_agents([vision, nlp, analyst, executor])
 result = master.orchestrate("Create a medical image analysis system")
 ---
 📡 Supported LLM Providers
-Provider	Cost	   Quality	    Speed	      Local	Status
-Ollama	    🆓 Free	  ⭐⭐⭐	   ⚡⚡⚡	      ✅ Yes	✅
+Provider	Cost	   Quality	     Speed	      Local	Status
+Ollama	    🆓 Free	  ⭐⭐⭐	    ⚡⚡⚡	      ✅ Yes✅
 Gemini	    🆓 Free	  ⭐⭐⭐⭐	⚡⚡⚡⚡	  ❌ No	✅
 Mistral	    💰 Paid	  ⭐⭐⭐⭐	⚡⚡⚡⚡	  ❌ No	✅
 Claude	    💰 Paid	  ⭐⭐⭐⭐⭐	⚡⚡⚡	      ❌ No	✅
