@@ -1,80 +1,73 @@
 @echo off
-title Vireo AI Communicator - Launcher v1.4.0
+title Vireo AI Communicator
 color 0A
 
 echo.
-echo 🌿 ========================================
-echo VIREO AI COMMUNICATOR v1.4.0
-echo A Language Designed for AI-to-AI Communication
+echo ========================================
+echo  VIREO AI COMMUNICATOR v1.4.1
+echo  A Language Designed for AI-to-AI Communication
 echo ========================================
 echo.
-echo 📂 Project: vireo-ai-communicator-3
-echo.
 
-:: Перевіряємо Python
-python --version > nul 2>&1
-if %errorlevel% neq 0 (
-    echo ❌ Python not found! Please install Python 3.8+
+cd /d "C:\Users\Startklar\Desktop\vireo-ai-communicator-3"
+
+echo [1] Checking Python...
+python --version >nul 2>&1
+if errorlevel 1 (
+    echo [X] Python not found!
     pause
-    exit /b 1
+    exit /b
 )
-echo ✅ Python found!
+echo [OK] Python found
 
-:: Перевіряємо, чи є файл api_server.py
-if not exist "api_server.py" (
-    echo ❌ ERROR: api_server.py not found!
-    echo    Please make sure you're in the right folder.
+echo [2] Checking server file...
+if exist "api_server.py" (
+    echo [OK] api_server.py found
+    set SERVER_FILE=api_server.py
+) else if exist "server.py" (
+    echo [OK] server.py found
+    set SERVER_FILE=server.py
+) else (
+    echo [X] No server file found!
     pause
-    exit /b 1
+    exit /b
 )
-echo ✅ API server found!
 
-:: Перевіряємо залежності
-echo.
-echo 📦 Checking dependencies...
-pip show Flask > nul 2>&1
-if %errorlevel% neq 0 (
-    echo ⚠️ Flask not found! Installing...
-    pip install Flask flask-cors
-)
-echo ✅ Dependencies OK!
+echo [3] Installing Flask...
+pip install flask flask-cors -q 2>nul
+echo [OK] Dependencies ready
 
-:: Запускаємо сервер
-echo.
-echo 🚀 Starting API server...
-start "Vireo Server" cmd /k "python api_server.py"
+echo [4] Stopping old server...
+taskkill /F /IM python.exe 2>nul
+timeout /t 1 >nul
+echo [OK] Stopped
 
-:: Чекаємо запуску
-echo ⏳ Waiting for server to start...
-timeout /t 5 /nobreak > nul
+echo [5] Starting server...
+start "Vireo Server" python %SERVER_FILE%
 
-:: Відкриваємо ВЕБ-ІНТЕРФЕЙС
-echo 🌐 Opening web interface...
+echo [6] Waiting for server...
+timeout /t 5 /nobreak >nul
+
+echo [7] Opening browser...
 start http://localhost:5000/web
-
-:: Відкриваємо ДОКУМЕНТАЦІЮ
-echo 📚 Opening documentation...
+timeout /t 1 >nul
+start http://localhost:5000
+timeout /t 1 >nul
 start http://localhost:5000/docs
 
 echo.
 echo ========================================
-echo ✅ Vireo AI Communicator is running!
+echo  [OK] SERVER RUNNING!
 echo ========================================
+echo  Web: http://localhost:5000/web
+echo  API: http://localhost:5000
+echo  Docs: http://localhost:5000/docs
 echo.
-echo 📡 API Server:    http://localhost:5000
-echo 🌐 Web Interface: http://localhost:5000/web
-echo 📚 Documentation: http://localhost:5000/docs
-echo.
-echo 🔴 Close this window to stop the server
+echo  Close this window to stop server
+echo ========================================
+pause >nul
 
-pause > nul
-
-:: Закриваємо Python процес
-echo.
-echo 🛑 Stopping server...
+echo Stopping server...
 taskkill /F /IM python.exe 2>nul
-echo ✅ Server stopped.
-
-echo.
-echo Press any key to exit...
-pause > nul
+echo Done.
+pause
