@@ -1,11 +1,11 @@
-# 🌿 Vireo — Programming Language and Protocol for Autonomous AI-to-AI Communication
+# 🌿 Vireo — The World's First AI-to-AI Communication Language
 
 **An open-source programming language and protocol designed specifically for autonomous AI-agent communication, negotiation, contracts, and coordination.**
 
-> 🧪 **Status: Experimental Development (v1.4.2)**  
+> 🧪 **Status: Active Development (v1.4.2)**  
 > Core language, interpreter, protocol foundations, and multi-agent system are implemented.
 > LLM integration with 5+ providers works. Cryptographic primitives are in place.
-> Currently in active development — not yet production-ready.
+> Currently in active development — community feedback and contributions are welcome.
 
 [![Version](https://img.shields.io/badge/version-1.4.2-blue.svg)](https://github.com/serhohro/vireo-ai-communicator-api)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
