@@ -1,79 +1,51 @@
-# [file name]: PROTOCOL.md
-# VIREO-A2A Protocol (Layer 3)
+[file name]: PROTOCOL.md
+VIREO-A2A Protocol (Layer 3)
+🚧 Status: Protocol Ready — LLM Integration Working
+Current version demonstrates complete agent coordination infrastructure. Autonomous decisions via LLM API — implemented and tested.
 
-> 🚧 **Status: Protocol Ready — LLM Integration Working**  
-> Current version demonstrates complete agent coordination infrastructure.
-> Autonomous decisions via LLM API — implemented and tested.
+📋 Agent Coordination Protocol
+This document describes the protocol layer added on top of the existing DSL (Layer 1) and Runtime (Layer 2).
 
----
+✅ Fully Implemented:
+ Message envelope (message format)
+ Speech acts (PROPOSE, COMMIT, REJECT, INFORM, NEGOTIATE)
+ Dialogue state machine (NEW → PROPOSED → COMMITTED → DONE)
+ Capability discovery (QUERY_CAPABILITIES / INFORM_CAPABILITIES)
+ Context versioning (optimistic concurrency control)
+ HMAC-SHA256 signatures
+ InMemoryEventBus (transport)
+ Multi-Agent System with Roles (8 specialized roles)
+ LLM Integration (5+ providers)
+ Autonomous negotiation (propose → commit → execute → done)
+ Negotiate with counter-offers
+ Contract system with resource invariants
+ Guardian Agent for security validation
+🚧 In Development:
+ Distributed transport (Redis/Kafka/NATS)
+ Asymmetric signatures (Ed25519)
+ Dialogue state persistence
+ WebAssembly compilation
+ Formal verification (TLA+)
+🎭 Multi-Agent System with Roles
+Agent Roles
+Vireo provides 8 specialized agent roles plus the Master coordinator:
 
-## 📋 Agent Coordination Protocol
-
-This document describes the protocol layer added on top of the existing
-DSL (Layer 1) and Runtime (Layer 2).
-
-### ✅ Fully Implemented:
-- [x] Message envelope (message format)
-- [x] Speech acts (PROPOSE, COMMIT, REJECT, INFORM, NEGOTIATE)
-- [x] Dialogue state machine (NEW → PROPOSED → COMMITTED → DONE)
-- [x] Capability discovery (QUERY_CAPABILITIES / INFORM_CAPABILITIES)
-- [x] Context versioning (optimistic concurrency control)
-- [x] HMAC-SHA256 signatures
-- [x] InMemoryEventBus (transport)
-- [x] Multi-Agent System with Roles (8 specialized roles)
-- [x] LLM Integration (5+ providers)
-- [x] Autonomous negotiation (propose → commit → execute → done)
-- [x] Negotiate with counter-offers
-- [x] Contract system with resource invariants
-- [x] Guardian Agent for security validation
-
-### 🚧 In Development:
-- [ ] Distributed transport (Redis/Kafka/NATS)
-- [ ] Asymmetric signatures (Ed25519)
-- [ ] Dialogue state persistence
-- [ ] WebAssembly compilation
-- [ ] Formal verification (TLA+)
-
----
-
-## 🎭 Multi-Agent System with Roles
-
-### Agent Roles
-
-Vireo provides **8 specialized agent roles** plus the **Master** coordinator:
-
-| Role | Icon | Description | Capabilities |
-|------|------|-------------|--------------|
-| **Master** | 🎯 | Coordinator | Orchestration, task distribution, agent management |
-| **Vision** | 👁️ | Computer Vision | Image processing, object detection, face recognition |
-| **NLP** | 🧠 | Language Processing | Text analysis, sentiment, translation, entity extraction |
-| **Analyst** | 📊 | Data Analysis | Statistics, predictive modeling, visualization |
-| **Researcher** | 🧬 | Research | Ideation, experimentation, knowledge synthesis |
-| **Executor** | ⚡ | Execution | Code execution, model training, report generation |
-| **Guardian** | 🛡️ | Security | Code validation, quality assurance, risk assessment |
-| **Teacher** | 📚 | Education | Explanation, mentoring, knowledge sharing |
-| **Quantum** | 🔬 | Quantum Computing | Quantum circuits, QML, simulation, optimization |
-
-### How Multi-Agent Collaboration Works
-User: "Create a medical image analysis system"
-↓
-🎯 MASTER analyzes the task
-↓
-┌─────────────────────────────────────────────────────┐
-│ 👁️ Vision: "Analyze medical images" │
-│ 🧠 NLP: "Process doctor notes" │
-│ 📊 Analyst: "Analyze patient data" │
-│ 🛡️ Guardian: "Validate safety" │
-│ ⚡ Executor: "Generate report" │
-└─────────────────────────────────────────────────────┘
-↓
-✅ Complete system ready!
+Role	Icon	Description	Capabilities
+Master	🎯	Coordinator	Orchestration, task distribution, agent management
+Vision	👁️	Computer Vision	Image processing, object detection, face recognition
+NLP	🧠	Language Processing	Text analysis, sentiment, translation, entity extraction
+Analyst	📊	Data Analysis	Statistics, predictive modeling, visualization
+Researcher	🧬	Research	Ideation, experimentation, knowledge synthesis
+Executor	⚡	Execution	Code execution, model training, report generation
+Guardian	🛡️	Security	Code validation, quality assurance, risk assessment
+Teacher	📚	Education	Explanation, mentoring, knowledge sharing
+Quantum	🔬	Quantum Computing	Quantum circuits, QML, simulation, optimization
+How Multi-Agent Collaboration Works
+User: "Create a medical image analysis system" ↓ 🎯 MASTER analyzes the task ↓ ┌─────────────────────────────────────────────────────┐ │ 👁️ Vision: "Analyze medical images" │ │ 🧠 NLP: "Process doctor notes" │ │ 📊 Analyst: "Analyze patient data" │ │ 🛡️ Guardian: "Validate safety" │ │ ⚡ Executor: "Generate report" │ └─────────────────────────────────────────────────────┘ ↓ ✅ Complete system ready!
 
 text
 
-### Creating Agents with Roles
-
-```python
+Creating Agents with Roles
 from protocol.agents import (
     MasterAgent,
     create_vision_agent,
