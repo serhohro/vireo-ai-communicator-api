@@ -2,7 +2,7 @@
 
 **One Language. All AI. Unlimited Future.**
 
-> 🚧 **Status: Stable Release (v1.4.1)**  
+> 🚧 **Status: Stable Release (v1.4.2)**  
 > Core language and protocol are stable. Multi-agent system with 8 roles is fully implemented.
 > LLM integration with 5+ providers works. Real cryptography Ed25519 integrated.
 > Ready for production testing and feedback.
