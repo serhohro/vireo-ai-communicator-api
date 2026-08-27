@@ -160,14 +160,14 @@ OpenAI	    💰 Paid	  ⭐⭐⭐⭐⭐	⚡⚡⚡⚡	  ❌ No	✅
 🔐 Security & Trust
 Vireo includes cryptographic primitives for secure AI-to-AI communication:
 
-| Component | Status |
-|-----------|--------|
-| Ed25519 Primitives (keygen, sign, verify) | ✅ Implemented |
-| HMAC Signatures (symmetric) | ✅ Implemented |
-| Nonce / Replay Protection | ✅ Implemented |
-| Ed25519 Protocol Integration | 🚧 In Development (v1.5.0) |
-| DID (Decentralized Identifiers) | 🚧 In Development (v1.5.0) |
-| Zero-Trust Protocol | 🚧 In Development (v1.5.0) |
+| Component                                     | Status |
+|-----------                                    |--------|
+| Ed25519 Primitives (keygen, sign, verify)     | ✅ Implemented |
+| HMAC Signatures (symmetric)                   | ✅ Implemented |
+| Nonce / Replay Protection                     | ✅ Implemented |
+| Ed25519 Protocol Integration                  | 🚧 In Development (v1.5.0) |
+| DID (Decentralized Identifiers)               | 🚧 In Development (v1.5.0) |
+| Zero-Trust Protocol                           | 🚧 In Development (v1.5.0) |
 
 🚀 Quick Start
 bash
