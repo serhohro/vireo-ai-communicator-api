@@ -149,12 +149,12 @@ executor = create_executor_agent()
 master.register_agents([vision, nlp, analyst, executor])
 result = master.orchestrate("Create a medical image analysis system")
 📡 Supported LLM Providers
-Provider	Cost	Quality	Speed	Local	Status
-Ollama	🆓 Free	⭐⭐⭐	⚡⚡⚡	✅ Yes	✅
-Gemini	🆓 Free	⭐⭐⭐⭐	⚡⚡⚡⚡	❌ No	✅
-Mistral	💰 Paid	⭐⭐⭐⭐	⚡⚡⚡⚡	❌ No	✅
-Claude	💰 Paid	⭐⭐⭐⭐⭐	⚡⚡⚡	❌ No	✅
-OpenAI	💰 Paid	⭐⭐⭐⭐⭐	⚡⚡⚡⚡	❌ No	✅
+Provider	Cost	   Quality	    Speed	      Local	Status
+Ollama	    🆓 Free	  ⭐⭐⭐	   ⚡⚡⚡	      ✅ Yes	✅
+Gemini	    🆓 Free	  ⭐⭐⭐⭐	⚡⚡⚡⚡	  ❌ No	✅
+Mistral	    💰 Paid	  ⭐⭐⭐⭐	⚡⚡⚡⚡	  ❌ No	✅
+Claude	    💰 Paid	  ⭐⭐⭐⭐⭐	⚡⚡⚡	      ❌ No	✅
+OpenAI	    💰 Paid	  ⭐⭐⭐⭐⭐	⚡⚡⚡⚡	  ❌ No	✅
 🔐 Security & Trust
 Vireo includes cryptographic primitives for secure AI-to-AI communication:
 
