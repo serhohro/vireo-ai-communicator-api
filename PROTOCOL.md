@@ -11,6 +11,17 @@
 
 This document describes the protocol layer added on top of the existing DSL (Layer 1) and Runtime (Layer 2).
 
+## 🏗️ Architectural Advantages
+
+### Deterministic State Machine
+Enforcing state transitions (NEW → PROPOSED → COMMITTED → DONE) directly inside the protocol prevents protocol drift and unexpected execution loops.
+
+### Native Cryptographic Identity & Contracts
+Embedding Ed25519 asymmetric signatures and resource invariants (max_tokens, timeout_sec) natively guarantees non-repudiation and prevents runaway agent execution costs.
+
+### Dual Wire Format
+Offering standard human-readable JSON alongside a compact key format optimizes both LLM parsing and token-constrained transport efficiency.
+
 ### ✅ Fully Implemented:
 
 - [x] Message envelope (message format)
