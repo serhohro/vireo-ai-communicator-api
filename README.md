@@ -244,13 +244,13 @@ negotiation SecureComputeNegotiation {
     }
 }
 📊 Comparison: Python vs Vireo
-Aspect	Python (PyTorch)	Vireo
-Lines of Code	30+ lines	5 lines
-External Libraries	3+ required	None (built-in)
-Data Loading	Manual	Built-in
-Training Loop	Manual	Declarative
-Agent Communication	❌ Not built-in	✅ Built-in
-Cryptography	❌ External library	✅ Built-in Primitives
+Aspect	                    Python (PyTorch)	    Vireo
+Lines of Code	            30+ lines	            5 lines
+External Libraries	        3+ required	            None (built-in)
+Data Loading	            Manual	                Built-in
+Training Loop	            Manual	                Declarative
+Agent Communication	        ❌ Not built-in	        ✅ Built-in
+Cryptography	            ❌ External library	    ✅ Built-in Primitives
 Multi-Agent Orchestration	❌ Custom code needed	✅ Built-in (7+ roles + Master)
 📚 Documentation
 PROTOCOL.md — Full AI-to-AI protocol specification
