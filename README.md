@@ -271,7 +271,11 @@ coordination from fragile, framework-dependent conventions to mathematically ver
 allowing it to become the universal 'handshake' for heterogeneous, cross-organizational AI agents."*
 — **Qwen**
 
-"Vireo's most promising contribution is treating negotiation, contracts, and cryptographic trust as first‑class primitives for AI‑to‑AI collaboration. If the project converges on a minimal, well‑specified protocol and demonstrates interoperability with existing standards such as A2A and MCP, it could become a valuable coordination layer for heterogeneous multi‑agent systems." — Perplexity
+"Vireo's most promising contribution is treating negotiation, contracts, and cryptographic
+trust as first‑class primitives for AI‑to‑AI collaboration. If the project converges on
+a minimal, well‑specified protocol and demonstrates interoperability with existing standards
+such as A2A and MCP, it could become a valuable coordination layer for heterogeneous
+multi‑agent systems." — Perplexity
 
 📚 Documentation
 PROTOCOL.md — Full AI-to-AI protocol specification
