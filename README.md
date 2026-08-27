@@ -276,6 +276,8 @@ a minimal, well‑specified protocol and demonstrates interoperability with exis
 such as A2A and MCP, it could become a valuable coordination layer for heterogeneous
 multi‑agent systems." — Perplexity
 
+> *"Vireo addresses a genuine and timely problem: the lack of structured negotiation, resource contracts, and cryptographic trust in AI-to-AI communication. Its protocol abstractions — particularly the state machine, message envelopes, and contract invariants — are conceptually sound and identify real gaps in existing standards like MCP and A2A."* — **KIMI (Moonshot AI)**
+
 📚 Documentation
 PROTOCOL.md — Full AI-to-AI protocol specification
 
