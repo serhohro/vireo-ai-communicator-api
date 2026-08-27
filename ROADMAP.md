@@ -141,17 +141,27 @@
 - [ ] Standards proposal to Eclipse/Apache
 
 ---
- 🎯 Strategic Path to Standardization
-MCP / LangChain / CrewAI Adapters (Ecosystem Integration)-
-IETF / W3C Draft: A2A Interoperability Wire Format
-Standalone WASM Runtime + Vendor-Neutral Steering Foundation
+ ## 🔬 Priority Roadmap
 
-## 🎯 Strategic Priority: Protocol Decoupling
-Based on expert evaluation (Qwen), the highest priority is:
-1. **Prune the ML Scope** — Remove native tensor/NN operations from Vireo language
-2. **Prioritize the Protocol RFC** — Make PROTOCOL.md the most polished document
-3. **Deliver on Sandboxing** — Accelerate WASM/Rust runtime roadmap
-4. **Multi-Language SDKs** — Provide Python, TypeScript, and Rust SDKs
+### Phase 1: Consolidation (6-12 months)
+- [ ] Remove all mock/stub features from main branch
+- [ ] Replace custom ML with PyTorch backend
+- [ ] Implement proper parser (Lark/PLY)
+- [ ] Integrate Ed25519 into protocol flow
+- [ ] Add WASM sandbox for execution
+- [ ] Add comprehensive test suite + CI
+
+### Phase 2: Protocol-First (12-18 months)
+- [ ] Decouple Vireo into: protocol library, runtime, compiler
+- [ ] Publish formal protocol specification (IETF style)
+- [ ] Build MCP/A2A interoperability bridges
+- [ ] Seek early adopters in controlled environments
+
+### Phase 3: Standardization (18-36 months)
+- [ ] Form working group with 3-5 organizations
+- [ ] Submit to standards body (IETF/W3C/OASIS)
+- [ ] Develop independent implementations (Python + Rust)
+- [ ] Security audit
 
 ## 🔗 Links
 
