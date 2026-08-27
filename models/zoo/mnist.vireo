@@ -1,0 +1,38 @@
+// [file name]: models/zoo/mnist.vireo
+// ============================================================
+// MNIST CLASSIFICATION MODEL
+// ============================================================
+
+model MNIST {
+    // Вхідний шар: 784 пікселі (28x28)
+    layer Dense(784, 128)
+    activation ReLU
+    
+    // Прихований шар
+    layer Dense(128, 64)
+    activation ReLU
+    
+    // Вихідний шар: 10 класів (цифри 0-9)
+    layer Dense(64, 10)
+    activation Softmax
+    
+    // Функція втрат та оптимізатор
+    loss CrossEntropy
+    optimizer Adam(lr=0.001)
+}
+
+train MNIST {
+    data = "mnist"
+    epochs = 10
+    batch_size = 64
+    validation = 0.2
+}
+
+predict MNIST {
+    data = "test"
+}
+
+evaluate MNIST {
+    data = "test"
+    metrics = [accuracy, precision, recall, f1]
+}

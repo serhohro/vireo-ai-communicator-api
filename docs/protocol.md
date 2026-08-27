@@ -1,30 +1,113 @@
+# VIREO-A2A Protocol (Layer 3)
 
-```markdown
-# 🔗 Protocol Guide
-
-## Overview
-
-Vireo-A2A is a communication protocol for autonomous AI agents.
+> ⚠️ **Статус: Протокол готовий, LLM-інтеграція працює**  
+> Поточна версія демонструє повну інфраструктуру координації агентів. 
+> Автономні рішення через LLM API — реалізовано та протестовано.
 
 ---
 
-## Architecture
-┌─────────────────────────────────────────────────────────────┐
-│ VIREO-A2A PROTOCOL │
-├─────────────────────────────────────────────────────────────┤
-│ Layer 1: DSL (model, train, predict) │
-│ Layer 2: Runtime (Tensor, Autograd, CNN) │
-│ Layer 3: Protocol (PROPOSE, COMMIT, REJECT, INFORM) │
-│ Layer 4: Transport (InMemoryEventBus, Redis/Kafka) │
-└─────────────────────────────────────────────────────────────┘
+## 📋 Протокол координації агентів
+
+Цей документ описує протокольний шар, доданий поверх існуючого
+DSL (Layer 1) та Runtime (Layer 2).
+
+### ✅ Реалізовано повністю:
+- [x] Message envelope (формат повідомлень)
+- [x] Speech acts (PROPOSE, COMMIT, REJECT, INFORM, ...)
+- [x] Dialogue state machine (NEW → PROPOSED → COMMITTED → DONE)
+- [x] Capability discovery (QUERY_CAPABILITIES / INFORM_CAPABILITIES)
+- [x] Context versioning (optimistic concurrency control)
+- [x] HMAC-SHA256 signatures
+- [x] InMemoryEventBus (transport)
+- [x] Multi-Agent System with Roles (8 specialized roles)
+- [x] LLM Integration (5+ providers)
+- [x] Autonomous negotiation (propose → commit → execute → done)
+
+### 🚧 В розробці:
+- [ ] Розподілений транспорт (Redis/Kafka/NATS)
+- [ ] Повний цикл переговорів (NEGOTIATE з контрпропозиціями)
+- [ ] Асиметричні підписи (Ed25519)
+- [ ] Персистентність стану діалогів
+- [ ] WebAssembly компіляція
+
+---
+
+## 🎭 Multi-Agent System with Roles
+
+### Agent Roles
+
+Vireo provides **8 specialized agent roles** plus the **Master** coordinator:
+
+| Role | Icon | Description | Capabilities |
+|------|------|-------------|--------------|
+| **Master** | 🎯 | Coordinator | Orchestration, task distribution, agent management |
+| **Vision** | 👁️ | Computer Vision | Image processing, object detection, face recognition |
+| **NLP** | 🧠 | Language Processing | Text analysis, sentiment, translation, entity extraction |
+| **Analyst** | 📊 | Data Analysis | Statistics, predictive modeling, visualization |
+| **Researcher** | 🧬 | Research | Ideation, experimentation, knowledge synthesis |
+| **Executor** | ⚡ | Execution | Code execution, model training, report generation |
+| **Guardian** | 🛡️ | Security | Code validation, quality assurance, risk assessment |
+| **Teacher** | 📚 | Education | Explanation, mentoring, knowledge sharing |
+| **Quantum** | 🔬 | Quantum Computing | Quantum circuits, QML, simulation, optimization |
+
+### How Multi-Agent Collaboration Works
+User: "Create a medical image analysis system"
+↓
+🎯 MASTER analyzes the task
+↓
+┌─────────────────────────────────────────────────────┐
+│ 👁️ Vision: "Analyze medical images" │
+│ 🧠 NLP: "Process doctor notes" │
+│ 📊 Analyst: "Analyze patient data" │
+│ 🛡️ Guardian: "Validate safety" │
+│ ⚡ Executor: "Generate report" │
+└─────────────────────────────────────────────────────┘
+↓
+✅ Complete system ready!
 
 text
 
----
+### Creating Agents with Roles
 
-## Message Format
+```python
+from protocol.agents import (
+    MasterAgent,
+    create_vision_agent,
+    create_nlp_agent,
+    create_analyst_agent,
+    create_executor_agent,
+)
 
-```json
+# Create Master coordinator
+master = MasterAgent("master")
+
+# Create specialized agents
+vision = create_vision_agent("agent-vision")
+nlp = create_nlp_agent("agent-nlp")
+analyst = create_analyst_agent("agent-analyst")
+executor = create_executor_agent("agent-executor")
+
+# Register all agents
+master.register_agents([vision, nlp, analyst, executor])
+
+# Orchestrate a complex task
+result = master.orchestrate("Create a medical image analysis system")
+Custom Roles
+python
+from protocol.agents import AgentRole, RoleAgent
+
+# Define custom role
+custom_role = AgentRole(
+    name="Custom",
+    description="Custom agent role",
+    capabilities=["custom_capability_1", "custom_capability_2"],
+    system_prompt_template="You are a Custom agent..."
+)
+
+# Create agent with custom role
+agent = RoleAgent("custom-agent", custom_role)
+📨 Формат повідомлення
+json
 {
   "protocol": "VIREO-A2A",
   "version": "1.0",
@@ -43,35 +126,31 @@ text
   "timestamp": 1787385246.235,
   "signature": null
 }
-Speech Acts (Intents)
-Intent	Description
-propose	Propose a task
-commit	Commit to execute
-reject	Reject a proposal
-inform	Inform result
-query_capabilities	Query agent capabilities
-inform_capabilities	Respond with capabilities
-cancel	Cancel a task
-negotiate	Negotiate terms
-State Machine
+🗣️ Speech acts (intent)
+Intent	Значение
+request	"выполни X"
+propose	"предлагаю сделать X"
+query	"какой статус / значение X?"
+inform	"сообщаю факт / результат"
+reject	"отклоняю предложение/запрос"
+commit	"принимаю предложение, обязуюсь выполнить"
+cancel	"отменяю ранее принятое обязательство"
+negotiate	"предлагаю изменить условия"
+query_capabilities	"что ты умеешь?"
+inform_capabilities	"вот список моих возможностей"
+⚙️ Машина станів діалогу
 text
 NEW → PROPOSED → COMMITTED → RUNNING → DONE
         │            │           │
         ├→ REJECTED  ├→ CANCELLED├→ FAILED
         ├→ TIMEOUT               ├→ TIMEOUT
         └→ CANCELLED             └→ CANCELLED
-Capability Discovery
-python
-# Register capability
-agent.register_capability("train_model", description="Trains models")
+Каждый conversation_id имеет собственное состояние. Недопустимые переходы
+(например, NEW → RUNNING в обход PROPOSED/COMMITTED) выбрасывают
+InvalidTransition — это гарантирует, что оба агента следуют одному и тому
+же протоколу переговоров, а не произвольному обмену сообщениями.
 
-# Query capabilities
-agent.query_capabilities("agent-training")
-
-# Response
-def on_capabilities(agent, msg):
-    capabilities = msg.payload["capabilities"]
-Trust & Security
+🔐 Довіра та безпека
 HMAC Signatures
 python
 from protocol import trust
@@ -81,50 +160,71 @@ trust.attach_signature(message, secret)
 
 # Verify signature
 is_valid = trust.verify(message, secret)
-Nonce Protection
+Nonce Protection (Replay Attacks)
 python
 from protocol.trust import NonceManager
 
 manager = NonceManager(ttl=60)
 nonce, timestamp = manager.generate()
 is_valid = manager.validate(nonce, timestamp)
-Transport
-InMemoryEventBus
+Permissions & Identity (в розробці)
 python
-from protocol import InMemoryEventBus
+# Планований синтаксис
+agent WeatherAgent {
+    identity: "did:key:z6Mkha..."
+    public_key: "0x1234..."
+    permissions: ["read", "execute"]
+}
+🧪 Демонстрації
+1. Базове демо (ручне керування) ✅
+bash
+python protocol/examples/two_agent_demo.py
+Людина керує агентами через код. Показує роботу протоколу.
 
-bus = InMemoryEventBus()
-bus.publish("channel", message)
-bus.subscribe("channel", handler)
-Redis (Future)
-python
-from src.transport import RedisEventBus
+2. Автономне демо з LLM ✅
+bash
+python protocol/examples/llm_agent_demo.py
+Агенти використовують LLM (Ollama, Claude, GPT-4, Gemini, Mistral) для прийняття рішень.
+Статус: ✅ Працює з 5+ провайдерами.
 
-bus = RedisEventBus("redis://localhost:6379")
-bus.connect()
-bus.publish("channel", message)
-bus.subscribe("channel", handler)
-Example: Full Negotiation
-python
-from protocol import Agent, InMemoryEventBus, Intent
+3. Multi-Agent демо з ролями ✅
+bash
+python protocol/examples/multi_agent_demo.py
+Master Agent координує 8 спеціалізованих агентів.
 
-# Create agents
-bus = InMemoryEventBus()
-agent_a = Agent("agent-a", bus)
-agent_b = Agent("agent-b", bus)
+4. MCP демо 🆕
+bash
+python protocol/examples/mcp_demo.py
+Інтеграція з Model Context Protocol.
 
-# Propose task
-proposal = agent_a.propose("agent-b", payload={"task": "train_model"})
+📊 Порівняння Vireo vs MCP vs A2A
+Характеристика	Vireo	MCP (Anthropic)	A2A (Google)
+Власна мова	✅ Так	❌ Ні	❌ Ні
+Протокол	✅ Так	✅ Так	✅ Так
+Runtime	✅ Так	❌ Ні	❌ Ні
+Тензори + Autodiff	✅ Так	❌ Ні	❌ Ні
+Відкритий код	✅ Так	✅ Так	❌ Ні
+Безкоштовний	✅ Так	✅ Так	❌ Ні
+Локальне виконання	✅ Так (Ollama)	⚠️ Частково	❌ Ні
+Multi-Agent Roles	✅ Так (8 ролей)	❌ Ні	✅ Так
+🚀 Пріоритети для наступних версій
+Розподілений транспорт — Redis/Kafka/NATS
 
-# Commit to task
-agent_b.commit(proposal)
+Повний цикл переговорів — negotiate з контрпропозиціями
 
-# Receive result
-def on_inform(agent, msg):
-    print(f"Result: {msg.payload}")
+Асиметричні підписи — Ed25519
 
-agent_a.on(Intent.INFORM, on_inform)
-Next Steps
+Персистентність — збереження стану діалогів
+
+🔗 Посилання
+PROTOCOL.md (основний)
+
+Agents Guide
+
 LLM Integration
 
 Cryptography
+
+Formal Specification
+
+🌿 Vireo — A Language Designed for AI-to-AI Communication
