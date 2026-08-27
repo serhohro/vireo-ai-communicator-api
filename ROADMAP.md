@@ -1,98 +1,154 @@
 # 🌿 Vireo Roadmap
 
-## Current Status: v1.4.0 ✅
+## Current Status: v1.4.2 (Active Development)
 
-| Component          | Status |
-|-----------         |--------|
-| DSL (Layer 1)      | ✅ Complete |
-| Runtime (Layer 2)  | ✅ Complete |
-| Protocol (Layer 3) | ✅ Complete |
-| Transport (Layer 4)| ✅ Complete |
-| LLM Integration    | ✅ Complete |
-| Multi-Agent Roles  | ✅ Complete |
-| Web Interface      | ✅ Complete |
-| API Server         | ✅ Complete |
+> 🧪 **Status: Active Development**  
+> Core language, interpreter, protocol foundations, and multi-agent system are implemented.
+> LLM integration with 5+ providers works. Cryptographic primitives are in place.
+> Community feedback and contributions are welcome.
 
 ---
 
-## Phase 1: Performance & Extensibility (v1.5 - v1.6)
+## 📊 Implementation Status Overview
 
-### v1.5.0 — LSTM Support (1-2 weeks)
-
-- [ ] LSTM layer implementation
-- [ ] LSTM tests
-- [ ] LSTM examples (weather, text)
-
-### v1.6.0 — JIT Compilation (2-3 weeks)
-
-- [ ] LLVM integration
-- [ ] JIT compilation for Vireo code
-- [ ] Performance benchmarks
+| Status | Percentage | Description |
+|--------|------------|-------------|
+| ✅ Implemented | ~55-60% | Working, tested features |
+| 🟡 Partial | ~25-30% | Partially implemented, needs improvement |
+| 🟠 Mock | ~5-10% | Placeholder, planned for future |
+| 🔵 Planned | ~10-15% | Not yet implemented, planned |
 
 ---
 
-## Phase 2: Integration & Interoperability (v1.7 - v1.8)
+## ✅ v1.4.2 — Current Release (Implemented)
 
-### v1.7.0 — GPU Support (2-3 weeks)
+### Core Language & Runtime
+- ✅ Vireo Interpreter
+- ✅ Vireo → Python Compiler
+- ✅ Tensor Operations (arithmetic, matmul, reshape, transpose, flatten)
+- ✅ Neural Network Layers (Dense, Conv2D, MaxPool2D, BatchNorm, Dropout, Flatten)
+- ✅ Statistics (sum, mean, std, var, min, max, argmax)
+- ✅ Tensor Neural Network primitives
 
-- [ ] CUDA backend
-- [ ] ROCm support (AMD)
-- [ ] Metal support (Apple)
+### Protocol Layer
+- ✅ Message Envelope (protocol, version, message_id, conversation_id, sender, recipient)
+- ✅ Speech Acts (PROPOSE, COMMIT, REJECT, INFORM, NEGOTIATE)
+- ✅ Dialogue State Machine (NEW → PROPOSED → COMMITTED → RUNNING → DONE)
+- ✅ Capability Discovery (QUERY_CAPABILITIES / INFORM_CAPABILITIES)
+- ✅ Context Versioning (optimistic concurrency control)
+- ✅ HMAC-SHA256 Signatures
+- ✅ InMemoryEventBus (transport)
 
-### v1.8.0 — ONNX Integration (2-3 weeks)
+### Multi-Agent System
+- ✅ Master Agent (orchestration, task distribution)
+- ✅ 7 Specialized Roles (Vision, NLP, Analyst, Researcher, Executor, Guardian, Teacher)
+- ✅ Custom Roles (AgentRole + create_role_agent)
+- ✅ LLM-driven autonomous negotiation
 
-- [ ] Export to ONNX
-- [ ] Import from ONNX
-- [ ] ONNX tests
+### LLM Integration
+- ✅ 5+ Providers (Ollama, Claude, OpenAI, Gemini, Mistral)
+- ✅ Provider fallback (partial)
+- ✅ Local LLM support (Ollama)
+
+### Security & Cryptography
+- ✅ Ed25519 Primitives (key generation, signing, verification)
+- ✅ HMAC Signatures (symmetric)
+- ✅ Nonce Protection (replay attack prevention)
+- ✅ Timestamp/TTL validation
+
+### Adapters
+- ✅ MCP Adapter (vireo_propose, vireo_commit, vireo_status)
+- ✅ LangChain Adapter (tool integration)
+- ✅ CrewAI Adapter (partial)
+
+### Transport
+- ✅ Redis (Pub/Sub implementation)
+- ✅ Kafka (Producer/Consumer implementation)
+- ✅ NATS (Async client implementation)
+
+### Web Interface
+- ✅ 8 functional tabs (Autonomous, Agents, Execute, Neural, Providers, Chat, Roles, Security)
+- ✅ Multi-language UI (Ukrainian 🇺🇦 / English 🇬🇧)
+- ✅ REST API with 20+ endpoints
+- ✅ API Documentation
 
 ---
 
-## Phase 3: Security & Trust (v1.9 - v2.0)
+## 🚧 v1.5.0 — Security & Distribution (Target: Q4 2026)
 
-### v1.9.0 — Cryptographic Security (2-3 weeks)
+### Security Enhancements
+- 🚧 **Ed25519 Protocol Integration** — Full asymmetric authentication
+- 🚧 **DID Implementation** — Decentralized Identifiers with proper verification
+- 🚧 **Zero-Trust Protocol** — Complete security architecture
+- 🚧 **State Persistence** — Save dialogue state
+- 🚧 **Revocation Mechanism** — Agent identity revocation
 
-- [ ] Ed25519 signatures
-- [ ] W3C DID
-- [ ] Zero-Trust protocol
+### Quantum Role
+- 🚧 **Quantum Agent** — Quantum computing role implementation
 
-### v2.0.0 — Negotiation Protocols (2-3 weeks)
-
-- [ ] Contract schemas
-- [ ] Session protocols
-- [ ] Timeout & max_rounds
-- [ ] Fallback handlers
-
----
-
-## Phase 4: Ecosystem & Standardization (v2.1 - v3.0)
-
-### v2.1.0 — Distributed Transport
-
-- [ ] Redis transport
-- [ ] Kafka transport
-
-### v2.2.0 — MCP Server
-
-- [ ] MCP protocol integration
-- [ ] Vireo as MCP server
-
-### v3.0.0 — Standardization
-
-- [ ] IEEE/ISO proposal
-- [ ] A2A/MCP integration
-- [ ] Industry adoption
+### Transport
+- 🚧 **Distributed Transport Integration** — Redis/Kafka/NATS production-ready
+- 🚧 **Dialogue State Persistence** — Cross-session state recovery
 
 ---
 
-## Timeline
+## 🚀 v1.6.0 — Performance & Portability (Target: Q1 2027)
 
-| Milestone             | Target          | Status |
-|-----------            |--------|--------|
-| v1.5.0 (LSTM)         | Sep 2026        | 🚧 In Progress |
-| v1.6.0 (JIT)          | Oct 2026        | 📋 Planned |
-| v1.7.0 (GPU)          | Oct 2026        | 📋 Planned |
-| v1.8.0 (ONNX)         | Nov 2026        | 📋 Planned |
-| v1.9.0 (Crypto)       | Nov 2026        | 📋 Planned |
-| v2.0.0 (Negotiation)  | Dec 2026        | 📋 Planned |
-| v2.1.0 (Distributed)  | Jan 2027        | 📋 Planned |
-| v3.0.0 (Standard)     | Mar 2027        | 📋 Planned |
+### Compilation
+- 🚀 **JIT Compilation (Native)** — Full Vireo → LLVM IR compilation
+- 🚀 **WASM Compilation** — WebAssembly for sandboxed execution
+- 🚀 **GPU Acceleration** — CUDA/ROCm backend
+
+### Interoperability
+- 🚀 **ONNX Integration** — Export/Import models
+- 🚀 **Independent Runtime (Rust)** — Second implementation for interoperability
+
+---
+
+## 🔬 v2.0.0 — Formalization & Standards (Target: Q3 2027)
+
+### Formal Verification
+- 🔬 **TLA+ Formal Specification** — Complete formal verification
+- 🔬 **Conformance Test Suite** — Hundreds of protocol tests
+- 🔬 **Security Model** — Formal security proofs
+
+### Standards
+- 🔬 **Interoperability Specification** — Independent implementations
+- 🔬 **Community Governance** — Open governance model
+- 🔬 **Standards Proposal** — Eclipse/Apache Foundation
+
+---
+
+## 📋 Success Criteria
+
+### v1.5.0 — Security & Distribution
+- [ ] Ed25519 protocol integration working
+- [ ] DID implementation with proper verification
+- [ ] Redis/Kafka/NATS production-ready
+- [ ] State persistence working
+
+### v1.6.0 — Performance & Portability
+- [ ] JIT compilation working (Vireo → LLVM)
+- [ ] WASM compilation working
+- [ ] GPU acceleration working
+- [ ] ONNX integration working
+
+### v2.0.0 — Formalization & Standards
+- [ ] TLA+ formal verification complete
+- [ ] Conformance test suite (100+ tests)
+- [ ] Independent runtime (Rust) implementation
+- [ ] A2A/MCP interoperability demo
+- [ ] Standards proposal to Eclipse/Apache
+
+---
+
+## 🔗 Links
+
+- [README.md](README.md) — Project overview
+- [PROTOCOL.md](PROTOCOL.md) — Full protocol specification
+- [CONTRIBUTING.md](CONTRIBUTING.md) — How to contribute
+- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — Common issues
+
+---
+
+**🌿 Vireo — A Language Designed for AI-to-AI Communication**
