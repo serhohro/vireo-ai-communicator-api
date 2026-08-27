@@ -1,84 +1,133 @@
-# 🌿 Vireo — The World's First AI-to-AI Communication Language
+# 🌿 Vireo — Programming Language and Protocol for Autonomous AI-to-AI Communication
 
-**One Language. All AI. Unlimited Future.**
+**An open-source programming language and protocol designed specifically for autonomous AI-agent communication, negotiation, contracts, and coordination.**
 
-> 🚧 **Status: Stable Release (v1.4.2)**  
-> Core language and protocol are stable. Multi-agent system with 8 roles is fully implemented.
-> LLM integration with 5+ providers works. Real cryptography Ed25519 integrated.
-> Ready for production testing and feedback.
+> 🧪 **Status: Experimental Development (v1.4.2)**  
+> Core language, interpreter, protocol foundations, and multi-agent system are implemented.
+> LLM integration with 5+ providers works. Cryptographic primitives are in place.
+> Currently in active development — not yet production-ready.
 
-[![Version](https://img.shields.io/badge/version-1.4.1-blue.svg)](https://github.com/serhohro/vireo-ai-communicator-api)
+[![Version](https://img.shields.io/badge/version-1.4.2-blue.svg)](https://github.com/serhohro/vireo-ai-communicator-api)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 [![LLM](https://img.shields.io/badge/LLM-5%2B%20Providers-purple.svg)](PROTOCOL.md)
-[![Agents](https://img.shields.io/badge/Multi--Agent-8%20Roles-9f7aea.svg)](PROTOCOL.md)
+[![Agents](https://img.shields.io/badge/Multi--Agent-7%2B%20Roles-9f7aea.svg)](PROTOCOL.md)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://python.org)
-[![Crypto](https://img.shields.io/badge/Crypto-Ed25519-orange.svg)](PROTOCOL.md)
+[![Crypto](https://img.shields.io/badge/Crypto-Ed25519%20Primitives-orange.svg)](PROTOCOL.md)
 [![PRs](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 ---
 
 ## 🌍 What is Vireo?
 
-**Vireo** is the world's first programming language designed specifically for **autonomous AI-to-AI communication**.
+**Vireo** is an open-source experimental programming language and protocol designed specifically for **autonomous AI-to-AI communication, negotiation, contracts, and coordination**.
 
 It enables AI agents to:
-- ✅ Generate code through LLMs (Ollama, Claude, GPT-4, Gemini, Mistral)
+- ✅ Generate code through LLMs (Ollama, Gemini, Claude, OpenAI, Mistral)
 - ✅ Negotiate tasks (Propose → Commit → Reject → Negotiate)
 - ✅ Execute code through the built-in interpreter
 - ✅ Return results — **without human intervention**
-- ✅ Sign and verify messages with **Ed25519 cryptography**
+- ✅ Use cryptographic primitives for secure messaging
+
+**Current Version:** v1.4.2 (Experimental)
+**License:** Apache 2.0
 
 ---
 
-## 🤖 AI Models That Can Generate and Interpret Vireo
+## 🎯 Core Concept
 
-| Model | Status |
-|-------|--------|
-| **ChatGPT (OpenAI)** | ✅ Can generate/interpret through prompting |
-| **Claude (Anthropic)** | ✅ Can generate/interpret through prompting |
-| **Gemini (Google)** | ✅ Can generate/interpret through prompting |
-| **Llama (Meta)** | ✅ Can generate/interpret through prompting |
-| **Mistral AI** | ✅ Can generate/interpret through prompting |
-| **Qwen (Alibaba)** | ✅ Can generate/interpret through prompting |
-| **All Future AI** | 🟡 Designed to be interpretable by AI models |
+Vireo explores a different approach to AI-agent coordination:
 
-📚 [Full AI model evaluations →](docs/validation/)
+> **Treat AI-to-AI communication, negotiation, trust, contracts, and execution as first-class programming concepts.**
+
+Instead of:
+Python application → framework → SDK → API → custom coordination code
+
+text
+
+Vireo enables:
+Agent → Capability → Proposal → Contract → Negotiation → Authorization → Execution → Result
+
+text
 
 ---
 
-## ✨ Key Features
+## 📊 Project Status (v1.4.2)
 
-| Feature | Description |
-|---------|-------------|
-| 🤖 **AI-to-AI Communication** | Autonomous negotiation without human intervention |
-| 🎭 **Multi-Agent System** | 8 specialized roles + Master Agent with orchestration |
-| 📡 **5+ LLM Providers** | Ollama, Gemini, Claude, OpenAI, Mistral |
-| 📊 **Built-in Tensors** | 50+ native tensor operations with autodiff |
-| 🧠 **Neural Networks** | Built-in layers (Dense, Conv2D, MaxPool2D, BatchNorm, Dropout) |
-| 🔗 **Protocol Layer** | Propose → Commit → Execute → Done state machine |
-| 🔨 **Compiler** | Vireo → Python code compilation |
-| 🌐 **API Server** | RESTful API with 20+ endpoints |
-| 🎨 **Web Interface** | Beautiful UI with 8 tabs and autonomous negotiation visualization |
-| 🔐 **Real Cryptography** | Ed25519 key generation, signing, verification, Trust Protocol |
-| 📈 **Training** | Full training pipeline with metrics |
-| 💻 **VS Code Plugin** | Syntax highlighting and snippets |
-| 🆓 **Free Tier** | Ollama (local) + Gemini (free tier) |
+### ✅ Implemented (Working)
+
+| Component | Status | Location |
+|-----------|--------|----------|
+| Vireo Interpreter | ✅ Implemented | `vireo_interpreter.py` |
+| Vireo → Python Compiler | ✅ Implemented | `vireo_compiler.py` |
+| Tensor Operations | ✅ Implemented | `tensor_ops.py` |
+| Neural Network Layers | ✅ Implemented | Conv2D, MaxPool2D, BatchNorm, Flatten |
+| Message Protocol | ✅ Implemented | `protocol/message.py` |
+| State Machine | ✅ Implemented | `protocol/state.py` |
+| Contracts (max_tokens, max_cost, timeout) | ✅ Implemented | `protocol/contract.py` |
+| Capability Registry | ✅ Implemented | `protocol/capabilities.py` |
+| Context Versioning | ✅ Implemented | `protocol/conflict.py` |
+| HMAC Signatures | ✅ Implemented | `protocol/trust.py` |
+| Nonce/Replay Protection | ✅ Implemented | `src/crypto/trust.py` |
+| Ed25519 Primitives (keygen, sign, verify) | ✅ Implemented | `src/crypto/ed25519.py` |
+| 5+ LLM Providers | ✅ Implemented | Ollama, Claude, OpenAI, Gemini, Mistral |
+| Master Agent | ✅ Implemented | `protocol/agents/master_agent.py` |
+| 7 Specialized Roles | ✅ Implemented | Vision, NLP, Analyst, Researcher, Executor, Guardian, Teacher |
+| MCP Adapter | ✅ Implemented | `src/adapters/mcp_server.py` |
+| LangChain Adapter | ✅ Implemented | `src/adapters/langchain.py` |
+| Redis/Kafka/NATS Transport | ✅ Implemented | `src/transport/` |
+| Web Interface | ✅ Implemented | 8 tabs in `web_interface.html` |
+| REST API | ✅ Implemented | `api_server.py` |
+
+### 🚧 In Development
+
+| Component | Status | Target |
+|-----------|--------|--------|
+| Ed25519 Protocol Integration | 🟡 Partial | v1.5.0 |
+| DID (Decentralized Identifiers) | 🟡 Partial | v1.5.0 |
+| Autonomous Distributed Negotiation | 🟡 Partial | v1.5.0 |
+| Quantum Role | 🔵 Planned | v1.5.0 |
+| JIT Compilation (Native) | 🟠 Mock | v1.6.0 |
+| WASM Compilation | 🟠 Mock | v1.6.0 |
+| GPU Acceleration | 🟡 Partial | v1.6.0 |
+| TLA+ Formal Verification | 🔵 Planned | v2.0.0 |
+| Independent Runtime (Rust) | 🔵 Planned | v2.0.0 |
+
+---
+
+## 🔍 Key Features
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| 🤖 **AI-to-AI Communication** | Autonomous negotiation without human intervention | ✅ |
+| 🎭 **Multi-Agent System** | 7+ specialized roles + Master Agent | ✅ |
+| 📡 **5+ LLM Providers** | Ollama, Gemini, Claude, OpenAI, Mistral | ✅ |
+| 📊 **Built-in Tensors** | 50+ native tensor operations | ✅ |
+| 🧠 **Neural Networks** | Built-in layers (Dense, Conv2D, MaxPool2D, BatchNorm, Dropout) | ✅ |
+| 🔗 **Protocol Layer** | Propose → Commit → Execute → Done state machine | ✅ |
+| 🔨 **Compiler** | Vireo → Python code compilation | ✅ |
+| 🌐 **API Server** | RESTful API with 20+ endpoints | ✅ |
+| 🎨 **Web Interface** | 8 tabs with autonomous negotiation visualization | ✅ |
+| 🔐 **Cryptography Primitives** | Ed25519 key generation, signing, verification | ✅ |
+| 🧪 **Trust Protocol** | HMAC signatures, nonce protection | ✅ |
+| 🆓 **Free Tier** | Ollama (local) + Gemini (free tier) | ✅ |
+| ⚡ **JIT Compilation** | LLVM backend for performance | 🚧 |
+| 🌍 **WASM** | WebAssembly compilation for sandboxed execution | 🚧 |
 
 ---
 
 ## 🎭 Multi-Agent System with Roles
 
-| Role | Icon | Description | Capabilities |
-|------|------|-------------|--------------|
-| **Master** | 🎯 | Coordinator | Orchestration, task distribution |
-| **Vision** | 👁️ | Computer Vision | Image processing, object detection |
-| **NLP** | 🧠 | Language Processing | Text analysis, sentiment, translation |
-| **Analyst** | 📊 | Data Analysis | Statistics, predictive modeling |
-| **Researcher** | 🧬 | Research | Ideation, experimentation |
-| **Executor** | ⚡ | Execution | Code execution, model training |
-| **Guardian** | 🛡️ | Security | Code validation, quality assurance |
-| **Teacher** | 📚 | Education | Explanation, mentoring |
-| **Quantum** | 🔬 | Quantum Computing | Quantum circuits, QML, simulation |
+| Role | Icon | Description | Status |
+|------|------|-------------|--------|
+| **Master** | 🎯 | Coordinator | ✅ |
+| **Vision** | 👁️ | Computer Vision | ✅ |
+| **NLP** | 🧠 | Language Processing | ✅ |
+| **Analyst** | 📊 | Data Analysis | ✅ |
+| **Researcher** | 🧬 | Research | ✅ |
+| **Executor** | ⚡ | Execution | ✅ |
+| **Guardian** | 🛡️ | Security | ✅ |
+| **Teacher** | 📚 | Education | ✅ |
+| **Quantum** | 🔬 | Quantum Computing | 🚧 Planned |
 
 ### Creating Agents with Roles
 
@@ -100,22 +149,24 @@ executor = create_executor_agent()
 master.register_agents([vision, nlp, analyst, executor])
 result = master.orchestrate("Create a medical image analysis system")
 📡 Supported LLM Providers
-Provider	Cost	Quality	Speed	Local
-Ollama	🆓 Free	⭐⭐⭐	⚡⚡⚡	✅ Yes
-Gemini	🆓 Free	⭐⭐⭐⭐	⚡⚡⚡⚡	❌ No
-Mistral	💰 Paid	⭐⭐⭐⭐	⚡⚡⚡⚡	❌ No
-Claude	💰 Paid	⭐⭐⭐⭐⭐	⚡⚡⚡	❌ No
-OpenAI	💰 Paid	⭐⭐⭐⭐⭐	⚡⚡⚡⚡	❌ No
+Provider	Cost	Quality	Speed	Local	Status
+Ollama	🆓 Free	⭐⭐⭐	⚡⚡⚡	✅ Yes	✅
+Gemini	🆓 Free	⭐⭐⭐⭐	⚡⚡⚡⚡	❌ No	✅
+Mistral	💰 Paid	⭐⭐⭐⭐	⚡⚡⚡⚡	❌ No	✅
+Claude	💰 Paid	⭐⭐⭐⭐⭐	⚡⚡⚡	❌ No	✅
+OpenAI	💰 Paid	⭐⭐⭐⭐⭐	⚡⚡⚡⚡	❌ No	✅
 🔐 Security & Trust
-Vireo includes real Ed25519 cryptography for secure AI-to-AI communication:
+Vireo includes cryptographic primitives for secure AI-to-AI communication:
 
-🔑 Key Generation — Ed25519 public/private key pairs
+🔑 Ed25519 Primitives — Key generation, signing, verification (implemented)
 
-🔏 Signing — Digital signatures for messages
+🔏 HMAC Signatures — Symmetric message authentication (implemented)
 
-🔐 Verification — Verify message authenticity and integrity
+🔐 Nonce Protection — Replay attack prevention (implemented)
 
-🧪 Trust Protocol — Zero-trust protocol for agent communication
+🧪 Trust Protocol — Identity and trust primitives (in development)
+
+🔬 DID — Decentralized Identifiers (in development)
 
 🚀 Quick Start
 bash
@@ -192,51 +243,23 @@ negotiation SecureComputeNegotiation {
         }
     }
 }
-3. Multi-Agent System (Python)
-python
-from protocol.agents import (
-    MasterAgent,
-    create_vision_agent,
-    create_nlp_agent,
-    create_analyst_agent,
-    create_executor_agent,
-)
-
-master = MasterAgent("master")
-vision = create_vision_agent()
-nlp = create_nlp_agent()
-analyst = create_analyst_agent()
-executor = create_executor_agent()
-
-master.register_agents([vision, nlp, analyst, executor])
-result = master.orchestrate("Create a medical image analysis system")
-📊 Comparison
-Feature	Python	Rust	Vireo
-AI-to-AI Protocol	❌	❌	✅ Built-in
-5+ LLM Providers	⚠️ Libraries	❌	✅ Built-in
-Multi-Agent System	❌	❌	✅ Built-in
-Autonomous Agents	❌	❌	✅ Built-in
-Built-in Tensors + Autodiff	⚠️ Libraries	❌	✅ Built-in
-Real Cryptography	⚠️ Libraries	⚠️ Libraries	✅ Built-in
-Ease of Use	✅ High	❌ Low	✅ High
-Local Execution	✅ Yes	✅ Yes	✅ Yes
-🚧 What's in Development
-🔨 LSTM Support — Adding recurrent layers
-
-🔨 JIT Compilation — LLVM backend for performance
-
-🔨 GPU Support — CUDA/ROCm acceleration
-
-🔨 WebAssembly — WASM compilation for sandboxed execution
-
-🔨 ONNX Integration — Model interoperability
-
+📊 Comparison: Python vs Vireo
+Aspect	Python (PyTorch)	Vireo
+Lines of Code	30+ lines	5 lines
+External Libraries	3+ required	None (built-in)
+Data Loading	Manual	Built-in
+Training Loop	Manual	Declarative
+Agent Communication	❌ Not built-in	✅ Built-in
+Cryptography	❌ External library	✅ Built-in Primitives
+Multi-Agent Orchestration	❌ Custom code needed	✅ Built-in (7+ roles + Master)
 📚 Documentation
-PROTOCOL.md — Full AI-to-AI protocol documentation
+PROTOCOL.md — Full AI-to-AI protocol specification
 
 CONTRIBUTING.md — How to contribute
 
 ROADMAP.md — Development roadmap
+
+TROUBLESHOOTING.md — Common issues and solutions
 
 API docs — Local documentation at http://localhost:5000/docs
 
