@@ -129,6 +129,7 @@ class Agent:
         if proposal_id and proposal_id in self._pending_proposals:
             self._pending_proposals.pop(proposal_id)
             self.state.transition(message.conversation_id, DialogueState.COMMITTED)
+            self.state.transition(message.conversation_id, DialogueState.RUNNING)  # ← ОСТАННІЙ ФІКС
             print(f"✅ Proposal {proposal_id} committed")
         else:
             print(f"⚠️ Unknown proposal: {proposal_id}")
