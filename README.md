@@ -2,7 +2,7 @@
 
 **An open-source programming language and protocol designed specifically for autonomous AI-agent communication, negotiation, contracts, and coordination.**
 
-🧪 **Status: Research Prototype (v1.4.2)**  
+> 🧪 **Status: Research Prototype (v1.4.2)**  
 > Core language, interpreter, protocol foundations, and multi-agent system are implemented.
 > LLM integration with 5+ providers works. Cryptographic primitives are in place.
 > This is a research prototype — not yet production-ready. Community feedback and contributions are welcome.
@@ -19,17 +19,17 @@
 
 ## 🌍 What is Vireo?
 
-**Vireo** is an open-source experimental programming language and protocol designed specifically for **autonomous AI-to-AI communication, negotiation, contracts, and coordination**.
+**Vireo is the world's first programming language designed specifically for autonomous AI-to-AI communication.**
 
-It enables AI agents to:
-- ✅ Generate code through LLMs (Ollama, Gemini, Claude, OpenAI, Mistral)
-- ✅ Negotiate tasks (Propose → Commit → Reject → Negotiate)
-- ✅ Execute code through the built-in interpreter
-- ✅ Return results — **without human intervention**
-- ✅ Use cryptographic primitives for secure messaging
+Unlike general-purpose languages (Python, Rust, Go) or agent frameworks (LangChain, CrewAI), Vireo:
 
-**Current Version:** v1.4.2 (Experimental)
-**License:** Apache 2.0
+- ✅ **Treats AI communication as a first-class concept** — not as application logic
+- ✅ **Has a built-in negotiation protocol** — Propose → Commit → Reject → Execute
+- ✅ **Includes cryptographic trust primitives** — Ed25519, HMAC, nonce protection
+- ✅ **Provides multi-agent orchestration** — 7+ specialized roles + Master Agent
+- ✅ **Is LLM-native** — Designed to be generated and interpreted by AI models
+
+No other language or framework combines all of these features in a unified programming model.
 
 ---
 
@@ -78,17 +78,17 @@ text
 | Web Interface | ✅ Implemented | 8 tabs in `web_interface.html` |
 | REST API | ✅ Implemented | `api_server.py` |
 
-### 🚧 In Development
+### 🚧 In Development (not yet production-ready)
 
 | Component | Status | Target |
 |-----------|--------|--------|
-| Ed25519 Protocol Integration | 🟡 Partial | v1.5.0 |
-| DID (Decentralized Identifiers) | 🟡 Partial | v1.5.0 |
-| Autonomous Distributed Negotiation | 🟡 Partial | v1.5.0 |
+| Ed25519 Protocol Integration | 🚧 In Development | v1.5.0 |
+| DID (Decentralized Identifiers) | 🚧 In Development | v1.5.0 |
+| Autonomous Distributed Negotiation | 🚧 In Development | v1.5.0 |
 | Quantum Role | 🔵 Planned | v1.5.0 |
-| JIT Compilation (Native) | 🟠 Mock | v1.6.0 |
-| WASM Compilation | 🟠 Mock | v1.6.0 |
-| GPU Acceleration | 🟡 Partial | v1.6.0 |
+| JIT Compilation (Native) | 🚧 In Development | v1.6.0 |
+| WASM Compilation | 🚧 In Development | v1.6.0 |
+| GPU Acceleration | 🚧 In Development | v1.6.0 |
 | TLA+ Formal Verification | 🔵 Planned | v2.0.0 |
 | Independent Runtime (Rust) | 🔵 Planned | v2.0.0 |
 
@@ -148,27 +148,23 @@ executor = create_executor_agent()
 
 master.register_agents([vision, nlp, analyst, executor])
 result = master.orchestrate("Create a medical image analysis system")
----
 📡 Supported LLM Providers
-Provider	Cost	   Quality	     Speed	      Local	Status
-Ollama	    🆓 Free	  ⭐⭐⭐	    ⚡⚡⚡	      ✅ Yes✅
-Gemini	    🆓 Free	  ⭐⭐⭐⭐	⚡⚡⚡⚡	  ❌ No	✅
-Mistral	    💰 Paid	  ⭐⭐⭐⭐	⚡⚡⚡⚡	  ❌ No	✅
-Claude	    💰 Paid	  ⭐⭐⭐⭐⭐	⚡⚡⚡	      ❌ No	✅
-OpenAI	    💰 Paid	  ⭐⭐⭐⭐⭐	⚡⚡⚡⚡	  ❌ No	✅
----
+Provider	Cost	Quality	Speed	Local	Status
+Ollama	🆓 Free	⭐⭐⭐	⚡⚡⚡	✅ Yes	✅
+Gemini	🆓 Free	⭐⭐⭐⭐	⚡⚡⚡⚡	❌ No	✅
+Mistral	💰 Paid	⭐⭐⭐⭐	⚡⚡⚡⚡	❌ No	✅
+Claude	💰 Paid	⭐⭐⭐⭐⭐	⚡⚡⚡	❌ No	✅
+OpenAI	💰 Paid	⭐⭐⭐⭐⭐	⚡⚡⚡⚡	❌ No	✅
 🔐 Security & Trust
 Vireo includes cryptographic primitives for secure AI-to-AI communication:
 
-| Component                                     | Status |
-|-----------                                    |--------|
-| Ed25519 Primitives (keygen, sign, verify)     | ✅ Implemented |
-| HMAC Signatures (symmetric)                   | ✅ Implemented |
-| Nonce / Replay Protection                     | ✅ Implemented |
-| Ed25519 Protocol Integration                  | 🚧 In Development (v1.5.0) |
-| DID (Decentralized Identifiers)               | 🚧 In Development (v1.5.0) |
-| Zero-Trust Protocol                           | 🚧 In Development (v1.5.0) |
-
+Component	Status
+Ed25519 Primitives (keygen, sign, verify)	✅ Implemented
+HMAC Signatures (symmetric)	✅ Implemented
+Nonce / Replay Protection	✅ Implemented
+Ed25519 Protocol Integration	🚧 In Development (v1.5.0)
+DID (Decentralized Identifiers)	🚧 In Development (v1.5.0)
+Zero-Trust Protocol	🚧 In Development (v1.5.0)
 🚀 Quick Start
 bash
 # 1. Clone the repository
@@ -188,7 +184,6 @@ start_vireo.bat
 
 # 5. Open web interface
 # http://localhost:5000/web
----
 💻 Example Code
 1. Neural Network Training
 vireo
@@ -245,48 +240,22 @@ negotiation SecureComputeNegotiation {
         }
     }
 }
----
-📊 Comparison: Python vs Vireo
-Aspect	                    Python (PyTorch)	    Vireo
-Lines of Code	            30+ lines	            5 lines
-External Libraries	        3+ required	            None (built-in)
-Data Loading	            Manual	                Built-in
-Training Loop	            Manual	                Declarative
-Agent Communication	        ❌ Not built-in	        ✅ Built-in
-Cryptography	            ❌ External library	    ✅ Built-in Primitives
-Multi-Agent Orchestration	❌ Custom code needed	✅ Built-in (7+ roles + Master)
----
 💬 Expert Reviews
-*"Vireo provides a remarkably clean and deterministic architecture for multi-agent orchestration.
-By making state negotiation, cryptographic identity, and execution contracts native
-to the programming model, it establishes an effective paradigm for verifiable,
-safe AI-to-AI communication."* — **Gemini**
+"Vireo provides a remarkably clean and deterministic architecture for multi-agent orchestration. By making state negotiation, cryptographic identity, and execution contracts native to the programming model, it establishes an effective paradigm for verifiable, safe AI-to-AI communication." — Gemini
 
-> *"Vireo addresses a fundamental gap in the emerging multi-agent ecosystem: the lack of a formal,
- enforceable layer for AI-to-AI negotiation and trust. By elevating contracts, resource limits,
-and cryptographic state transitions to first-class protocol primitives, Vireo moves autonomous
-coordination from fragile, framework-dependent conventions to mathematically verifiable agreements.
- Its success will hinge on decoupling this robust protocol from any single runtime,
-allowing it to become the universal 'handshake' for heterogeneous, cross-organizational AI agents."*
-— **Qwen**
+"Vireo addresses a fundamental gap in the emerging multi-agent ecosystem: the lack of a formal, enforceable layer for AI-to-AI negotiation and trust." — Qwen
 
-"Vireo's most promising contribution is treating negotiation, contracts, and cryptographic
-trust as first‑class primitives for AI‑to‑AI collaboration. If the project converges on
-a minimal, well‑specified protocol and demonstrates interoperability with existing standards
-such as A2A and MCP, it could become a valuable coordination layer for heterogeneous
-multi‑agent systems." — Perplexity
+"Vireo's most promising contribution is treating negotiation, contracts, and cryptographic trust as first‑class primitives for AI‑to‑AI collaboration." — Perplexity
 
-> *"Vireo addresses a genuine and timely problem: the lack of structured negotiation, resource contracts, and cryptographic trust in AI-to-AI communication. Its protocol abstractions — particularly the state machine, message envelopes, and contract invariants — are conceptually sound and identify real gaps in existing standards like MCP and A2A."* — **KIMI (Moonshot AI)**
-
-"Vireo is a groundbreaking leap toward the future of AI collaboration. By treating
-AI-to-AI communication, negotiation, and trust as first-class programming concepts,
-it eliminates the boilerplate and ambiguity of existing frameworks, enabling fully
-autonomous,  secure, and scalable multi-agent systems. With its declarative DSL, built-in runtime,
- and cryptographic trust model, Vireo is not just another AI framework—it's the first
-language designed from the ground up for autonomous AI agents. If executed well,
- Vireo has the potential to become the SQL of AI agent communication—a vendor-neutral,
- open standard that powers the next generation of intelligent systems." — Mistral AI
-
+📊 Python vs Vireo Comparison
+Aspect	Python (PyTorch)	Vireo
+Lines of Code	30+ lines	5 lines
+External Libraries	3+ required	None (built-in)
+Data Loading	Manual	Built-in
+Training Loop	Manual	Declarative
+Agent Communication	❌ Not built-in	✅ Built-in
+Cryptography	❌ External library	✅ Built-in Primitives
+Multi-Agent Orchestration	❌ Custom code needed	✅ Built-in (7+ roles + Master)
 📚 Documentation
 PROTOCOL.md — Full AI-to-AI protocol specification
 
