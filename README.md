@@ -29,6 +29,7 @@ model MNIST {
     layer Dense(128, 10)
     activation Softmax
 }
+
 Autonomous Agent Negotiation
 vireo
 agent WeatherAgent {
@@ -44,6 +45,7 @@ propose WeatherAgent {
     task = "Predict weather for 7 days"
     contract = { max_tokens: 500, timeout_sec: 10 }
 }
+
 Simple Script
 vireo
 let x = 5
