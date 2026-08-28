@@ -37,6 +37,7 @@ class Agent:
         """Повний цикл: COMMITTED → RUNNING → EXECUTE → DONE → INFORM"""
         conversation_id = proposal.conversation_id
         
+        # Агент-виконавець переходить у COMMITTED
         self.state.transition(conversation_id, DialogueState.COMMITTED)
         self.state.transition(conversation_id, DialogueState.RUNNING)
         
@@ -104,6 +105,7 @@ class Agent:
     
     def _handle_propose(self, message: Message) -> None:
         self._pending_proposals[message.message_id] = message
+        self.state.transition(message.conversation_id, DialogueState.PROPOSED)  # ← ВИПРАВЛЕНО
         print(f"📝 Proposal {message.message_id} received from {message.sender}")
     
     def _handle_commit(self, message: Message) -> None:
@@ -131,8 +133,10 @@ class Agent:
         error = message.payload.get("error")
         
         if error:
+            self.state.transition(message.conversation_id, DialogueState.FAILED)  # ← ВИПРАВЛЕНО
             print(f"❌ Execution failed for {proposal_id}: {error}")
         else:
+            self.state.transition(message.conversation_id, DialogueState.DONE)   # ← ВИПРАВЛЕНО
             print(f"✅ Execution result for {proposal_id}: {result}")
     
     def _handle_query_capabilities(self, message: Message) -> None:
