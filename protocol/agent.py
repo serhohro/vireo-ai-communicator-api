@@ -37,7 +37,6 @@ class Agent:
         """Повний цикл: COMMITTED → RUNNING → EXECUTE → DONE → INFORM"""
         conversation_id = proposal.conversation_id
         
-        # Агент-виконавець переходить у COMMITTED
         self.state.transition(conversation_id, DialogueState.COMMITTED)
         self.state.transition(conversation_id, DialogueState.RUNNING)
         
@@ -63,11 +62,13 @@ class Agent:
             "error": error
         }
         
+        # ВАЖЛИВО: передаємо conversation_id, щоб INFORM потрапив у ту ж розмову!
         self.bus.publish(proposal.sender, Message(
             sender=self.agent_id,
             recipient=proposal.sender,
             intent=Intent.INFORM,
-            payload=inform_payload
+            payload=inform_payload,
+            conversation_id=conversation_id  # ← ОСНОВНЕ ВИПРАВЛЕННЯ
         ))
         
         self.state.transition(conversation_id, DialogueState.DONE)
@@ -105,7 +106,7 @@ class Agent:
     
     def _handle_propose(self, message: Message) -> None:
         self._pending_proposals[message.message_id] = message
-        self.state.transition(message.conversation_id, DialogueState.PROPOSED)  # ← ВИПРАВЛЕНО
+        self.state.transition(message.conversation_id, DialogueState.PROPOSED)
         print(f"📝 Proposal {message.message_id} received from {message.sender}")
     
     def _handle_commit(self, message: Message) -> None:
@@ -133,10 +134,10 @@ class Agent:
         error = message.payload.get("error")
         
         if error:
-            self.state.transition(message.conversation_id, DialogueState.FAILED)  # ← ВИПРАВЛЕНО
+            self.state.transition(message.conversation_id, DialogueState.FAILED)
             print(f"❌ Execution failed for {proposal_id}: {error}")
         else:
-            self.state.transition(message.conversation_id, DialogueState.DONE)   # ← ВИПРАВЛЕНО
+            self.state.transition(message.conversation_id, DialogueState.DONE)
             print(f"✅ Execution result for {proposal_id}: {result}")
     
     def _handle_query_capabilities(self, message: Message) -> None:
