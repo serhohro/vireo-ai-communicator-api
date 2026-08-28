@@ -160,13 +160,14 @@ OpenAI	    💰 Paid	 ⭐⭐⭐⭐⭐ ⚡⚡⚡⚡	 ❌ No	 ✅
 🔐 Security & Trust
 Vireo includes cryptographic primitives for secure AI-to-AI communication:
 
-Component	Status
+Component	                                 Status
 Ed25519 Primitives (keygen, sign, verify)	✅ Implemented
-HMAC Signatures (symmetric)	✅ Implemented
-Nonce / Replay Protection	✅ Implemented
-Ed25519 Protocol Integration	🚧 In Development (v1.5.0)
-DID (Decentralized Identifiers)	🚧 In Development (v1.5.0)
-Zero-Trust Protocol	🚧 In Development (v1.5.0)
+HMAC Signatures (symmetric)	                ✅ Implemented
+Nonce / Replay Protection	                ✅ Implemented
+Ed25519 Protocol Integration	            🚧 In Development (v1.5.0)
+DID (Decentralized Identifiers)	            🚧 In Development (v1.5.0)
+Zero-Trust Protocol	                        🚧 In Development (v1.5.0)
+
 🚀 Quick Start
 bash
 # 1. Clone the repository
@@ -250,14 +251,15 @@ negotiation SecureComputeNegotiation {
 "Vireo's most promising contribution is treating negotiation, contracts, and cryptographic trust as first‑class primitives for AI‑to‑AI collaboration." — Perplexity
 
 📊 Python vs Vireo Comparison
-Aspect	Python (PyTorch)	Vireo
-Lines of Code	30+ lines	5 lines
-External Libraries	3+ required	None (built-in)
-Data Loading	Manual	Built-in
-Training Loop	Manual	Declarative
-Agent Communication	❌ Not built-in	✅ Built-in
-Cryptography	❌ External library	✅ Built-in Primitives
+Aspect	                    Python (PyTorch)	          Vireo
+Lines of Code	            30+ lines	                 5 lines
+External Libraries	        3+ required	                 None (built-in)
+Data Loading	            Manual	                     Built-in
+Training Loop	            Manual	                     Declarative
+Agent Communication	        ❌ Not built-in	             ✅ Built-in
+Cryptography	            ❌ External library	         ✅ Built-in Primitives
 Multi-Agent Orchestration	❌ Custom code needed	✅ Built-in (7+ roles + Master)
+
 📚 Documentation
 PROTOCOL.md — Full AI-to-AI protocol specification
 
