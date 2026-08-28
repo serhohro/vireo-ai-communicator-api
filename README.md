@@ -19,6 +19,50 @@
 
 ## 🌍 What is Vireo?
 
+## 🚀 Quick Examples
+
+### Neural Network in 5 Lines
+```vireo
+model MNIST {
+    layer Dense(784, 128)
+    activation ReLU
+    layer Dense(128, 10)
+    activation Softmax
+}
+Autonomous Agent Negotiation
+vireo
+agent WeatherAgent {
+    capabilities: ["predict_weather", "analyze_data"]
+}
+
+contract Agreement {
+    max_tokens: 1000,
+    timeout_sec: 30
+}
+
+propose WeatherAgent {
+    task = "Predict weather for 7 days"
+    contract = { max_tokens: 500, timeout_sec: 10 }
+}
+Simple Script
+vireo
+let x = 5
+let y = 10
+let sum = x + y
+print(sum)  // Output: 15
+
+fn add(a, b) {
+    return a + b
+}
+let result = add(7, 3)
+print(result)  // Output: 10
+
+// Tensor Operations
+let t = Tensor([1, 2, 3, 4, 5])
+let t2 = Tensor([5, 4, 3, 2, 1])
+let sum_t = t + t2
+print(sum_t)  // Tensor(shape=[5])
+
 **Vireo is the world's first programming language designed specifically for autonomous AI-to-AI communication.**
 
 Unlike general-purpose languages (Python, Rust, Go) or agent frameworks (LangChain, CrewAI), Vireo:
@@ -187,6 +231,7 @@ start_vireo.bat
 
 # 5. Open web interface
 # http://localhost:5000/web
+
 💻 Example Code
 1. Neural Network Training
 vireo
