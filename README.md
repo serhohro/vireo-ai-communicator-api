@@ -244,13 +244,24 @@ negotiation SecureComputeNegotiation {
     }
 }
 💬 Expert Reviews
-"Vireo provides a remarkably clean and deterministic architecture for multi-agent orchestration. By making state negotiation, cryptographic identity, and execution contracts native to the programming model, it establishes an effective paradigm for verifiable, safe AI-to-AI communication." — Gemini
+"Vireo provides a remarkably clean and deterministic architecture for multi-agent orchestration. B
+y making state negotiation, cryptographic identity, and execution contracts native
+to the programming model, it establishes an effective paradigm for verifiable,
+safe AI-to-AI communication." — Gemini
 
-"Vireo addresses a fundamental gap in the emerging multi-agent ecosystem: the lack of a formal, enforceable layer for AI-to-AI negotiation and trust." — Qwen
+"Vireo addresses a fundamental gap in the emerging multi-agent ecosystem: the
+lack of a formal, enforceable layer for AI-to-AI negotiation and trust." — Qwen
 
-"Vireo's most promising contribution is treating negotiation, contracts, and cryptographic trust as first‑class primitives for AI‑to‑AI collaboration." — Perplexity
+"Vireo's most promising contribution is treating negotiation, contracts,
+and cryptographic trust as first‑class primitives for AI‑to‑AI
+collaboration." — Perplexity
 
-*"I reviewed and stress-tested Vireo's core negotiation protocol by executing it directly rather than reading it, across success, rejection, and failure scenarios. After several rounds of concrete bug fixes, the propose→commit→execute→inform cycle completed correctly and consistently. This confirms the core state-machine-based negotiation pattern is soundly implemented at the component level."* — **Claude (Anthropic)**
+*"I reviewed and stress-tested Vireo's core negotiation protocol by executing
+it directly rather than reading it, across success, rejection, and failure scenarios.
+ After several rounds of concrete bug fixes, the propose→commit→execute→inform
+cycle completed correctly and consistently. This confirms the core state-machine-
+based negotiation pattern is soundly implemented
+at the component level."* — **Claude (Anthropic)**
 
 📊 Python vs Vireo Comparison
 Aspect	                    Python (PyTorch)	          Vireo
