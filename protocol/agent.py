@@ -16,7 +16,6 @@ class Agent:
         self.state = StateMachine()
         self._pending_proposals = {}
         
-        # Підписуємося на повідомлення
         bus.subscribe(agent_id, self._handle_message)
     
     def register_capability(self, name: str, description: str = ""):
@@ -38,13 +37,9 @@ class Agent:
         """Повний цикл: COMMITTED → RUNNING → EXECUTE → DONE → INFORM"""
         conversation_id = proposal.conversation_id
         
-        # 1. Переходимо в COMMITTED
         self.state.transition(conversation_id, DialogueState.COMMITTED)
-        
-        # 2. Переходимо в RUNNING
         self.state.transition(conversation_id, DialogueState.RUNNING)
         
-        # 3. Виконуємо код (якщо є executor)
         result = None
         error = None
         
@@ -61,7 +56,6 @@ class Agent:
         else:
             result = {"status": "success", "message": "Committed (no executor)"}
         
-        # 4. Надсилаємо INFORM з результатом
         inform_payload = {
             "proposal_id": proposal.message_id,
             "result": result,
@@ -75,7 +69,6 @@ class Agent:
             payload=inform_payload
         ))
         
-        # 5. Переходимо в DONE
         self.state.transition(conversation_id, DialogueState.DONE)
     
     def reject(self, proposal: Message, reason: str = "") -> None:
@@ -88,10 +81,8 @@ class Agent:
         ))
     
     def _handle_message(self, message: Message) -> None:
-        """Диспетчеризація вхідних повідомлень за Intent"""
         print(f"Agent {self.agent_id} received: {message.intent}")
         
-        # Диспетчеризація за типом повідомлення
         if message.intent == Intent.PROPOSE:
             self._handle_propose(message)
         elif message.intent == Intent.COMMIT:
@@ -112,25 +103,22 @@ class Agent:
             print(f"⚠️ Unhandled intent: {message.intent}")
     
     def _handle_propose(self, message: Message) -> None:
-        """Обробка PROPOSE — зберігаємо пропозицію"""
         self._pending_proposals[message.message_id] = message
         print(f"📝 Proposal {message.message_id} received from {message.sender}")
     
     def _handle_commit(self, message: Message) -> None:
-        """Обробка COMMIT — підтверджуємо виконання"""
         proposal_id = message.payload.get("proposal_id")
         if proposal_id and proposal_id in self._pending_proposals:
-            proposal = self._pending_proposals.pop(proposal_id)
+            self._pending_proposals.pop(proposal_id)
             self.state.transition(message.conversation_id, DialogueState.COMMITTED)
             print(f"✅ Proposal {proposal_id} committed")
         else:
             print(f"⚠️ Unknown proposal: {proposal_id}")
     
     def _handle_reject(self, message: Message) -> None:
-        """Обробка REJECT — відхиляємо пропозицію"""
         proposal_id = message.payload.get("proposal_id")
         if proposal_id and proposal_id in self._pending_proposals:
-            proposal = self._pending_proposals.pop(proposal_id)
+            self._pending_proposals.pop(proposal_id)
             self.state.transition(message.conversation_id, DialogueState.REJECTED)
             reason = message.payload.get("reason", "No reason provided")
             print(f"❌ Proposal {proposal_id} rejected: {reason}")
@@ -138,7 +126,6 @@ class Agent:
             print(f"⚠️ Unknown proposal: {proposal_id}")
     
     def _handle_inform(self, message: Message) -> None:
-        """Обробка INFORM — отримуємо результат виконання"""
         proposal_id = message.payload.get("proposal_id")
         result = message.payload.get("result")
         error = message.payload.get("error")
@@ -149,7 +136,6 @@ class Agent:
             print(f"✅ Execution result for {proposal_id}: {result}")
     
     def _handle_query_capabilities(self, message: Message) -> None:
-        """Відповідаємо на запит можливостей"""
         capabilities = self.capabilities.list()
         self.bus.publish(message.sender, Message(
             sender=self.agent_id,
@@ -160,27 +146,22 @@ class Agent:
         print(f"📋 Capabilities sent to {message.sender}")
     
     def _handle_inform_capabilities(self, message: Message) -> None:
-        """Отримуємо можливості іншого агента"""
         capabilities = message.payload.get("capabilities", [])
         print(f"📋 Received capabilities from {message.sender}: {capabilities}")
     
     def _handle_negotiate(self, message: Message) -> None:
-        """Обробка NEGOTIATE — зустрічна пропозиція"""
         print(f"🔄 Negotiation request from {message.sender}: {message.payload}")
-        # Тут можна додати логіку зустрічної пропозиції
     
     def _handle_cancel(self, message: Message) -> None:
-        """Обробка CANCEL — скасування пропозиції"""
         proposal_id = message.payload.get("proposal_id")
         if proposal_id and proposal_id in self._pending_proposals:
-            proposal = self._pending_proposals.pop(proposal_id)
+            self._pending_proposals.pop(proposal_id)
             self.state.transition(message.conversation_id, DialogueState.CANCELLED)
             print(f"⏹️ Proposal {proposal_id} cancelled")
         else:
             print(f"⚠️ Unknown proposal: {proposal_id}")
     
     def query_capabilities(self, agent_id: str) -> None:
-        """Запит можливостей іншого агента"""
         self.bus.publish(agent_id, Message(
             sender=self.agent_id,
             recipient=agent_id,
