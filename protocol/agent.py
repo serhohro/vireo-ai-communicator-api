@@ -37,9 +37,22 @@ class Agent:
         """Повний цикл: COMMITTED → RUNNING → EXECUTE → DONE → INFORM"""
         conversation_id = proposal.conversation_id
         
+        # 1. Надсилаємо COMMIT (щоб пропонент знав про COMMITTED)
+        self.bus.publish(proposal.sender, Message(
+            sender=self.agent_id,
+            recipient=proposal.sender,
+            intent=Intent.COMMIT,
+            payload={"proposal_id": proposal.message_id},
+            conversation_id=conversation_id
+        ))
+        
+        # 2. Переходимо в COMMITTED
         self.state.transition(conversation_id, DialogueState.COMMITTED)
+        
+        # 3. Переходимо в RUNNING
         self.state.transition(conversation_id, DialogueState.RUNNING)
         
+        # 4. Виконуємо код
         result = None
         error = None
         
@@ -56,21 +69,22 @@ class Agent:
         else:
             result = {"status": "success", "message": "Committed (no executor)"}
         
+        # 5. Надсилаємо INFORM з результатом
         inform_payload = {
             "proposal_id": proposal.message_id,
             "result": result,
             "error": error
         }
         
-        # ВАЖЛИВО: передаємо conversation_id, щоб INFORM потрапив у ту ж розмову!
         self.bus.publish(proposal.sender, Message(
             sender=self.agent_id,
             recipient=proposal.sender,
             intent=Intent.INFORM,
             payload=inform_payload,
-            conversation_id=conversation_id  # ← ОСНОВНЕ ВИПРАВЛЕННЯ
+            conversation_id=conversation_id
         ))
         
+        # 6. Переходимо в DONE
         self.state.transition(conversation_id, DialogueState.DONE)
     
     def reject(self, proposal: Message, reason: str = "") -> None:
@@ -79,7 +93,8 @@ class Agent:
             sender=self.agent_id,
             recipient=proposal.sender,
             intent=Intent.REJECT,
-            payload={"proposal_id": proposal.message_id, "reason": reason}
+            payload={"proposal_id": proposal.message_id, "reason": reason},
+            conversation_id=proposal.conversation_id
         ))
     
     def _handle_message(self, message: Message) -> None:
