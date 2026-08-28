@@ -271,7 +271,7 @@ Data Loading	            Manual	                     Built-in
 Training Loop	            Manual	                     Declarative
 Agent Communication	        ❌ Not built-in	             ✅ Built-in
 Cryptography	            ❌ External library	         ✅ Built-in Primitives
-Multi-Agent Orchestration	❌ Custom code needed	✅ Built-in (7+ roles + Master)
+Multi-Agent Orchestration	❌ Custom code needed	     ✅ Built-in (7+ roles + Master)
 
 📚 Documentation
 PROTOCOL.md — Full AI-to-AI protocol specification
