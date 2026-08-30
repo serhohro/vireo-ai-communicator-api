@@ -1,12 +1,30 @@
-
----
-
-### 2. `CHANGELOG.md` (НОВИЙ)
-
-```markdown
 # 🌿 Vireo Changelog
 
 All notable changes to this project will be documented in this file.
+
+---
+
+## [1.4.5] - 2026-08-30
+
+### Added
+- **EfficientNet (B0–B5)** — lightweight image classification models (5–30M parameters)
+- **UNet3+** — lightweight image segmentation model (3.5M parameters)
+- **Zipformer (Wav2Vec2)** — speech recognition / ASR model (291M parameters)
+- **LSTM with Activations** — support for ReLU, Sigmoid, Swish, GELU, LeakyReLU
+- **New "Models" Tab** — web interface for managing pretrained models
+- **New API Endpoints** — `/models/list`, `/models/load`, `/models/predict`, `/models/info`, `/models/cache/clear`
+- **requirements.txt** — added `efficientnet-pytorch`, `torchaudio`, `soundfile`, `librosa`
+
+### Fixed
+- Fixed syntax error in `.env.example` — `GEMINI_MODEL gemini-1.5-pro` → `GEMINI_MODEL=gemini-1.5-pro`
+- Fixed syntax error in `api_server.py` — removed extra closing parenthesis
+- Fixed `pretrained.py` — `GPT2Model` → `GPT2LMHeadModel` (adds `generate` method support)
+
+### Changed
+- **README.md** — updated with new model support
+- **language/grammar.lark** — added LSTM layer syntax
+- **web_interface.html** — now includes 9 tabs (added Models tab)
+- **api_server.py** — extended with LSTM and Pretrained Models endpoints
 
 ---
 
