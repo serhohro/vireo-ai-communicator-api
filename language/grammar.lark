@@ -1,16 +1,56 @@
 // Vireo Language Grammar (Lark)
 // ============================================================
-// Version: 1.4.3 — The World's First AI-to-AI Communication Language
+// Version: 1.4.5 — An Executable Coordination Language
 // ============================================================
 
-// Program
+// ============================================================
+// PRECEDENCE
+// ============================================================
+
+%left "or"
+%left "and"
+%left "==" "!=" ">" "<" ">=" "<="
+%left "+" "-"
+%left "*" "/"
+%right "not"
+%left "."
+
+// ============================================================
+// TERMINALS
+// ============================================================
+
+_NL: /[\n\r]+/
+_WS: /[ \t]+/
+_COMMENT: "//" /[^\n]*/
+_BLOCK_COMMENT: "/*" /(.|\n)*?/ "*/"
+
+FLOAT: /[0-9]+\.[0-9]+/
+NUMBER: /[0-9]+/
+STRING: /"([^"\\]|\\\\.)*"/
+NAME: /[a-zA-Z_][a-zA-Z0-9_]*/
+BOOL: "true" | "false"
+
+%ignore _WS
+%ignore _COMMENT
+%ignore _BLOCK_COMMENT
+
+// ============================================================
+// PROGRAM
+// ============================================================
+
 program: (import_def | statement | model_def | agent_def | contract_def | negotiation_def)*
 
-// Imports
+// ============================================================
+// IMPORTS
+// ============================================================
+
 import_def: "import" NAME
 import_from: "from" NAME "import" NAME
 
-// Statements
+// ============================================================
+// STATEMENTS
+// ============================================================
+
 statement: variable_def | assign_def | function_def | print_stmt | return_stmt | if_stmt | while_stmt | for_stmt | block
 
 variable_def: "let" NAME "=" expression
@@ -21,17 +61,25 @@ return_stmt: "return" expression
 if_stmt: "if" expression block ["else" (block | if_stmt)]
 while_stmt: "while" expression block
 for_stmt: "for" NAME "in" expression block
-block: "{" statement* "}"
 
-// Parameters
+// ============================================================
+// BLOCK
+// ============================================================
+
+block: "{" (_NL* statement (_NL+ statement)*)? _NL* "}"
+
+// ============================================================
+// PARAMETERS
+// ============================================================
+
 parameters: NAME ("," NAME)*
 
 // ============================================================
 // MODELS
 // ============================================================
 
-model_def: "model" NAME "{" model_body "}"
-model_body: (layer_def | activation_def | loss_def | optimizer_def | training_param)*
+model_def: "model" NAME "{" _NL* model_body _NL* "}"
+model_body: (layer_def | activation_def | loss_def | optimizer_def | training_param) (_NL+ (layer_def | activation_def | loss_def | optimizer_def | training_param))*
 
 // Layers
 layer_def: "layer" layer_type "(" [arguments] ")"
@@ -69,12 +117,13 @@ training_param: NAME "=" (NUMBER | FLOAT | STRING)
 // AGENTS
 // ============================================================
 
-agent_def: "agent" NAME "{" agent_body "}"
-agent_body: (identity_def | capability_def | role_def | system_prompt_def)*
+agent_def: "agent" NAME "{" _NL* agent_body _NL* "}"
+agent_body: (identity_def | capability_def | role_def | system_prompt_def) (_NL+ (identity_def | capability_def | role_def | system_prompt_def))*
 
 identity_def: "identity" ":" STRING
-capability_def: "capability" NAME ["(" [parameters] ")"] ["{" capability_body "}"]
-capability_body: (description_def | input_schema_def | output_schema_def)*
+capability_def: "capability" NAME ["(" [parameters] ")"] ["{" _NL* capability_body _NL* "}"]
+capability_body: (description_def | input_schema_def | output_schema_def) (_NL+ (description_def | input_schema_def | output_schema_def))*
+
 description_def: "description" ":" STRING
 input_schema_def: "input" ":" type
 output_schema_def: "output" ":" type
@@ -86,12 +135,12 @@ system_prompt_def: "system_prompt" ":" STRING
 // CONTRACTS
 // ============================================================
 
-contract_def: "contract" NAME "{" contract_body "}"
-contract_body: (field_def | condition_def | invariant_def)*
+contract_def: "contract" NAME "{" _NL* contract_body _NL* "}"
+contract_body: (field_def | condition_def | invariant_def) (_NL+ (field_def | condition_def | invariant_def))*
 
 field_def: NAME ":" type ["=" value]
-condition_def: "condition" "{" expression "}"
-invariant_def: "invariant" "{" expression "}"
+condition_def: "condition" "{" _NL* expression _NL* "}"
+invariant_def: "invariant" "{" _NL* expression _NL* "}"
 
 type: "Int" | "Float" | "String" | "Bool" | "Tensor" | "List" "[" type "]" | "Map" "[" type "," type "]"
 
@@ -99,8 +148,8 @@ type: "Int" | "Float" | "String" | "Bool" | "Tensor" | "List" "[" type "]" | "Ma
 // NEGOTIATIONS
 // ============================================================
 
-negotiation_def: "negotiate" NAME "{" negotiation_body "}"
-negotiation_body: (party_def | timeout_def | max_rounds_def | on_offer_def | on_commit_def | on_reject_def)*
+negotiation_def: "negotiate" NAME "{" _NL* negotiation_body _NL* "}"
+negotiation_body: (party_def | timeout_def | max_rounds_def | on_offer_def | on_commit_def | on_reject_def) (_NL+ (party_def | timeout_def | max_rounds_def | on_offer_def | on_commit_def | on_reject_def))*
 
 party_def: "party" NAME ":" NAME
 timeout_def: "timeout" "=" NUMBER "s"
@@ -119,12 +168,13 @@ logical_and: comparison ("and" comparison)*
 comparison: arithmetic ((">" | "<" | "==" | "!=" | ">=" | "<=") arithmetic)*
 arithmetic: term ("+" | "-" term)*
 term: factor ("*" | "/" factor)*
-factor: unary_op | "(" expression ")" | NUMBER | FLOAT | STRING | NAME | tensor_expr | function_call | list_expr | map_expr | lambda_expr
+factor: unary_op | "(" expression ")" | NUMBER | FLOAT | STRING | NAME | BOOL | tensor_ops | function_call | list_expr | map_expr | lambda_expr
 
 unary_op: ("-" | "+" | "not") factor
 
-tensor_expr: "Tensor" "(" [expression ("," expression)*] ")"
 tensor_ops: tensor_expr ("." ("matmul" | "transpose" | "reshape" | "flatten" | "sum" | "mean" | "max" | "min" | "argmax" | "argmin") "(" [arguments] ")")*
+
+tensor_expr: "Tensor" "(" [expression ("," expression)*] ")"
 
 function_call: NAME "(" [expression ("," expression)*] ")"
 list_expr: "[" [expression ("," expression)*] "]"
@@ -135,24 +185,4 @@ lambda_expr: "|" parameters "|" expression
 // VALUES
 // ============================================================
 
-value: NUMBER | FLOAT | STRING | "true" | "false" | "null" | list_expr | map_expr
-
-// ============================================================
-// LEXICAL DEFINITIONS
-// ============================================================
-
-NUMBER: /[0-9]+/
-FLOAT: /[0-9]+\.[0-9]+/
-STRING: /"([^"\\\\]|\\\\.)*"/
-NAME: /[a-zA-Z_][a-zA-Z0-9_]*/
-IDENTIFIER: NAME
-
-// Comments
-COMMENT: "//" /[^\n]*/
-BLOCK_COMMENT: "/*" /.*?/ "*/"
-
-// Whitespace
-WS: /[ \t\n\r]+/
-%ignore WS
-%ignore COMMENT
-%ignore BLOCK_COMMENT
+value: NUMBER | FLOAT | STRING | BOOL | "null" | list_expr | map_expr
