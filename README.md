@@ -1,4 +1,4 @@
-🌿Vireo — An Executable Coordination Language for Autonomous AI Agents# 
+🌿Vireo — An Executable Coordination Language for Autonomous AI Agents 
 
 **Version: v1.4.3**
 
