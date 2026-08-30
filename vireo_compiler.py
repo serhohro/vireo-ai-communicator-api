@@ -1,6 +1,7 @@
 # ============================================================
-# VIREO COMPILER v1.0.0
+# VIREO COMPILER v1.4.3
 # Компілятор мови Vireo в Python код
+# Підтримує формальну граматику v1.4.3
 # ============================================================
 
 import re
@@ -14,6 +15,8 @@ from typing import List, Dict, Any, Optional, Union
 
 class Lexer:
     """Перетворює код Vireo на токени"""
+    
+    VERSION = "1.4.3"
     
     def __init__(self):
         self.tokens = []
@@ -79,7 +82,6 @@ class Lexer:
         self.current_pos = 0
         
         while self.current_pos < len(code):
-            # Перевіряємо всі патерни
             matched = False
             for pattern, token_type in self.token_patterns:
                 regex = re.compile(pattern)
@@ -98,7 +100,6 @@ class Lexer:
                     break
             
             if not matched:
-                # Невідомий символ
                 self.tokens.append({
                     'type': 'UNKNOWN',
                     'value': code[self.current_pos],
@@ -115,6 +116,8 @@ class Lexer:
 
 class Parser:
     """Будує AST з токенів"""
+    
+    VERSION = "1.4.3"
     
     def __init__(self, tokens: List[Dict]):
         self.tokens = tokens
@@ -147,23 +150,21 @@ class Parser:
             elif token['type'] == 'TENSOR':
                 self.ast.append(self.parse_tensor())
             else:
-                # Якщо це вираз
                 expr = self.parse_expression()
                 if expr:
                     self.ast.append(expr)
                 else:
                     self.pos += 1
         
-        return {'type': 'program', 'body': self.ast}
+        return {'type': 'program', 'body': self.ast, 'version': self.VERSION}
     
     def parse_let(self) -> Dict:
-        """Парсить let x = 5"""
-        self.pos += 1  # пропускаємо 'let'
+        self.pos += 1
         var_name = self.tokens[self.pos]['value']
-        self.pos += 1  # пропускаємо ім'я змінної
+        self.pos += 1
         
         if self.tokens[self.pos]['type'] == 'ASSIGN':
-            self.pos += 1  # пропускаємо '='
+            self.pos += 1
             value = self.parse_expression()
             return {
                 'type': 'let',
@@ -174,8 +175,7 @@ class Parser:
         return {'type': 'let', 'name': var_name, 'value': None}
     
     def parse_const(self) -> Dict:
-        """Парсить const PI = 3.14"""
-        self.pos += 1  # пропускаємо 'const'
+        self.pos += 1
         var_name = self.tokens[self.pos]['value']
         self.pos += 1
         
@@ -191,12 +191,10 @@ class Parser:
         return {'type': 'const', 'name': var_name, 'value': None}
     
     def parse_function(self) -> Dict:
-        """Парсить fn name(args) { ... }"""
-        self.pos += 1  # пропускаємо 'fn'
+        self.pos += 1
         func_name = self.tokens[self.pos]['value']
         self.pos += 1
         
-        # Аргументи
         args = []
         if self.tokens[self.pos]['type'] == 'LPAREN':
             self.pos += 1
@@ -204,16 +202,15 @@ class Parser:
                 if self.tokens[self.pos]['type'] == 'IDENTIFIER':
                     args.append(self.tokens[self.pos]['value'])
                 self.pos += 1
-            self.pos += 1  # пропускаємо ')'
+            self.pos += 1
         
-        # Тіло функції
         body = []
         if self.tokens[self.pos]['type'] == 'LBRACE':
             self.pos += 1
             while self.tokens[self.pos]['type'] != 'RBRACE':
                 body.append(self.tokens[self.pos])
                 self.pos += 1
-            self.pos += 1  # пропускаємо '}'
+            self.pos += 1
         
         return {
             'type': 'function',
@@ -223,11 +220,9 @@ class Parser:
         }
     
     def parse_if(self) -> Dict:
-        """Парсить if condition { ... } else { ... }"""
-        self.pos += 1  # пропускаємо 'if'
+        self.pos += 1
         condition = self.parse_expression()
         
-        # Тіло if
         body = []
         if self.tokens[self.pos]['type'] == 'LBRACE':
             self.pos += 1
@@ -236,7 +231,6 @@ class Parser:
                 self.pos += 1
             self.pos += 1
         
-        # Тіло else
         else_body = []
         if self.pos < len(self.tokens) and self.tokens[self.pos]['type'] == 'ELSE':
             self.pos += 1
@@ -255,8 +249,7 @@ class Parser:
         }
     
     def parse_for(self) -> Dict:
-        """Парсить for i in range(10) { ... }"""
-        self.pos += 1  # пропускаємо 'for'
+        self.pos += 1
         var_name = self.tokens[self.pos]['value']
         self.pos += 1
         
@@ -280,8 +273,7 @@ class Parser:
         }
     
     def parse_while(self) -> Dict:
-        """Парсить while condition { ... }"""
-        self.pos += 1  # пропускаємо 'while'
+        self.pos += 1
         condition = self.parse_expression()
         
         body = []
@@ -299,25 +291,21 @@ class Parser:
         }
     
     def parse_return(self) -> Dict:
-        """Парсить return value"""
-        self.pos += 1  # пропускаємо 'return'
+        self.pos += 1
         value = self.parse_expression()
         return {'type': 'return', 'value': value}
     
     def parse_print(self) -> Dict:
-        """Парсить print expr"""
-        self.pos += 1  # пропускаємо 'print'
+        self.pos += 1
         value = self.parse_expression()
         return {'type': 'print', 'value': value}
     
     def parse_neural(self) -> Dict:
-        """Парсить @neural"""
-        self.pos += 1  # пропускаємо '@neural'
+        self.pos += 1
         return {'type': 'neural'}
     
     def parse_tensor(self) -> Dict:
-        """Парсить Tensor<F32, [2, 3]>"""
-        self.pos += 1  # пропускаємо 'Tensor'
+        self.pos += 1
         tensor_type = None
         shape = []
         
@@ -330,7 +318,7 @@ class Parser:
                 if self.tokens[self.pos]['type'] == 'LBRACKET':
                     self.pos += 1
                     while self.tokens[self.pos]['type'] != 'RBRACKET':
-                        if self.tokens[self.pos]['type'] == 'IDENTIFIER' or self.tokens[self.pos]['type'] == 'INTEGER':
+                        if self.tokens[self.pos]['type'] in ['IDENTIFIER', 'INTEGER']:
                             shape.append(self.tokens[self.pos]['value'])
                         self.pos += 1
                     self.pos += 1
@@ -342,28 +330,23 @@ class Parser:
         }
     
     def parse_expression(self) -> Dict:
-        """Парсить вирази"""
         if self.pos >= len(self.tokens):
             return None
         
         token = self.tokens[self.pos]
         
-        # Число
         if token['type'] in ['INTEGER', 'FLOAT']:
             self.pos += 1
             return {'type': 'number', 'value': token['value']}
         
-        # Рядок
         if token['type'] == 'STRING':
             self.pos += 1
             return {'type': 'string', 'value': token['value']}
         
-        # Змінна
         if token['type'] == 'IDENTIFIER':
             self.pos += 1
             return {'type': 'identifier', 'name': token['value']}
         
-        # Вираз з оператором
         if token['type'] in ['PLUS', 'MINUS', 'MUL', 'DIV']:
             op = token['value']
             self.pos += 1
@@ -380,6 +363,8 @@ class Parser:
 class CodeGenerator:
     """Генерує Python код з AST"""
     
+    VERSION = "1.4.3"
+    
     def __init__(self):
         self.indent = 0
         self.variables = {}
@@ -391,30 +376,26 @@ class CodeGenerator:
         """Генерує Python код"""
         self.output = []
         
-        # Додаємо заголовок
         self.output.append("# ============================================================")
-        self.output.append("# Скомпільовано з Vireo в Python")
+        self.output.append(f"# Скомпільовано з Vireo v{self.VERSION} в Python")
         self.output.append("# ============================================================")
         self.output.append("")
         self.output.append("import math")
         self.output.append("import random")
         self.output.append("")
         
-        # Генеруємо код
         for node in ast.get('body', []):
             self._generate_node(node)
         
-        # Додаємо точку входу
         if 'main' not in self.functions:
             self.output.append("")
             self.output.append("if __name__ == '__main__':")
-            self.output.append("    print('🚀 Vireo program executed successfully!')")
+            self.output.append("    print('🌿 Vireo v1.4.3 program executed successfully!')")
             self.output.append("")
         
         return '\n'.join(self.output)
     
     def _generate_node(self, node: Dict):
-        """Генерує код для одного вузла"""
         node_type = node.get('type', '')
         
         if node_type == 'let':
@@ -478,7 +459,6 @@ class CodeGenerator:
         self.output.append(f"def {name}({args}):")
         self.indent += 1
         
-        # Генеруємо тіло функції
         for token in node.get('body', []):
             if isinstance(token, dict) and 'type' in token:
                 self._generate_node(token)
@@ -556,15 +536,13 @@ class CodeGenerator:
             self.output.append(self._indent() + "print()")
     
     def _generate_neural(self, node: Dict):
-        self.output.append(self._indent() + "# 🧠 Neural network decorator")
-        self.output.append(self._indent() + "# (Vireo neural networks are compiled to Python)")
+        self.output.append(self._indent() + "# 🧠 Neural network decorator (Vireo v1.4.3)")
     
     def _generate_tensor(self, node: Dict):
         dtype = node.get('dtype', 'F32')
         shape = node.get('shape', [])
         shape_str = ', '.join(shape) if shape else 'None'
-        self.output.append(self._indent() + f"# Tensor<{dtype}, [{shape_str}]>")
-        self.output.append(self._indent() + f"# (Vireo tensors are compiled to Python lists)")
+        self.output.append(self._indent() + f"# Tensor<{dtype}, [{shape_str}]> (Vireo v1.4.3)")
     
     def _generate_number(self, node: Dict):
         self.output.append(self._indent() + str(node['value']))
@@ -610,7 +588,9 @@ class CodeGenerator:
 # ============================================================
 
 class VireoCompiler:
-    """Головний клас компілятора Vireo"""
+    """Головний клас компілятора Vireo v1.4.3"""
+    
+    VERSION = "1.4.3"
     
     def __init__(self):
         self.lexer = Lexer()
@@ -619,14 +599,9 @@ class VireoCompiler:
     
     def compile(self, code: str) -> str:
         """Компілює Vireo код у Python код"""
-        # 1. Лексичний аналіз
         tokens = self.lexer.tokenize(code)
-        
-        # 2. Синтаксичний аналіз
         parser = Parser(tokens)
         ast = parser.parse()
-        
-        # 3. Генерація коду
         return self.generator.generate(ast)
     
     def compile_to_file(self, code: str, output_file: str) -> str:
@@ -634,7 +609,7 @@ class VireoCompiler:
         python_code = self.compile(code)
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write(python_code)
-        return f"✅ Compiled to {output_file}"
+        return f"✅ Compiled to {output_file} (Vireo v{self.VERSION})"
     
     def compile_file(self, input_file: str, output_file: str = None) -> str:
         """Компілює файл .v у .py"""
@@ -655,7 +630,8 @@ def main():
     import sys
     import os
     
-    print("🟢 Vireo Compiler v1.0.0")
+    print("🟢 Vireo Compiler v1.4.3")
+    print("The World's First AI-to-AI Communication Language")
     print("========================================")
     
     if len(sys.argv) < 2:
@@ -667,7 +643,6 @@ def main():
     input_file = sys.argv[1]
     output_file = input_file.replace('.v', '.py')
     
-    # Перевірка прапорців
     for i, arg in enumerate(sys.argv):
         if arg == '-o' and i + 1 < len(sys.argv):
             output_file = sys.argv[i + 1]
@@ -682,7 +657,6 @@ def main():
         result = compiler.compile_file(input_file, output_file)
         print(result)
         
-        # Показуємо згенерований код
         print("")
         print("📄 Generated code:")
         print("========================================")
@@ -698,7 +672,6 @@ def main():
 # ============================================================
 
 if __name__ == "__main__":
-    # Тестовий код Vireo
     test_code = """
 let x = 5
 let y = 10
@@ -723,7 +696,7 @@ fn model(input) {
     
     compiler = VireoCompiler()
     
-    print("🟢 Vireo Compiler Demo")
+    print("🟢 Vireo Compiler v1.4.3 Demo")
     print("========================================")
     print("")
     print("📄 Input Vireo code:")
@@ -738,4 +711,4 @@ fn model(input) {
     
     print("")
     print("========================================")
-    print("✅ Compilation successful!")
+    print("✅ Compilation successful! (Vireo v1.4.3)")

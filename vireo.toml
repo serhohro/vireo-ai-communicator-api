@@ -1,9 +1,9 @@
 [package]
 name = "vireo-ai-communicator"
-version = "1.0.0"
-authors = ["YOUR NAME <YOUR_EMAIL>"]
+version = "1.4.3"
+authors = ["Serhii <serhohro@gmail.com>"]
 description = "The world's first programming language for AI-to-AI communication"
-repository = "https://github.com/YOUR_USERNAME/vireo-ai-communicator"
+repository = "https://github.com/serhohro/vireo-ai-communicator-api"
 license = "Apache-2.0"
 
 [features]
@@ -14,3 +14,6 @@ privacy_first = true
 [metadata]
 project_type = "ai-language"
 innovation = "first-of-its-kind"
+vireo_version = "1.4.3"
+language_first = true
+formal_grammar = true

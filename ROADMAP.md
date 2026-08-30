@@ -1,175 +1,119 @@
 # 🌿 Vireo Roadmap
 
-## Current Status: v1.4.2 (Active Development)
+## Current Status: v1.4.3 — Language-First
 
-> 🧪 **Status: Active Development**  
-> Core language, interpreter, protocol foundations, and multi-agent system are implemented.
-> LLM integration with 5+ providers works. Cryptographic primitives are in place.
-> Community feedback and contributions are welcome.
+> **Focus:** Vireo is now positioned as a full programming language for AI-to-AI communication.
+> The world's first language designed for autonomous AI-to-AI communication.
 
 ---
 
-## 📊 Implementation Status Overview
+## 🎯 Language Development Priorities
 
-| Status | Percentage | Description |
-|--------|------------|-------------|
-| ✅ Implemented | ~55-60% | Working, tested features |
-| 🟡 Partial | ~25-30% | Partially implemented, needs improvement |
-| 🟠 Mock | ~5-10% | Placeholder, planned for future |
-| 🔵 Planned | ~10-15% | Not yet implemented, planned |
+### ✅ Completed (v1.4.3)
+- [x] Language positioning (language, not protocol)
+- [x] Formal grammar (`language/grammar.lark`)
+- [x] Syntax documentation (`language/syntax.md`)
+- [x] Language examples (`language/examples/`)
+- [x] Standard library start (`language/stdlib/`)
+- [x] Ed25519 cryptography (real implementation)
+- [x] 8 agent roles (Master, Vision, NLP, Analyst, Researcher, Executor, Guardian, Teacher)
+- [x] 5+ LLM providers (Ollama, Gemini, Claude, OpenAI, Mistral)
+- [x] Autonomous negotiation (propose → commit → execute → inform)
+- [x] Multi-language UI (🇺🇦 Ukrainian, 🇬🇧 English)
+- [x] Full protocol state machine
+- [x] Tensor operations and interpreter
+- [x] CHANGELOG.md
 
----
+### 🚧 In Progress (v1.5.0)
+- [ ] Full parser (Vireo → AST)
+- [ ] Code generator (Vireo → Python)
+- [ ] Validator (semantic analysis)
+- [ ] Standard library: `math.v`, `tensor.v`, `agent.v`, `contract.v`, `crypto.v`
+- [ ] Complete `language/examples/`
+- [ ] Redis/Kafka transport integration
+- [ ] DID (Decentralized Identifiers)
+- [ ] Automated tests for `protocol/agent.py`
+- [ ] CI/CD (GitHub Actions)
+- [ ] Protocol documentation update
 
-## ✅ v1.4.2 — Current Release (Implemented)
+### 🔵 Planned (v1.6.0)
+- [ ] Optimizer
+- [ ] JIT compilation (LLVM)
+- [ ] WASM compilation
+- [ ] Complete standard library
+- [ ] GPU support (CUDA/OpenCL)
+- [ ] Performance benchmarking
 
-### Core Language & Runtime
-- ✅ Vireo Interpreter
-- ✅ Vireo → Python Compiler
-- ✅ Tensor Operations (arithmetic, matmul, reshape, transpose, flatten)
-- ✅ Neural Network Layers (Dense, Conv2D, MaxPool2D, BatchNorm, Dropout, Flatten)
-- ✅ Statistics (sum, mean, std, var, min, max, argmax)
-- ✅ Tensor Neural Network primitives
-
-### Protocol Layer
-- ✅ Message Envelope (protocol, version, message_id, conversation_id, sender, recipient)
-- ✅ Speech Acts (PROPOSE, COMMIT, REJECT, INFORM, NEGOTIATE)
-- ✅ Dialogue State Machine (NEW → PROPOSED → COMMITTED → RUNNING → DONE)
-- ✅ Capability Discovery (QUERY_CAPABILITIES / INFORM_CAPABILITIES)
-- ✅ Context Versioning (optimistic concurrency control)
-- ✅ HMAC-SHA256 Signatures
-- ✅ InMemoryEventBus (transport)
-
-### Multi-Agent System
-- ✅ Master Agent (orchestration, task distribution)
-- ✅ 7 Specialized Roles (Vision, NLP, Analyst, Researcher, Executor, Guardian, Teacher)
-- ✅ Custom Roles (AgentRole + create_role_agent)
-- ✅ LLM-driven autonomous negotiation
-
-### LLM Integration
-- ✅ 5+ Providers (Ollama, Claude, OpenAI, Gemini, Mistral)
-- ✅ Provider fallback (partial)
-- ✅ Local LLM support (Ollama)
-
-### Security & Cryptography
-- ✅ Ed25519 Primitives (key generation, signing, verification)
-- ✅ HMAC Signatures (symmetric)
-- ✅ Nonce Protection (replay attack prevention)
-- ✅ Timestamp/TTL validation
-
-### Adapters
-- ✅ MCP Adapter (vireo_propose, vireo_commit, vireo_status)
-- ✅ LangChain Adapter (tool integration)
-- ✅ CrewAI Adapter (partial)
-
-### Transport
-- ✅ Redis (Pub/Sub implementation)
-- ✅ Kafka (Producer/Consumer implementation)
-- ✅ NATS (Async client implementation)
-
-### Web Interface
-- ✅ 8 functional tabs (Autonomous, Agents, Execute, Neural, Providers, Chat, Roles, Security)
-- ✅ Multi-language UI (Ukrainian 🇺🇦 / English 🇬🇧)
-- ✅ REST API with 20+ endpoints
-- ✅ API Documentation
+### 🔮 Future (v2.0.0)
+- [ ] Independent runtime (Rust)
+- [ ] Formal verification (TLA+)
+- [ ] Standards proposal
+- [ ] VS Code plugin
+- [ ] Vireo Playground
+- [ ] Community governance
 
 ---
 
-## 🚧 v1.5.0 — Security & Distribution (Target: Q4 2026)
+## 🗓️ Release History
 
-### Security Enhancements
-- 🚧 **Ed25519 Protocol Integration** — Full asymmetric authentication
-- 🚧 **DID Implementation** — Decentralized Identifiers with proper verification
-- 🚧 **Zero-Trust Protocol** — Complete security architecture
-- 🚧 **State Persistence** — Save dialogue state
-- 🚧 **Revocation Mechanism** — Agent identity revocation
-
-### Quantum Role
-- 🚧 **Quantum Agent** — Quantum computing role implementation
-
-### Transport
-- 🚧 **Distributed Transport Integration** — Redis/Kafka/NATS production-ready
-- 🚧 **Dialogue State Persistence** — Cross-session state recovery
+| Version | Date | Focus | Status |
+|---------|------|-------|--------|
+| **v1.4.3** | 2026-08-29 | **Language-First** — Formal grammar, standard library, examples | 🟢 Current |
+| **v1.4.2** | 2026-08-28 | **Cryptography & Protocol** — Ed25519, trust, negotiation, 8 agents | ✅ Released |
+| **v1.4.1** | 2026-08-27 | **Initial Release** — Tensor, interpreter, API | ✅ Released |
+| **v1.5.0** | 2026-Q4 | **Language Core** — Parser, codegen, stdlib | 🚧 In Progress |
+| **v1.6.0** | 2027-Q1 | **Performance** — JIT, WASM, GPU | 🔵 Planned |
+| **v2.0.0** | 2027-Q3 | **Standardization** — Formal spec, runtime, standards | 🔵 Planned |
 
 ---
 
-## 🚀 v1.6.0 — Performance & Portability (Target: Q1 2027)
+## 🎯 Strategic Goals
 
-### Compilation
-- 🚀 **JIT Compilation (Native)** — Full Vireo → LLVM IR compilation
-- 🚀 **WASM Compilation** — WebAssembly for sandboxed execution
-- 🚀 **GPU Acceleration** — CUDA/ROCm backend
+### 2026 Q4 — Language Core
+- Complete parser and code generator
+- Expand standard library
+- Add comprehensive tests
+- Redis/Kafka transport
 
-### Interoperability
-- 🚀 **ONNX Integration** — Export/Import models
-- 🚀 **Independent Runtime (Rust)** — Second implementation for interoperability
+### 2027 Q1 — Performance
+- JIT compilation (LLVM)
+- WASM compilation
+- GPU support
+- Performance optimization
 
----
+### 2027 Q2 — Ecosystem
+- VS Code plugin
+- Vireo Playground
+- Community growth
+- Documentation expansion
 
-## 🔬 v2.0.0 — Formalization & Standards (Target: Q3 2027)
-
-### Formal Verification
-- 🔬 **TLA+ Formal Specification** — Complete formal verification
-- 🔬 **Conformance Test Suite** — Hundreds of protocol tests
-- 🔬 **Security Model** — Formal security proofs
-
-### Standards
-- 🔬 **Interoperability Specification** — Independent implementations
-- 🔬 **Community Governance** — Open governance model
-- 🔬 **Standards Proposal** — Eclipse/Apache Foundation
-
----
-
-## 📋 Success Criteria
-
-### v1.5.0 — Security & Distribution
-- [ ] Ed25519 protocol integration working
-- [ ] DID implementation with proper verification
-- [ ] Redis/Kafka/NATS production-ready
-- [ ] State persistence working
-
-### v1.6.0 — Performance & Portability
-- [ ] JIT compilation working (Vireo → LLVM)
-- [ ] WASM compilation working
-- [ ] GPU acceleration working
-- [ ] ONNX integration working
-
-### v2.0.0 — Formalization & Standards
-- [ ] TLA+ formal verification complete
-- [ ] Conformance test suite (100+ tests)
-- [ ] Independent runtime (Rust) implementation
-- [ ] A2A/MCP interoperability demo
-- [ ] Standards proposal to Eclipse/Apache
+### 2027 Q3 — Standardization
+- Formal specification
+- Independent runtime (Rust)
+- Standards proposal
+- Governance model
 
 ---
- ## 🔬 Priority Roadmap
 
-### Phase 1: Consolidation (6-12 months)
-- [ ] Remove all mock/stub features from main branch
-- [ ] Replace custom ML with PyTorch backend
-- [ ] Implement proper parser (Lark/PLY)
-- [ ] Integrate Ed25519 into protocol flow
-- [ ] Add WASM sandbox for execution
-- [ ] Add comprehensive test suite + CI
+## 📊 Key Metrics
 
-### Phase 2: Protocol-First (12-18 months)
-- [ ] Decouple Vireo into: protocol library, runtime, compiler
-- [ ] Publish formal protocol specification (IETF style)
-- [ ] Build MCP/A2A interoperability bridges
-- [ ] Seek early adopters in controlled environments
+| Metric | v1.4.1 | v1.4.2 | v1.4.3 | Target v2.0 |
+|--------|--------|--------|--------|-------------|
+| Agent Roles | 1 | 7+ | 8 | 15+ |
+| LLM Providers | 1 | 5+ | 5+ | 10+ |
+| Examples | 0 | 3 | 7 | 20+ |
+| Tests | 0% | 0% | 0% | 80% |
+| Documentation | Basic | Good | Comprehensive | Complete |
 
-### Phase 3: Standardization (18-36 months)
-- [ ] Form working group with 3-5 organizations
-- [ ] Submit to standards body (IETF/W3C/OASIS)
-- [ ] Develop independent implementations (Python + Rust)
-- [ ] Security audit
+---
 
 ## 🔗 Links
 
-- [README.md](README.md) — Project overview
-- [PROTOCOL.md](PROTOCOL.md) — Full protocol specification
-- [CONTRIBUTING.md](CONTRIBUTING.md) — How to contribute
-- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — Common issues
+- [GitHub](https://github.com/serhohro/vireo-ai-communicator-api)
+- [CHANGELOG.md](https://github.com/serhohro/vireo-ai-communicator-api/blob/main/CHANGELOG.md)
+- [PROTOCOL.md](https://github.com/serhohro/vireo-ai-communicator-api/blob/main/PROTOCOL.md)
+- [language/syntax.md](https://github.com/serhohro/vireo-ai-communicator-api/blob/main/language/syntax.md)
 
 ---
 
-**🌿 Vireo — A Language Designed for AI-to-AI Communication**
+**🌿 Vireo v1.4.3 — The World's First AI-to-AI Communication Language.** 🚀

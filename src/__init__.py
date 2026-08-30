@@ -17,7 +17,7 @@ from .crypto import Ed25519Crypto, DIDManager, TrustManager
 from .transport import RedisEventBus, KafkaEventBus
 from .onnx import export_to_onnx, import_from_onnx
 
-__version__ = "1.4.0"
+__version__ = "1.4.3"
 
 __all__ = [
     # Compiler

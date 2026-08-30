@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <!-- [file name]: web_interface.html -->
+<!-- Vireo v1.4.3 — The World's First AI-to-AI Communication Language -->
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌿 Vireo — AI-to-AI Communication Language</title>
+    <title>🌿 Vireo v1.4.3 — AI-to-AI Communication Language</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
     <style>
         /* ============================================================
            СТИЛІ
@@ -45,6 +47,17 @@
             background-clip: text;
         }
         
+        .header .version {
+            display: inline-block;
+            background: rgba(72, 187, 120, 0.2);
+            color: #48bb78;
+            padding: 2px 16px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            border: 1px solid rgba(72, 187, 120, 0.3);
+            margin-top: 5px;
+        }
+        
         .header .subtitle {
             color: #a0aec0;
             font-size: 1.2em;
@@ -83,6 +96,7 @@
         .badge.red { background: rgba(245, 101, 101, 0.2); color: #fc8181; border: 1px solid #fc8181; }
         .badge.role { background: rgba(159, 122, 234, 0.2); color: #9f7aea; border: 1px solid #9f7aea; }
         .badge.dev { background: rgba(236, 201, 75, 0.2); color: #ecc94b; border: 1px solid #ecc94b; }
+        .badge.models { background: rgba(72, 187, 120, 0.2); color: #48bb78; border: 1px solid #48bb78; }
         
         /* ===== СТАТУСНА ПАНЕЛЬ ===== */
         .status-panel {
@@ -247,24 +261,14 @@
             box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
         }
         
-        .btn-danger {
-            background: linear-gradient(135deg, #fc8181, #e53e3e);
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(245, 101, 101, 0.3);
-        }
-        
         .btn-warning {
-            background: linear-gradient(135deg, #ecc94b, #d69e2e);
-            color: #1a202c;
+            background: linear-gradient(135deg, #ed8936, #dd6b20);
+            color: white;
         }
         
         .btn-warning:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(236, 201, 75, 0.3);
+            box-shadow: 0 8px 25px rgba(237, 137, 54, 0.3);
         }
         
         .btn-sm {
@@ -341,16 +345,6 @@
         .agent-card h4 {
             color: #48bb78;
             margin-bottom: 10px;
-        }
-        
-        .agent-card .capability-item {
-            display: inline-block;
-            background: rgba(72, 187, 120, 0.15);
-            color: #48bb78;
-            padding: 2px 12px;
-            border-radius: 12px;
-            font-size: 0.8em;
-            margin: 3px 4px 3px 0;
         }
         
         /* ===== ROLE CARDS ===== */
@@ -509,11 +503,39 @@
         .process-step .step-status.pending { background: rgba(237, 137, 54, 0.2); color: #ed8936; }
         .process-step .step-status.error { background: rgba(245, 101, 101, 0.2); color: #fc8181; }
 
-        /* ===== ВИБІР ПРОВАЙДЕРА З QWEN ===== */
         .provider-option-qwen {
             color: #48bb78;
             font-weight: 600;
         }
+
+        /* ===== ПОВІДОМЛЕННЯ ПРО ВЕРСІЮ ===== */
+        .version-notice {
+            background: rgba(72, 187, 120, 0.08);
+            border: 1px solid rgba(72, 187, 120, 0.2);
+            border-radius: 10px;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #a0aec0;
+            font-size: 0.9em;
+        }
+        .version-notice strong {
+            color: #48bb78;
+        }
+        .version-notice .v {
+            color: #ecc94b;
+        }
+        
+        /* ===== МОДЕЛІ ===== */
+        .model-info {
+            background: rgba(72,187,120,0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(72,187,120,0.15);
+        }
+        .model-info h4 { color: #48bb78; margin-bottom: 5px; }
+        .model-info .info-content { font-size: 0.9em; color: #a0aec0; }
     </style>
 </head>
 <body>
@@ -523,8 +545,9 @@
         ============================================================ -->
         <div class="header">
             <h1>🌿 Vireo</h1>
+            <div class="version">v1.4.3</div>
             <div class="subtitle">
-                <span>A Language Designed for AI-to-AI Communication</span>
+                <span>The World's First AI-to-AI Communication Language</span>
             </div>
             
             <div class="badge-container">
@@ -533,7 +556,8 @@
                 <span class="badge orange">🔄 Autonomous Agents</span>
                 <span class="badge blue">🆓 Free Tier Available</span>
                 <span class="badge role">🎭 Multi-Agent Roles</span>
-                <span class="badge dev">🚧 Active Development v1.4.0</span>
+                <span class="badge models">🧠 Pretrained Models</span>
+                <span class="badge dev">🚧 Research Prototype</span>
             </div>
             
             <!-- Статусна панель -->
@@ -558,7 +582,7 @@
         </div>
 
         <!-- ============================================================
-        ТАБИ
+        ТАБИ (v1.4.3)
         ============================================================ -->
         <div class="tabs">
             <button class="tab active" data-tab="autonomous">🤖 Autonomous</button>
@@ -569,6 +593,7 @@
             <button class="tab" data-tab="chat">💬 Chat</button>
             <button class="tab" data-tab="roles">🎭 Roles</button>
             <button class="tab" data-tab="security">🔐 Security</button>
+            <button class="tab" data-tab="models">🧠 Models</button>
         </div>
 
         <!-- ============================================================
@@ -578,6 +603,11 @@
             <div class="section-title">
                 <span class="icon">🤖</span> Autonomous AI-to-AI Communication
                 <span style="font-size:0.6em; color:#48bb78; font-weight:400;"> — No human intervention</span>
+            </div>
+            
+            <div class="version-notice">
+                <strong>🌿 Vireo v1.4.3</strong> — <span class="v">Language-First</span> · 
+                AI agents communicate, negotiate, and execute tasks without human intervention.
             </div>
             
             <p style="color:#a0aec0; margin-bottom:15px;">
@@ -714,6 +744,10 @@
         <div class="tab-content" id="execute">
             <div class="section-title"><span class="icon">▶️</span> Execute Vireo Code</div>
             
+            <div class="version-notice" style="margin-bottom:15px;">
+                💻 Write Vireo code and execute it in real-time.
+            </div>
+            
             <textarea id="codeInput" placeholder="Enter Vireo code here...">// Прості обчислення
 let x = 5
 let y = 10
@@ -732,7 +766,15 @@ print(result)
 let t = Tensor([1, 2, 3, 4, 5])
 let t2 = Tensor([5, 4, 3, 2, 1])
 let sum_t = t + t2
-print(sum_t)</textarea>
+print(sum_t)
+
+// Нейромережа
+model MNIST {
+    layer Dense(784, 128)
+    activation ReLU
+    layer Dense(128, 10)
+    activation Softmax
+}</textarea>
             
             <button class="btn btn-primary" onclick="executeCode()">🚀 Execute</button>
             
@@ -766,10 +808,6 @@ print(sum_t)</textarea>
         ============================================================ -->
         <div class="tab-content" id="providers">
             <div class="section-title"><span class="icon">📡</span> LLM Providers</div>
-            
-            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:15px; margin-bottom:20px;" id="providerCards">
-                <!-- Заповнюється JS -->
-            </div>
             
             <div class="btn-group">
                 <button class="btn btn-secondary btn-sm" onclick="refreshProviders()">🔄 Refresh</button>
@@ -903,10 +941,14 @@ print(sum_t)</textarea>
         </div>
 
         <!-- ============================================================
-        TAB 8: SECURITY (НОВА ВКЛАДКА)
+        TAB 8: SECURITY
         ============================================================ -->
         <div class="tab-content" id="security">
             <div class="section-title"><span class="icon">🔐</span> Security & Trust</div>
+            
+            <div class="version-notice" style="margin-bottom:15px;">
+                🔐 <strong>Ed25519 Cryptography</strong> — Real key generation, signing, and verification.
+            </div>
             
             <p style="color:#a0aec0; margin-bottom:15px;">
                 Cryptographic security and trust layer for AI-to-AI communication.
@@ -943,19 +985,96 @@ print(sum_t)</textarea>
         </div>
 
         <!-- ============================================================
+        TAB 9: MODELS (NEW!)
+        ============================================================ -->
+        <div class="tab-content" id="models">
+            <div class="section-title">
+                <span class="icon">🧠</span> Pretrained Models
+                <span style="font-size:0.6em; color:#48bb78; font-weight:400;"> — ResNet, BERT, GPT-2</span>
+            </div>
+            
+            <div class="version-notice" style="margin-bottom:15px;">
+                🧠 <strong>Real pretrained models</strong> — Image classification, text embeddings, and text generation.
+                Models are loaded on demand and cached for performance.
+            </div>
+            
+            <!-- Список моделей -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:20px;">
+                <div>
+                    <label style="color:#a0aec0; font-size:0.85em;">📋 Available Models</label>
+                    <select id="modelSelect" style="margin-top:4px; height:40px;">
+                        <option value="resnet18">ResNet-18 (image classification)</option>
+                        <option value="resnet34">ResNet-34 (image classification)</option>
+                        <option value="resnet50">ResNet-50 (image classification)</option>
+                        <option value="resnet101">ResNet-101 (image classification)</option>
+                        <option value="resnet152">ResNet-152 (image classification)</option>
+                        <option value="bert_base">BERT Base (text embeddings)</option>
+                        <option value="bert_large">BERT Large (text embeddings)</option>
+                        <option value="bert_base_cased">BERT Base Cased (text embeddings)</option>
+                        <option value="gpt2">GPT-2 (text generation)</option>
+                        <option value="gpt2_medium">GPT-2 Medium (text generation)</option>
+                        <option value="gpt2_large">GPT-2 Large (text generation)</option>
+                        <option value="gpt2_xl">GPT-2 XL (text generation)</option>
+                    </select>
+                </div>
+                <div style="display:flex; gap:10px; align-items:flex-end;">
+                    <button class="btn btn-secondary btn-sm" onclick="loadModel()" style="flex:1;">📥 Load Model</button>
+                    <button class="btn btn-warning btn-sm" onclick="clearModelCache()" style="flex:1;">🗑️ Clear Cache</button>
+                </div>
+            </div>
+            
+            <!-- Інформація про модель -->
+            <div class="model-info" id="modelInfo" style="display:none;">
+                <h4>📊 Model Info</h4>
+                <div class="info-content" id="modelInfoContent"></div>
+            </div>
+            
+            <!-- Введення для інференсу -->
+            <div style="margin-bottom:20px;">
+                <label style="color:#a0aec0; font-size:0.85em;">📝 Input</label>
+                <textarea id="modelInput" placeholder="Enter input for the model..." style="min-height:80px; margin-top:4px;">The future of AI is</textarea>
+            </div>
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-bottom:20px;">
+                <div>
+                    <label style="color:#a0aec0; font-size:0.85em;">📊 Top K (ResNet)</label>
+                    <input type="number" id="modelTopK" value="5" style="margin-top:4px;">
+                </div>
+                <div>
+                    <label style="color:#a0aec0; font-size:0.85em;">🔢 Max Tokens (GPT-2)</label>
+                    <input type="number" id="modelMaxTokens" value="50" style="margin-top:4px;">
+                </div>
+                <div>
+                    <label style="color:#a0aec0; font-size:0.85em;">🌡️ Temperature (GPT-2)</label>
+                    <input type="number" id="modelTemperature" value="0.7" step="0.1" style="margin-top:4px;">
+                </div>
+            </div>
+            
+            <button class="btn btn-primary btn-block" onclick="runModelInference()">
+                🧠 Run Inference
+            </button>
+            
+            <div class="loader" id="modelLoader"></div>
+            <div class="result" id="modelResult">
+                <pre>🧠 Select a model and enter input to run inference.</pre>
+            </div>
+        </div>
+
+        <!-- ============================================================
         FOOTER
         ============================================================ -->
         <div class="footer">
             <p>
-                🌿 <strong>Vireo</strong> — A Language Designed for AI-to-AI Communication
+                🌿 <strong>Vireo</strong> — The World's First AI-to-AI Communication Language
             </p>
             <p style="margin-top:5px; font-size:0.8em;">
-                <a href="https://github.com/serhohro/vireo-ai-communicator-api">GitHub</a> ·
+                <a href="https://github.com/serhohro/vireo-ai-communicator-api" target="_blank">GitHub</a> ·
                 <a href="http://localhost:5000/docs">Documentation</a> ·
                 <a href="http://localhost:5000">API</a> ·
                 <span style="color:#48bb78;">🤖 Real AI-to-AI</span> ·
                 <span style="color:#9f7aea;">🎭 Multi-Agent</span> ·
-                <span style="color:#ecc94b;">🚧 Active Development</span>
+                <span style="color:#ecc94b;">🚧 Active Development</span> ·
+                <span style="color:#63b3ed;">📌 v1.4.3</span>
             </p>
         </div>
     </div>
@@ -1500,8 +1619,13 @@ print(sum_t)</textarea>
         }
         
         // ============================================================
-        // SECURITY
+        // SECURITY (ВИПРАВЛЕНО!)
         // ============================================================
+        
+        let currentSignature = null;
+        let currentPublicKey = null;
+        let currentPrivateKey = null;
+        
         async function generateKeys() {
             const result = document.getElementById('keyResult');
             result.textContent = '🔑 Generating key pair...';
@@ -1511,7 +1635,25 @@ print(sum_t)</textarea>
                     method: 'POST'
                 });
                 const data = await resp.json();
-                result.innerHTML = `✅ Keys generated!<br>Public: ${data.public_key?.substring(0, 32)}...<br>Private: ${data.private_key?.substring(0, 32)}...`;
+                
+                if (data.status === 'success') {
+                    // Зберігаємо ключі
+                    currentPublicKey = data.full_public;
+                    currentPrivateKey = data.full_private;
+                    
+                    // Також зберігаємо в localStorage
+                    localStorage.setItem('vireo_public_key', data.full_public);
+                    localStorage.setItem('vireo_private_key', data.full_private);
+                    
+                    result.innerHTML = `
+                        ✅ Keys generated!<br>
+                        Public: ${data.public_key}<br>
+                        Private: ${data.private_key}<br>
+                        <span style="color:#48bb78; font-size:0.8em;">✅ Keys saved for signing</span>
+                    `;
+                } else {
+                    result.textContent = '❌ Error generating keys';
+                }
             } catch (e) {
                 result.textContent = '❌ Error generating keys';
             }
@@ -1520,16 +1662,39 @@ print(sum_t)</textarea>
         async function signMessage() {
             const message = document.getElementById('signMessage').value;
             const result = document.getElementById('signResult');
+            
+            if (!message.trim()) {
+                result.textContent = '❌ Please enter a message to sign';
+                return;
+            }
+            
+            // Перевіряємо, чи є ключі
+            const privateKey = localStorage.getItem('vireo_private_key') || currentPrivateKey;
+            if (!privateKey) {
+                result.textContent = '❌ No private key found. Generate keys first!';
+                return;
+            }
+            
             result.textContent = '🔏 Signing...';
             
             try {
                 const resp = await fetch(`${API_BASE}/crypto/sign`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message })
+                    body: JSON.stringify({ message: message })
                 });
                 const data = await resp.json();
-                result.innerHTML = `✅ Signed!<br>Signature: ${data.signature?.substring(0, 32)}...`;
+                
+                if (data.status === 'success') {
+                    currentSignature = data.full_signature;
+                    result.innerHTML = `
+                        ✅ Signed!<br>
+                        Signature: ${data.signature}<br>
+                        <span style="color:#48bb78; font-size:0.8em;">✅ Ready for verification</span>
+                    `;
+                } else {
+                    result.textContent = `❌ Error: ${data.message}`;
+                }
             } catch (e) {
                 result.textContent = '❌ Error signing message';
             }
@@ -1538,18 +1703,43 @@ print(sum_t)</textarea>
         async function verifyMessage() {
             const message = document.getElementById('signMessage').value;
             const result = document.getElementById('signResult');
+            
+            if (!message.trim()) {
+                result.textContent = '❌ Please enter a message to verify';
+                return;
+            }
+            
+            if (!currentSignature) {
+                result.textContent = '❌ No signature found. Sign a message first!';
+                return;
+            }
+            
             result.textContent = '🔐 Verifying...';
             
             try {
                 const resp = await fetch(`${API_BASE}/crypto/verify`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message })
+                    body: JSON.stringify({ 
+                        message: message, 
+                        signature: currentSignature 
+                    })
                 });
                 const data = await resp.json();
-                result.innerHTML = data.valid ? '✅ Signature valid!' : '❌ Invalid signature';
+                
+                if (data.status === 'success' && data.valid === true) {
+                    result.innerHTML = `
+                        ✅ Signature valid!<br>
+                        <span style="color:#48bb78; font-size:0.8em;">✅ Message verified successfully</span>
+                    `;
+                } else {
+                    result.innerHTML = `
+                        ❌ Invalid signature<br>
+                        <span style="color:#fc8181; font-size:0.8em;">Make sure you signed the same message</span>
+                    `;
+                }
             } catch (e) {
-                result.textContent = '❌ Error verifying message';
+                result.textContent = '❌ Error verifying signature';
             }
         }
         
@@ -1566,6 +1756,125 @@ print(sum_t)</textarea>
             } catch (e) {
                 result.textContent = '❌ Trust protocol test failed';
             }
+        }
+        
+        // ============================================================
+        // MODELS (NEW!)
+        // ============================================================
+        
+        let loadedModel = null;
+        
+        async function loadModel() {
+            const modelName = document.getElementById('modelSelect').value;
+            const loader = document.getElementById('modelLoader');
+            const result = document.getElementById('modelResult');
+            const info = document.getElementById('modelInfo');
+            const infoContent = document.getElementById('modelInfoContent');
+            
+            loader.style.display = 'block';
+            result.innerHTML = `<pre>📥 Loading ${modelName}... This may take a few seconds.</pre>`;
+            info.style.display = 'none';
+            
+            try {
+                const resp = await fetch(`${API_BASE}/models/load/${modelName}`, {
+                    method: 'POST'
+                });
+                const data = await resp.json();
+                
+                if (data.status === 'success') {
+                    loadedModel = modelName;
+                    info.style.display = 'block';
+                    infoContent.innerHTML = `
+                        <strong>Name:</strong> ${data.model}<br>
+                        <strong>Device:</strong> ${data.info?.device || 'N/A'}<br>
+                        <strong>Parameters:</strong> ${(data.info?.parameters || 0).toLocaleString()}<br>
+                        <strong>Status:</strong> ✅ Loaded
+                    `;
+                    result.innerHTML = `<pre style="color:#48bb78;">✅ Model ${modelName} loaded successfully!</pre>`;
+                } else {
+                    result.innerHTML = `<pre style="color:#fc8181;">❌ Error: ${data.message}</pre>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<pre style="color:#fc8181;">❌ Error: ${error.message}</pre>`;
+            }
+            
+            loader.style.display = 'none';
+        }
+        
+        async function clearModelCache() {
+            const result = document.getElementById('modelResult');
+            const info = document.getElementById('modelInfo');
+            
+            try {
+                const resp = await fetch(`${API_BASE}/models/cache/clear`, {
+                    method: 'POST'
+                });
+                const data = await resp.json();
+                loadedModel = null;
+                info.style.display = 'none';
+                result.innerHTML = `<pre style="color:#48bb78;">✅ ${data.message}</pre>`;
+            } catch (error) {
+                result.innerHTML = `<pre style="color:#fc8181;">❌ Error: ${error.message}</pre>`;
+            }
+        }
+        
+        async function runModelInference() {
+            const modelName = document.getElementById('modelSelect').value;
+            const input = document.getElementById('modelInput').value;
+            const topK = parseInt(document.getElementById('modelTopK').value) || 5;
+            const maxTokens = parseInt(document.getElementById('modelMaxTokens').value) || 50;
+            const temperature = parseFloat(document.getElementById('modelTemperature').value) || 0.7;
+            const loader = document.getElementById('modelLoader');
+            const result = document.getElementById('modelResult');
+            
+            if (!input.trim()) {
+                result.innerHTML = '<pre style="color:#fc8181;">❌ Please enter input for the model.</pre>';
+                return;
+            }
+            
+            loader.style.display = 'block';
+            result.innerHTML = '<pre>🧠 Running inference...</pre>';
+            
+            try {
+                let body = {};
+                
+                // Визначаємо тип моделі
+                if (modelName.includes('resnet')) {
+                    // Для ResNet потрібне зображення (поки що заглушка)
+                    result.innerHTML = '<pre style="color:#fc8181;">❌ ResNet requires image input. Coming soon!</pre>';
+                    loader.style.display = 'none';
+                    return;
+                } else if (modelName.includes('bert')) {
+                    body = { text: input, max_length: 512 };
+                } else if (modelName.includes('gpt2') || modelName.includes('gpt')) {
+                    body = { prompt: input, max_new_tokens: maxTokens, temperature: temperature };
+                } else {
+                    body = { text: input };
+                }
+                
+                const resp = await fetch(`${API_BASE}/models/predict/${modelName}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await resp.json();
+                
+                if (data.status === 'success') {
+                    result.innerHTML = `<pre style="color:#48bb78;">✅ INFERENCE COMPLETE!
+        
+        📊 RESULT:
+        ${JSON.stringify(data.result, null, 2).substring(0, 1000)}${JSON.stringify(data.result, null, 2).length > 1000 ? '\n... (truncated)' : ''}
+        
+        Model: ${data.model}
+        Version: ${data.version}</pre>`;
+                } else {
+                    result.innerHTML = `<pre style="color:#fc8181;">❌ Error: ${data.message}</pre>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<pre style="color:#fc8181;">❌ Error: ${error.message}</pre>`;
+            }
+            
+            loader.style.display = 'none';
         }
         
         // ============================================================
@@ -1588,12 +1897,13 @@ print(sum_t)</textarea>
             document.getElementById('costStatus').textContent = costInfo[this.value] || '—';
         });
         
-        console.log('🌿 Vireo — A Language Designed for AI-to-AI Communication');
+        console.log('🌿 Vireo v1.4.3 — The World\'s First AI-to-AI Communication Language');
         console.log('🤖 Real AI-to-AI communication with LLM agents');
-        console.log('🎭 Multi-Agent system with 8 specialized roles');
-        console.log('🔐 Security & Trust layer');
+        console.log('🎭 Multi-Agent system with 7+ specialized roles');
+        console.log('🔐 Security & Trust layer (Ed25519)');
         console.log('📡 Supported providers: Ollama, Qwen2.5-Coder, Gemini, Claude, OpenAI, Mistral');
-        console.log('🚧 Active Development v1.4.0');
+        console.log('🧠 Pretrained models: ResNet, BERT, GPT-2');
+        console.log('🚧 Active Development v1.4.3');
     </script>
 </body>
 </html>

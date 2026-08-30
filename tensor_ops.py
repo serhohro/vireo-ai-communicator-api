@@ -1,19 +1,28 @@
 # ============================================================
-# VIREO TENSOR OPERATIONS v1.0.0
+# VIREO TENSOR OPERATIONS v1.4.3
 # Розширена бібліотека тензорних операцій
+# The World's First AI-to-AI Communication Language
 # ============================================================
+
+VERSION = "1.4.3"
 
 import math
 import random
-import numpy as np
 from typing import List, Union, Optional, Tuple
+
+try:
+    import numpy as np
+except ImportError:
+    raise ImportError("NumPy is required for tensor operations. Install: pip install numpy")
 
 # ============================================================
 # 1. ОСНОВНИЙ КЛАС TENSOR
 # ============================================================
 
 class Tensor:
-    """Повноцінна реалізація тензорів для Vireo"""
+    """Повноцінна реалізація тензорів для Vireo v1.4.3"""
+    
+    VERSION = "1.4.3"
     
     def __init__(self, data, dtype='float32', requires_grad=False):
         if isinstance(data, (int, float)):
@@ -478,7 +487,9 @@ def col2im(
 # ============================================================
 
 class Conv2D:
-    """Згортковий шар з autodiff через im2col."""
+    """Згортковий шар з autodiff через im2col. Vireo v1.4.3"""
+    
+    VERSION = "1.4.3"
     
     def __init__(
         self,
@@ -579,7 +590,9 @@ class Conv2D:
 # ============================================================
 
 class MaxPool2D:
-    """MaxPool2D з кешуванням argmax для backward."""
+    """MaxPool2D з кешуванням argmax для backward. Vireo v1.4.3"""
+    
+    VERSION = "1.4.3"
     
     def __init__(self, kernel_size: int, stride: Optional[int] = None, padding: int = 0):
         self.kernel_size = kernel_size if isinstance(kernel_size, tuple) else (kernel_size, kernel_size)
@@ -647,7 +660,9 @@ class MaxPool2D:
 # ============================================================
 
 class Flatten:
-    """Розгортає тензор у 2D (batch, features)."""
+    """Розгортає тензор у 2D (batch, features). Vireo v1.4.3"""
+    
+    VERSION = "1.4.3"
     
     def __init__(self):
         self._input_shape = None
@@ -668,7 +683,9 @@ class Flatten:
 # ============================================================
 
 class BatchNorm2D:
-    """Batch Normalization для 2D зображень."""
+    """Batch Normalization для 2D зображень. Vireo v1.4.3"""
+    
+    VERSION = "1.4.3"
     
     def __init__(self, num_features, eps=1e-5, momentum=0.1):
         self.num_features = num_features
@@ -697,7 +714,6 @@ class BatchNorm2D:
         if C != self.num_features:
             raise ValueError(f"Expected {self.num_features} channels, got {C}")
         
-        # Перетворюємо в (N*H*W, C)
         x_flat = x.transpose(0, 2, 3, 1).reshape(-1, C)
         
         if training:
@@ -726,11 +742,9 @@ class BatchNorm2D:
         
         grad_flat = grad_output.transpose(0, 2, 3, 1).reshape(-1, C)
         
-        # Градієнти для gamma і beta
         self.dgamma = (grad_flat * self._normalized).sum(axis=0) / N
         self.dbeta = grad_flat.sum(axis=0) / N
         
-        # Градієнт для вхідних даних
         x_flat = self._input.transpose(0, 2, 3, 1).reshape(-1, C)
         mean = self._mean
         var = self._var
@@ -739,10 +753,8 @@ class BatchNorm2D:
         N_total = x_flat.shape[0]
         inv_std = 1.0 / np.sqrt(var + eps)
         
-        # Градієнт для normalized
         d_norm = grad_flat * self.gamma
         
-        # Градієнт для x
         d_x = (1.0 / N_total) * inv_std * (
             N_total * d_norm -
             d_norm.sum(axis=0) -
@@ -838,7 +850,13 @@ def tensor_log(a):
 # ============================================================
 
 if __name__ == "__main__":
-    print("🧪 Testing Conv2D + MaxPool2D + Flatten + BatchNorm")
+    print("=" * 50)
+    print("🧪 VIREO TENSOR OPERATIONS v1.4.3")
+    print("The World's First AI-to-AI Communication Language")
+    print("=" * 50)
+    print()
+    print("Testing Conv2D + MaxPool2D + Flatten + BatchNorm")
+    print()
     
     conv1 = Conv2D(1, 32, kernel_size=3, stride=1, padding=1)
     bn1 = BatchNorm2D(32)
@@ -875,9 +893,14 @@ if __name__ == "__main__":
     grad = bn1.backward(grad)
     grad = conv1.backward(grad)
     
-    print(f"\n✅ All shapes match!")
+    print()
+    print("✅ All shapes match!")
     print(f"   grad shape: {grad.shape}")
     print(f"   conv1 dweights shape: {conv1.dweights.shape}")
     print(f"   conv1 dbias shape: {conv1.dbias.shape}")
     print(f"   bn1 dgamma shape: {bn1.dgamma.shape}")
     print(f"   bn1 dbeta shape: {bn1.dbeta.shape}")
+    print()
+    print("=" * 50)
+    print("✅ Vireo Tensor Operations v1.4.3 ready!")
+    print("=" * 50)
