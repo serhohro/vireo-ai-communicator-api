@@ -15,6 +15,7 @@ import redis
 import json
 from typing import Callable, Optional, Dict, Any
 import logging
+from protocol.message import Message  # ← ДОДАНО
 
 logger = logging.getLogger("vireo.transport.redis")
 
@@ -79,7 +80,9 @@ class RedisEventBus:
                 data = json.loads(message['data'])
                 handler = self._handlers.get(message['channel'])
                 if handler:
-                    handler(data)
+                    # Створюємо Message з dict і передаємо його
+                    msg = Message.from_dict(data)
+                    handler(msg)
             except Exception as e:
                 logger.error(f"❌ Message processing error: {e}")
     
