@@ -253,10 +253,15 @@ class GPT2Model(VireoPretrainedModel):
         
         logger.info(f"🔄 Loading {variant}...")
         model_name = self.SUPPORTED_VARIANTS[variant]
-        model = GPT2Model.from_pretrained(model_name)
+        
+        from transformers import GPT2Model as HF_GPT2Model
+        from transformers import GPT2Tokenizer
+        
+        # Використовуємо GPT2LMHeadModel для генерації
+        from transformers import GPT2LMHeadModel
+        model = GPT2LMHeadModel.from_pretrained(model_name)
         tokenizer = GPT2Tokenizer.from_pretrained(model_name)
         
-        # Додаємо pad_token
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
         
@@ -264,20 +269,8 @@ class GPT2Model(VireoPretrainedModel):
         
         super().__init__(model, tokenizer, device)
         self.variant = variant
-        self.generator = None
     
     def predict(self, prompt: str, max_new_tokens: int = 50, temperature: float = 0.7) -> Dict:
-        """
-        Генерує текст на основі промпту.
-        
-        Args:
-            prompt: Початковий текст
-            max_new_tokens: Максимум нових токенів
-            temperature: Температура генерації
-        
-        Returns:
-            Dict: Згенерований текст
-        """
         inputs = self.tokenizer(
             prompt,
             return_tensors="pt",
@@ -305,8 +298,6 @@ class GPT2Model(VireoPretrainedModel):
             "model": self.variant,
             "tokens_generated": len(outputs[0]) - len(inputs["input_ids"][0])
         }
-
-
 # ============================================================
 # 5. ФАБРИКА МОДЕЛЕЙ
 # ============================================================
