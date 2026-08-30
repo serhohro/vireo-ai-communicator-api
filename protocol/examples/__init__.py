@@ -25,7 +25,7 @@ __all__ = []
 # META INFORMATION
 # ============================================================
 
-__version__ = "1.4.0"
+__version__ = "1.4.3"
 __author__ = "Serhii (serhohro)"
 __description__ = "Vireo language examples"
 
