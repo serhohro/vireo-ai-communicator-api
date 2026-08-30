@@ -1,888 +1,484 @@
 # ============================================================
-# ⚠️ IMPORTANT NOTICE: MODEL SKELETONS ONLY
-# ============================================================
-#
-# This file contains ARCHITECTURAL TEMPLATES (skeletons) of
-# popular models (ResNet, BERT, GPT) to demonstrate how they
-# will be integrated into Vireo.
-#
-# ⚠️ THESE ARE NOT TRAINED MODELS!
-#    - No pre-trained weights are included
-#    - Some methods are stubs (return input unchanged)
-#    - These are STRUCTURAL TEMPLATES only
-#
-# Full implementations with pre-trained weights are planned
-# for future releases (v1.5.0 and beyond).
-#
-# For actual model usage, please use:
-#   - PyTorch: torchvision.models.resnet18()
-#   - HuggingFace: transformers.BertModel.from_pretrained()
-#   - Or wait for Vireo v1.5.0
-# ============================================================
-
-# ============================================================
 # PRETRAINED MODELS FOR VIREO v1.4.3
-# Готові моделі: ResNet, BERT, GPT (повноцінні реалізації)
+# РЕАЛЬНІ МОДЕЛІ З ПОПЕРЕДНІМ НАВЧАННЯМ!
 # The World's First AI-to-AI Communication Language
+# ============================================================
+#
+# ⚠️ ВИМАГАЄ ВСТАНОВЛЕННЯ ЗАЛЕЖНОСТЕЙ:
+#    pip install torch torchvision transformers
 # ============================================================
 
 VERSION = "1.4.3"
 
-import math
-import random
-import json
-from typing import List, Dict, Optional, Tuple, Union
+import logging
+from typing import List, Dict, Optional, Union, Any
+
+# Налаштування логування
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("vireo.pretrained")
 
 # ============================================================
-# 1. БАЗОВІ КЛАСИ ДЛЯ ВСІХ МОДЕЛЕЙ
+# ПЕРЕВІРКА ЗАЛЕЖНОСТЕЙ
 # ============================================================
 
-class Tensor:
-    """Спрощена реалізація тензорів для моделей Vireo v1.4.3"""
+try:
+    import torch
+    import torch.nn as nn
+    import torchvision.models as tv_models
+    from transformers import (
+        BertModel, BertTokenizer,
+        GPT2Model, GPT2Tokenizer,
+        pipeline
+    )
+    DEPS_AVAILABLE = True
+    logger.info("✅ All dependencies loaded (PyTorch, torchvision, transformers)")
+except ImportError as e:
+    DEPS_AVAILABLE = False
+    logger.warning(f"⚠️ Missing dependencies: {e}")
+    logger.warning("   Install: pip install torch torchvision transformers")
+
+
+# ============================================================
+# 1. БАЗОВИЙ КЛАС ДЛЯ ВСІХ МОДЕЛЕЙ
+# ============================================================
+
+class VireoPretrainedModel:
+    """Базовий клас для всіх попередньо навчених моделей."""
     
-    VERSION = "1.4.3"
-    
-    def __init__(self, data, dtype='float32', requires_grad=False):
-        if isinstance(data, (int, float)):
-            self.data = [float(data)]
-        elif isinstance(data, list):
-            self.data = data
-        elif isinstance(data, Tensor):
-            self.data = data.data.copy()
-        else:
-            self.data = list(data) if hasattr(data, '__iter__') else [data]
-        self.dtype = dtype
-        self.requires_grad = requires_grad
-        self.grad = None
-        self._shape = None
-        self._compute_shape()
-    
-    def _compute_shape(self):
-        def get_shape(d):
-            if not isinstance(d, list):
-                return []
-            if not d:
-                return [0]
-            first = get_shape(d[0])
-            if all(get_shape(item) == first for item in d):
-                return [len(d)] + first
-            return [len(d)]
-        self._shape = get_shape(self.data)
-    
-    @property
-    def shape(self):
-        return self._shape
-    
-    def __repr__(self):
-        return f"Tensor(shape={self.shape}, dtype={self.dtype})"
-    
-    def __add__(self, other):
-        if isinstance(other, Tensor):
-            if self.shape != other.shape:
-                raise ValueError(f"Shape mismatch: {self.shape} vs {other.shape}")
-            return Tensor([a + b for a, b in zip(self.data, other.data)])
-        return Tensor([x + other for x in self.data])
-    
-    def __radd__(self, other):
-        return self.__add__(other)
-    
-    def __sub__(self, other):
-        if isinstance(other, Tensor):
-            if self.shape != other.shape:
-                raise ValueError(f"Shape mismatch: {self.shape} vs {other.shape}")
-            return Tensor([a - b for a, b in zip(self.data, other.data)])
-        return Tensor([x - other for x in self.data])
-    
-    def __mul__(self, other):
-        if isinstance(other, Tensor):
-            if self.shape != other.shape:
-                raise ValueError(f"Shape mismatch: {self.shape} vs {other.shape}")
-            return Tensor([a * b for a, b in zip(self.data, other.data)])
-        return Tensor([x * other for x in self.data])
-    
-    def __rmul__(self, other):
-        return self.__mul__(other)
-    
-    def __truediv__(self, other):
-        if isinstance(other, Tensor):
-            if self.shape != other.shape:
-                raise ValueError(f"Shape mismatch: {self.shape} vs {other.shape}")
-            return Tensor([a / b for a, b in zip(self.data, other.data)])
-        return Tensor([x / other for x in self.data])
-    
-    def matmul(self, other):
-        if not isinstance(other, Tensor):
-            raise TypeError("matmul requires Tensor")
+    def __init__(self, model, tokenizer=None, device=None):
+        self.model = model
+        self.tokenizer = tokenizer
+        self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         
-        if len(self.shape) == 1 and len(other.shape) == 1:
-            if self.shape[0] != other.shape[0]:
-                raise ValueError(f"Shape mismatch: {self.shape} vs {other.shape}")
-            return sum(a * b for a, b in zip(self.data, other.data))
+        if hasattr(model, 'to'):
+            self.model.to(self.device)
         
-        if len(self.shape) == 2 and len(other.shape) == 2:
-            rows = self.shape[0]
-            cols = other.shape[1]
-            k_dim = self.shape[1]
-            if k_dim != other.shape[0]:
-                raise ValueError(f"Shape mismatch: {self.shape} vs {other.shape}")
-            result = [[0] * cols for _ in range(rows)]
-            for i in range(rows):
-                for j in range(cols):
-                    s = 0
-                    for k in range(k_dim):
-                        s += self.data[i][k] * other.data[k][j]
-                    result[i][j] = s
-            return Tensor(result)
+        self.model.eval()
+        logger.info(f"✅ Model loaded on {self.device}")
+    
+    def predict(self, *args, **kwargs):
+        """Запускає інференс моделі."""
+        raise NotImplementedError
+    
+    def to_dict(self) -> Dict:
+        """Повертає інформацію про модель."""
+        return {
+            "type": self.__class__.__name__,
+            "device": self.device,
+            "parameters": sum(p.numel() for p in self.model.parameters()),
+            "version": VERSION
+        }
+
+
+# ============================================================
+# 2. RESNET
+# ============================================================
+
+class ResNetModel(VireoPretrainedModel):
+    """ResNet модель з попереднім навчанням на ImageNet."""
+    
+    SUPPORTED_VARIANTS = {
+        "resnet18": tv_models.resnet18,
+        "resnet34": tv_models.resnet34,
+        "resnet50": tv_models.resnet50,
+        "resnet101": tv_models.resnet101,
+        "resnet152": tv_models.resnet152,
+    }
+    
+    def __init__(self, variant: str = "resnet18", pretrained: bool = True, device=None):
+        if not DEPS_AVAILABLE:
+            raise ImportError("PyTorch/torchvision not installed")
         
-        if len(self.shape) == 2 and len(other.shape) == 1:
-            rows = self.shape[0]
-            cols = self.shape[1]
-            if cols != other.shape[0]:
-                raise ValueError(f"Shape mismatch: {self.shape} vs {other.shape}")
-            result = [0] * rows
-            for i in range(rows):
-                s = 0
-                for j in range(cols):
-                    s += self.data[i][j] * other.data[j]
-                result[i] = s
-            return Tensor(result)
+        if variant not in self.SUPPORTED_VARIANTS:
+            raise ValueError(f"Unsupported variant: {variant}. Choose from: {list(self.SUPPORTED_VARIANTS.keys())}")
         
-        raise ValueError(f"Unsupported matmul: {self.shape} x {other.shape}")
+        logger.info(f"🔄 Loading {variant}...")
+        model_fn = self.SUPPORTED_VARIANTS[variant]
+        model = model_fn(weights="DEFAULT" if pretrained else None)
+        model.eval()
+        
+        super().__init__(model, device=device)
+        self.variant = variant
+        self.pretrained = pretrained
+        
+        # Нормалізація для ImageNet
+        self.mean = torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1)
+        self.std = torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1)
     
-    def transpose(self):
-        if len(self.shape) == 2:
-            rows = self.shape[0]
-            cols = self.shape[1]
-            result = [[self.data[j][i] for j in range(rows)] for i in range(cols)]
-            return Tensor(result)
-        return self
+    def predict(self, image: Union[torch.Tensor, List], top_k: int = 5) -> Dict:
+        """
+        Передбачає клас зображення.
+        
+        Args:
+            image: Тензор (3, H, W) або список
+            top_k: Кількість топ-класів для повернення
+        
+        Returns:
+            Dict: Топ-класи з ймовірностями
+        """
+        if not isinstance(image, torch.Tensor):
+            image = torch.tensor(image, dtype=torch.float32)
+        
+        # Нормалізація
+        if image.dim() == 3:
+            image = image.unsqueeze(0)
+        
+        image = image.to(self.device)
+        image = (image / 255.0 - self.mean.to(self.device)) / self.std.to(self.device)
+        
+        with torch.no_grad():
+            output = self.model(image)
+            probs = torch.nn.functional.softmax(output, dim=1)
+            top_probs, top_indices = probs.topk(top_k, dim=1)
+        
+        # Завантажуємо мітки ImageNet (спрощено)
+        labels = self._get_imagenet_labels()
+        results = []
+        for i in range(top_k):
+            idx = top_indices[0][i].item()
+            results.append({
+                "class": labels.get(idx, f"Class_{idx}"),
+                "probability": top_probs[0][i].item()
+            })
+        
+        return {
+            "predictions": results,
+            "model": self.variant,
+            "pretrained": self.pretrained
+        }
     
-    def reshape(self, new_shape):
-        flat = self.flatten()
-        if len(new_shape) == 1:
-            return Tensor(flat[:new_shape[0]])
-        if len(new_shape) == 2:
-            result = []
-            idx = 0
-            for i in range(new_shape[0]):
-                row = flat[idx:idx+new_shape[1]]
-                result.append(row)
-                idx += new_shape[1]
-            return Tensor(result)
-        if len(new_shape) == 3:
-            result = []
-            idx = 0
-            for i in range(new_shape[0]):
-                slice_2d = []
-                for j in range(new_shape[1]):
-                    row = flat[idx:idx+new_shape[2]]
-                    slice_2d.append(row)
-                    idx += new_shape[2]
-                result.append(slice_2d)
-            return Tensor(result)
-        return self
+    def _get_imagenet_labels(self) -> Dict[int, str]:
+        """Повертає словник міток ImageNet (спрощено)."""
+        # Повний список можна завантажити з:
+        # https://raw.githubusercontent.com/pytorch/hub/master/imagenet_classes.txt
+        # Для прикладу повертаємо базові
+        return {
+            0: "tench",
+            1: "goldfish",
+            2: "great white shark",
+            3: "tiger shark",
+            4: "hammerhead shark",
+            5: "electric ray",
+            6: "stingray",
+            7: "cock",
+            8: "hen",
+            9: "ostrich",
+            # ... повний список у реальній версії
+        }
+
+
+# ============================================================
+# 3. BERT
+# ============================================================
+
+class BERTModel(VireoPretrainedModel):
+    """BERT модель з попереднім навчанням."""
     
-    def flatten(self):
-        def _flatten(d):
-            if isinstance(d, list):
-                result = []
-                for item in d:
-                    result.extend(_flatten(item))
-                return result
-            return [d]
-        return _flatten(self.data)
+    SUPPORTED_VARIANTS = {
+        "bert-base-uncased": "bert-base-uncased",
+        "bert-large-uncased": "bert-large-uncased",
+        "bert-base-cased": "bert-base-cased",
+        "bert-large-cased": "bert-large-cased",
+    }
     
-    def sum(self, axis=None):
-        if axis is None:
-            def _flatten_sum(d):
-                if isinstance(d, list):
-                    return sum(_flatten_sum(item) for item in d)
-                return d
-            return _flatten_sum(self.data)
-        if axis == 0 and len(self.shape) == 2:
-            result = [0] * self.shape[1]
-            for row in self.data:
-                for j, val in enumerate(row):
-                    result[j] += val
-            return Tensor(result)
-        if axis == 1 and len(self.shape) == 2:
-            result = [sum(row) for row in self.data]
-            return Tensor(result)
-        return self
+    def __init__(self, variant: str = "bert-base-uncased", device=None):
+        if not DEPS_AVAILABLE:
+            raise ImportError("transformers not installed")
+        
+        if variant not in self.SUPPORTED_VARIANTS:
+            raise ValueError(f"Unsupported variant: {variant}")
+        
+        logger.info(f"🔄 Loading {variant}...")
+        model_name = self.SUPPORTED_VARIANTS[variant]
+        model = BertModel.from_pretrained(model_name)
+        tokenizer = BertTokenizer.from_pretrained(model_name)
+        model.eval()
+        
+        super().__init__(model, tokenizer, device)
+        self.variant = variant
     
-    def mean(self, axis=None):
-        s = self.sum(axis)
-        if isinstance(s, Tensor):
-            if axis is None:
-                return s / self._size()
-            return Tensor([v / self.shape[axis] for v in s.data])
-        return s / self._size()
+    def predict(self, text: Union[str, List[str]], max_length: int = 512) -> Dict:
+        """
+        Отримує ембеддинги тексту через BERT.
+        
+        Args:
+            text: Текст або список текстів
+            max_length: Максимальна довжина послідовності
+        
+        Returns:
+            Dict: Ембеддинги та інформація
+        """
+        inputs = self.tokenizer(
+            text,
+            return_tensors="pt",
+            padding=True,
+            truncation=True,
+            max_length=max_length
+        )
+        
+        inputs = {k: v.to(self.device) for k, v in inputs.items()}
+        
+        with torch.no_grad():
+            outputs = self.model(**inputs)
+            embeddings = outputs.last_hidden_state
+        
+        return {
+            "embeddings": embeddings.cpu().numpy(),
+            "shape": embeddings.shape,
+            "model": self.variant,
+            "text": text if isinstance(text, str) else text[:2]  # для відображення
+        }
+
+
+# ============================================================
+# 4. GPT-2
+# ============================================================
+
+class GPT2Model(VireoPretrainedModel):
+    """GPT-2 модель з попереднім навчанням для генерації тексту."""
     
-    def _size(self):
-        def _size(shape):
-            if not shape:
-                return 1
-            return shape[0] * _size(shape[1:])
-        return _size(self.shape)
+    SUPPORTED_VARIANTS = {
+        "gpt2": "gpt2",
+        "gpt2-medium": "gpt2-medium",
+        "gpt2-large": "gpt2-large",
+        "gpt2-xl": "gpt2-xl",
+    }
     
-    def max(self, axis=None):
-        if axis is None:
-            def _max(d):
-                if isinstance(d, list):
-                    return max(_max(item) for item in d)
-                return d
-            return _max(self.data)
-        if axis == 1 and len(self.shape) == 2:
-            return Tensor([max(row) for row in self.data])
-        return self
+    def __init__(self, variant: str = "gpt2", device=None):
+        if not DEPS_AVAILABLE:
+            raise ImportError("transformers not installed")
+        
+        if variant not in self.SUPPORTED_VARIANTS:
+            raise ValueError(f"Unsupported variant: {variant}")
+        
+        logger.info(f"🔄 Loading {variant}...")
+        model_name = self.SUPPORTED_VARIANTS[variant]
+        model = GPT2Model.from_pretrained(model_name)
+        tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+        
+        # Додаємо pad_token
+        if tokenizer.pad_token is None:
+            tokenizer.pad_token = tokenizer.eos_token
+        
+        model.eval()
+        
+        super().__init__(model, tokenizer, device)
+        self.variant = variant
+        self.generator = None
     
-    def min(self, axis=None):
-        if axis is None:
-            def _min(d):
-                if isinstance(d, list):
-                    return min(_min(item) for item in d)
-                return d
-            return _min(self.data)
-        return self
+    def predict(self, prompt: str, max_new_tokens: int = 50, temperature: float = 0.7) -> Dict:
+        """
+        Генерує текст на основі промпту.
+        
+        Args:
+            prompt: Початковий текст
+            max_new_tokens: Максимум нових токенів
+            temperature: Температура генерації
+        
+        Returns:
+            Dict: Згенерований текст
+        """
+        inputs = self.tokenizer(
+            prompt,
+            return_tensors="pt",
+            padding=True,
+            truncation=True,
+            max_length=512
+        )
+        
+        inputs = {k: v.to(self.device) for k, v in inputs.items()}
+        
+        with torch.no_grad():
+            outputs = self.model.generate(
+                **inputs,
+                max_new_tokens=max_new_tokens,
+                temperature=temperature,
+                do_sample=True,
+                pad_token_id=self.tokenizer.eos_token_id
+            )
+        
+        generated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+        
+        return {
+            "prompt": prompt,
+            "generated": generated_text,
+            "model": self.variant,
+            "tokens_generated": len(outputs[0]) - len(inputs["input_ids"][0])
+        }
+
+
+# ============================================================
+# 5. ФАБРИКА МОДЕЛЕЙ
+# ============================================================
+
+class ModelFactory:
+    """Фабрика для створення моделей."""
+    
+    _instances = {}
     
     @classmethod
-    def zeros(cls, shape):
-        if len(shape) == 2:
-            return Tensor([[0.0 for _ in range(shape[1])] for _ in range(shape[0])])
-        elif len(shape) == 1:
-            return Tensor([0.0 for _ in range(shape[0])])
-        else:
-            return Tensor([0.0])
+    def get_model(cls, model_type: str, variant: str = None, **kwargs):
+        """
+        Отримує модель (з кешуванням).
+        
+        Args:
+            model_type: "resnet", "bert", "gpt2"
+            variant: Варіант моделі
+            **kwargs: Додаткові параметри
+        
+        Returns:
+            VireoPretrainedModel: Екземпляр моделі
+        """
+        if not DEPS_AVAILABLE:
+            raise ImportError("Dependencies not installed. Run: pip install torch torchvision transformers")
+        
+        key = f"{model_type}:{variant or 'default'}"
+        
+        if key not in cls._instances:
+            if model_type == "resnet":
+                variant = variant or "resnet18"
+                model = ResNetModel(variant, **kwargs)
+            elif model_type == "bert":
+                variant = variant or "bert-base-uncased"
+                model = BERTModel(variant, **kwargs)
+            elif model_type == "gpt2":
+                variant = variant or "gpt2"
+                model = GPT2Model(variant, **kwargs)
+            else:
+                raise ValueError(f"Unknown model type: {model_type}. Choose from: resnet, bert, gpt2")
+            
+            cls._instances[key] = model
+        
+        return cls._instances[key]
     
     @classmethod
-    def ones(cls, shape):
-        if len(shape) == 2:
-            return Tensor([[1.0 for _ in range(shape[1])] for _ in range(shape[0])])
-        elif len(shape) == 1:
-            return Tensor([1.0 for _ in range(shape[0])])
-        else:
-            return Tensor([1.0])
-    
-    @classmethod
-    def random(cls, shape):
-        if len(shape) == 2:
-            return Tensor([[random.random() for _ in range(shape[1])] for _ in range(shape[0])])
-        elif len(shape) == 1:
-            return Tensor([random.random() for _ in range(shape[0])])
-        else:
-            return Tensor([random.random()])
+    def clear_cache(cls):
+        """Очищує кеш моделей."""
+        cls._instances = {}
+        logger.info("🧹 Model cache cleared")
 
 
 # ============================================================
-# 2. ФУНКЦІЇ АКТИВАЦІЇ
+# 6. API-СУМІСНІ ФУНКЦІЇ
 # ============================================================
 
-def relu(x):
-    if isinstance(x, Tensor):
-        return Tensor([max(0, v) for v in x.flatten()])
-    if isinstance(x, (int, float)):
-        return max(0, x)
-    return x
-
-def sigmoid(x):
-    if isinstance(x, Tensor):
-        return Tensor([1 / (1 + math.exp(-v)) for v in x.flatten()])
-    if isinstance(x, (int, float)):
-        return 1 / (1 + math.exp(-x))
-    return x
-
-def tanh(x):
-    if isinstance(x, Tensor):
-        return Tensor([math.tanh(v) for v in x.flatten()])
-    if isinstance(x, (int, float)):
-        return math.tanh(x)
-    return x
-
-def softmax(x):
-    if isinstance(x, Tensor):
-        flat = x.flatten()
-        exp_vals = [math.exp(v) for v in flat]
-        sum_exp = sum(exp_vals)
-        return Tensor([v / sum_exp for v in exp_vals])
-    return x
-
-
-# ============================================================
-# 3. ШАРИ (БАЗОВІ)
-# ============================================================
-
-class Dense:
-    """Повнозв'язний шар. Vireo v1.4.3"""
-    
-    VERSION = "1.4.3"
-    
-    def __init__(self, input_size, output_size, activation=None):
-        self.weights = Tensor.random([input_size, output_size])
-        self.bias = Tensor.random([output_size])
-        self.activation = activation
-    
-    def forward(self, x):
-        if len(x.shape) == 2:
-            self.output = x.matmul(self.weights) + self.bias
-        elif len(x.shape) == 1:
-            result = []
-            for j in range(len(self.weights.data[0])):
-                s = 0
-                for i in range(len(x.data)):
-                    s += x.data[i] * self.weights.data[i][j]
-                result.append(s)
-            self.output = Tensor(result) + self.bias
-        else:
-            self.output = x.matmul(self.weights) + self.bias
-        
-        if self.activation == 'relu':
-            self.output = relu(self.output)
-        elif self.activation == 'sigmoid':
-            self.output = sigmoid(self.output)
-        elif self.activation == 'tanh':
-            self.output = tanh(self.output)
-        elif self.activation == 'softmax':
-            self.output = softmax(self.output)
-        
-        return self.output
-
-
-# ============================================================
-# 4. MODEL SKELETONS (⚠️ ARCHITECTURAL TEMPLATES ONLY)
-# ============================================================
-
-class Conv2D:
-    """⚠️ SKELETON: Згортковий шар (неповна реалізація)."""
-    
-    VERSION = "1.4.3"
-    
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0):
-        self.in_channels = in_channels
-        self.out_channels = out_channels
-        self.kernel_size = kernel_size
-        self.stride = stride
-        self.padding = padding
-        
-        self.weights = Tensor.random([out_channels, in_channels, kernel_size, kernel_size])
-        self.bias = Tensor.random([out_channels])
-    
-    def forward(self, x):
-        # ⚠️ Спрощена реалізація (заглушка)
-        return x
-
-
-class MaxPool2D:
-    """⚠️ SKELETON: MaxPool2D шар (неповна реалізація)."""
-    
-    VERSION = "1.4.3"
-    
-    def __init__(self, kernel_size, stride=None, padding=0):
-        self.kernel_size = kernel_size
-        self.stride = stride if stride else kernel_size
-        self.padding = padding
-    
-    def forward(self, x):
-        # ⚠️ Заглушка
-        return x
-
-
-class AvgPool2D:
-    """⚠️ SKELETON: AvgPool2D шар (неповна реалізація)."""
-    
-    VERSION = "1.4.3"
-    
-    def __init__(self, kernel_size):
-        self.kernel_size = kernel_size
-    
-    def forward(self, x):
-        # ⚠️ Заглушка
-        return x
-
-
-class BatchNorm:
-    """⚠️ SKELETON: Batch Normalization (неповна реалізація)."""
-    
-    VERSION = "1.4.3"
-    
-    def __init__(self, num_features):
-        self.num_features = num_features
-        self.gamma = Tensor([1.0] * num_features)
-        self.beta = Tensor([0.0] * num_features)
-    
-    def forward(self, x):
-        # ⚠️ Заглушка
-        return x
-
-
-class LayerNorm:
-    """⚠️ SKELETON: Layer Normalization (неповна реалізація)."""
-    
-    VERSION = "1.4.3"
-    
-    def __init__(self, hidden_size):
-        self.hidden_size = hidden_size
-        self.gamma = Tensor([1.0] * hidden_size)
-        self.beta = Tensor([0.0] * hidden_size)
-    
-    def forward(self, x):
-        # ⚠️ Заглушка
-        return x
-
-
-class Identity:
-    """Identity шар. Vireo v1.4.3"""
-    
-    VERSION = "1.4.3"
-    
-    def forward(self, x):
-        return x
-
-
-class Sequential:
-    """Послідовність шарів. Vireo v1.4.3"""
-    
-    VERSION = "1.4.3"
-    
-    def __init__(self, layers):
-        self.layers = layers
-    
-    def forward(self, x):
-        for layer in self.layers:
-            x = layer.forward(x)
-        return x
-
-
-class Embedding:
-    """⚠️ SKELETON: Embedding шар (неповна реалізація)."""
-    
-    VERSION = "1.4.3"
-    
-    def __init__(self, vocab_size, embedding_dim):
-        self.vocab_size = vocab_size
-        self.embedding_dim = embedding_dim
-        self.weights = Tensor.random([vocab_size, embedding_dim])
-    
-    def forward(self, x):
-        # ⚠️ Заглушка
-        return x
-
-
-class PositionalEncoding:
-    """⚠️ SKELETON: Positional Encoding (неповна реалізація)."""
-    
-    VERSION = "1.4.3"
-    
-    def __init__(self, hidden_size):
-        self.hidden_size = hidden_size
-    
-    def forward(self, x):
-        # ⚠️ Заглушка
-        return x
-
-
-# ============================================================
-# 5. RESNET SKELETON (⚠️ ARCHITECTURAL TEMPLATE ONLY)
-# ============================================================
-
-class ResNetBlock:
-    """⚠️ SKELETON: ResNet блок (неповна реалізація)."""
-    
-    VERSION = "1.4.3"
-    
-    def __init__(self, in_channels, out_channels, stride=1):
-        self.in_channels = in_channels
-        self.out_channels = out_channels
-        self.stride = stride
-        
-        self.conv1 = Conv2D(in_channels, out_channels, 3, stride, 1)
-        self.bn1 = BatchNorm(out_channels)
-        self.conv2 = Conv2D(out_channels, out_channels, 3, 1, 1)
-        self.bn2 = BatchNorm(out_channels)
-        
-        if stride != 1 or in_channels != out_channels:
-            self.shortcut = Sequential([
-                Conv2D(in_channels, out_channels, 1, stride, 0),
-                BatchNorm(out_channels)
-            ])
-        else:
-            self.shortcut = Identity()
-    
-    def forward(self, x):
-        # ⚠️ Спрощена реалізація (заглушка)
-        residual = self.shortcut.forward(x)
-        x = self.conv1.forward(x)
-        x = self.bn1.forward(x)
-        x = relu(x)
-        x = self.conv2.forward(x)
-        x = self.bn2.forward(x)
-        x = x + residual
-        x = relu(x)
-        return x
-
-
-class ResNet:
-    """⚠️ SKELETON: ResNet модель (НЕ МІСТИТЬ НАВЧЕНИХ ВАГ!)."""
-    
-    VERSION = "1.4.3"
-    
-    def __init__(self, num_classes=1000):
-        self.conv1 = Conv2D(3, 64, 7, 2, 3)
-        self.bn1 = BatchNorm(64)
-        self.maxpool = MaxPool2D(3, 2, 1)
-        
-        self.layer1 = self._make_layer(64, 64, 2, 1)
-        self.layer2 = self._make_layer(64, 128, 2, 2)
-        self.layer3 = self._make_layer(128, 256, 2, 2)
-        self.layer4 = self._make_layer(256, 512, 2, 2)
-        
-        self.avgpool = AvgPool2D(7)
-        self.fc = Dense(512, num_classes)
-    
-    def _make_layer(self, in_channels, out_channels, blocks, stride):
-        layers = [ResNetBlock(in_channels, out_channels, stride)]
-        for _ in range(1, blocks):
-            layers.append(ResNetBlock(out_channels, out_channels, 1))
-        return Sequential(layers)
-    
-    def forward(self, x):
-        # ⚠️ Це лише демонстрація структури
-        x = self.conv1.forward(x)
-        x = self.bn1.forward(x)
-        x = relu(x)
-        x = self.maxpool.forward(x)
-        x = self.layer1.forward(x)
-        x = self.layer2.forward(x)
-        x = self.layer3.forward(x)
-        x = self.layer4.forward(x)
-        x = self.avgpool.forward(x)
-        x = x.flatten()
-        x = self.fc.forward(x)
-        return x
-    
-    def predict(self, x):
-        # ⚠️ НЕПРАЦЮЮЧА ЗАГЛУШКА
-        output = self.forward(x)
-        if hasattr(output, 'flatten'):
-            flat = output.flatten()
-            if flat:
-                return max(flat)
-        return 0
-    
-    def save(self, path):
-        import pickle
-        with open(path, 'wb') as f:
-            pickle.dump(self, f)
-    
-    @classmethod
-    def load(cls, path):
-        import pickle
-        with open(path, 'rb') as f:
-            return pickle.load(f)
-
-
-def resnet18():
-    """⚠️ SKELETON: Створює структуру ResNet-18 (без навчених ваг)."""
-    return ResNet(1000)
-
-
-def resnet50():
-    """⚠️ SKELETON: Створює структуру ResNet-50 (без навчених ваг)."""
-    class ResNet50(ResNet):
-        def __init__(self, num_classes=1000):
-            super().__init__(num_classes)
-            self.layer1 = self._make_layer(64, 64, 3, 1)
-            self.layer2 = self._make_layer(64, 128, 4, 2)
-            self.layer3 = self._make_layer(128, 256, 6, 2)
-            self.layer4 = self._make_layer(256, 512, 3, 2)
-    
-    return ResNet50(1000)
-
-
-# ============================================================
-# 6. BERT SKELETON (⚠️ ARCHITECTURAL TEMPLATE ONLY)
-# ============================================================
-
-class MultiHeadAttention:
-    """⚠️ SKELETON: Multi-Head Attention (неповна реалізація)."""
-    
-    VERSION = "1.4.3"
-    
-    def __init__(self, hidden_size, num_heads):
-        self.hidden_size = hidden_size
-        self.num_heads = num_heads
-        self.head_dim = hidden_size // num_heads
-        
-        self.q = Dense(hidden_size, hidden_size)
-        self.k = Dense(hidden_size, hidden_size)
-        self.v = Dense(hidden_size, hidden_size)
-        self.out = Dense(hidden_size, hidden_size)
-    
-    def forward(self, x):
-        # ⚠️ Заглушка
-        return x
-
-
-class TransformerBlock:
-    """⚠️ SKELETON: Transformer блок (неповна реалізація)."""
-    
-    VERSION = "1.4.3"
-    
-    def __init__(self, hidden_size, num_heads, ff_size):
-        self.hidden_size = hidden_size
-        self.num_heads = num_heads
-        
-        self.attention = MultiHeadAttention(hidden_size, num_heads)
-        self.norm1 = LayerNorm(hidden_size)
-        
-        self.ff1 = Dense(hidden_size, ff_size)
-        self.ff2 = Dense(ff_size, hidden_size)
-        self.norm2 = LayerNorm(hidden_size)
-    
-    def forward(self, x):
-        # ⚠️ Заглушка
-        attn = self.attention.forward(x)
-        x = x + attn
-        x = self.norm1.forward(x)
-        ff = self.ff1.forward(x)
-        ff = relu(ff)
-        ff = self.ff2.forward(ff)
-        x = x + ff
-        x = self.norm2.forward(x)
-        return x
-
-
-class BERT:
-    """⚠️ SKELETON: BERT модель (НЕ МІСТИТЬ НАВЧЕНИХ ВАГ!)."""
-    
-    VERSION = "1.4.3"
-    
-    def __init__(self, vocab_size=30522, hidden_size=768, num_heads=12, num_layers=12):
-        self.embedding = Embedding(vocab_size, hidden_size)
-        self.positional = PositionalEncoding(hidden_size)
-        
-        self.layers = []
-        for _ in range(num_layers):
-            self.layers.append(TransformerBlock(hidden_size, num_heads, hidden_size * 4))
-        
-        self.norm = LayerNorm(hidden_size)
-        self.fc = Dense(hidden_size, vocab_size)
-    
-    def forward(self, input_ids):
-        # ⚠️ Це лише демонстрація структури
-        x = self.embedding.forward(input_ids)
-        x = self.positional.forward(x)
-        for layer in self.layers:
-            x = layer.forward(x)
-        x = self.norm.forward(x)
-        x = self.fc.forward(x)
-        return x
-    
-    def predict(self, input_ids):
-        # ⚠️ НЕПРАЦЮЮЧА ЗАГЛУШКА
-        return self.forward(input_ids)
-    
-    def save(self, path):
-        import pickle
-        with open(path, 'wb') as f:
-            pickle.dump(self, f)
-    
-    @classmethod
-    def load(cls, path):
-        import pickle
-        with open(path, 'rb') as f:
-            return pickle.load(f)
-
-
-def bert_base():
-    """⚠️ SKELETON: Створює структуру BERT Base (без навчених ваг)."""
-    return BERT(30522, 768, 12, 12)
-
-
-def bert_large():
-    """⚠️ SKELETON: Створює структуру BERT Large (без навчених ваг)."""
-    return BERT(30522, 1024, 16, 24)
-
-
-# ============================================================
-# 7. GPT SKELETON (⚠️ ARCHITECTURAL TEMPLATE ONLY)
-# ============================================================
-
-class CausalAttention:
-    """⚠️ SKELETON: Causal Attention (неповна реалізація)."""
-    
-    VERSION = "1.4.3"
-    
-    def __init__(self, hidden_size, num_heads):
-        self.hidden_size = hidden_size
-        self.num_heads = num_heads
-        self.head_dim = hidden_size // num_heads
-        
-        self.q = Dense(hidden_size, hidden_size)
-        self.k = Dense(hidden_size, hidden_size)
-        self.v = Dense(hidden_size, hidden_size)
-        self.out = Dense(hidden_size, hidden_size)
-    
-    def forward(self, x):
-        # ⚠️ Заглушка
-        return x
-
-
-class GPTBlock:
-    """⚠️ SKELETON: GPT блок (неповна реалізація)."""
-    
-    VERSION = "1.4.3"
-    
-    def __init__(self, hidden_size, num_heads, ff_size):
-        self.hidden_size = hidden_size
-        self.num_heads = num_heads
-        
-        self.attention = CausalAttention(hidden_size, num_heads)
-        self.norm1 = LayerNorm(hidden_size)
-        
-        self.ff1 = Dense(hidden_size, ff_size)
-        self.ff2 = Dense(ff_size, hidden_size)
-        self.norm2 = LayerNorm(hidden_size)
-    
-    def forward(self, x):
-        # ⚠️ Заглушка
-        attn = self.attention.forward(x)
-        x = x + attn
-        x = self.norm1.forward(x)
-        ff = self.ff1.forward(x)
-        ff = relu(ff)
-        ff = self.ff2.forward(ff)
-        x = x + ff
-        x = self.norm2.forward(x)
-        return x
-
-
-class GPT:
-    """⚠️ SKELETON: GPT модель (НЕ МІСТИТЬ НАВЧЕНИХ ВАГ!)."""
-    
-    VERSION = "1.4.3"
-    
-    def __init__(self, vocab_size=50257, hidden_size=768, num_heads=12, num_layers=12):
-        self.embedding = Embedding(vocab_size, hidden_size)
-        self.positional = PositionalEncoding(hidden_size)
-        
-        self.layers = []
-        for _ in range(num_layers):
-            self.layers.append(GPTBlock(hidden_size, num_heads, hidden_size * 4))
-        
-        self.norm = LayerNorm(hidden_size)
-        self.fc = Dense(hidden_size, vocab_size)
-    
-    def forward(self, input_ids):
-        # ⚠️ Це лише демонстрація структури
-        x = self.embedding.forward(input_ids)
-        x = self.positional.forward(x)
-        for layer in self.layers:
-            x = layer.forward(x)
-        x = self.norm.forward(x)
-        x = self.fc.forward(x)
-        return x
-    
-    def predict(self, input_ids, max_tokens=100):
-        # ⚠️ НЕПРАЦЮЮЧА ЗАГЛУШКА
-        return input_ids
-    
-    def generate(self, prompt, max_tokens=100):
-        # ⚠️ НЕПРАЦЮЮЧА ЗАГЛУШКА
-        return prompt + " [generated]"
-    
-    def save(self, path):
-        import pickle
-        with open(path, 'wb') as f:
-            pickle.dump(self, f)
-    
-    @classmethod
-    def load(cls, path):
-        import pickle
-        with open(path, 'rb') as f:
-            return pickle.load(f)
-
-
-def gpt2():
-    """⚠️ SKELETON: Створює структуру GPT-2 (без навчених ваг)."""
-    return GPT(50257, 768, 12, 12)
-
-
-def gpt2_medium():
-    """⚠️ SKELETON: Створює структуру GPT-2 Medium (без навчених ваг)."""
-    return GPT(50257, 1024, 16, 24)
-
-
-# ============================================================
-# 8. ЗАВАНТАЖЕННЯ МОДЕЛЕЙ
-# ============================================================
-
-PRETRAINED_MODELS = {
-    'resnet18': resnet18,
-    'resnet50': resnet50,
-    'bert_base': bert_base,
-    'bert_large': bert_large,
-    'gpt2': gpt2,
-    'gpt2_medium': gpt2_medium,
-}
-
-
-def load_model(model_name: str):
+def load_model(model_name: str, **kwargs) -> Any:
     """
-    ⚠️ Завантажує СТРУКТУРУ моделі (без навчених ваг!).
+    Завантажує модель за назвою.
     
-    Це лише демонстрація архітектури. Для реального використання:
-    - Використовуйте PyTorch: torchvision.models.resnet18(pretrained=True)
-    - Або HuggingFace: transformers.BertModel.from_pretrained('bert-base-uncased')
-    - Або зачекайте на Vireo v1.5.0
+    Args:
+        model_name: resnet18, resnet50, bert_base, gpt2, etc.
+    
+    Returns:
+        VireoPretrainedModel: Екземпляр моделі
     """
-    if model_name in PRETRAINED_MODELS:
-        return PRETRAINED_MODELS[model_name]()
-    else:
-        available = ', '.join(PRETRAINED_MODELS.keys())
+    model_map = {
+        "resnet18": ("resnet", "resnet18"),
+        "resnet34": ("resnet", "resnet34"),
+        "resnet50": ("resnet", "resnet50"),
+        "resnet101": ("resnet", "resnet101"),
+        "resnet152": ("resnet", "resnet152"),
+        "bert_base": ("bert", "bert-base-uncased"),
+        "bert_large": ("bert", "bert-large-uncased"),
+        "bert_base_cased": ("bert", "bert-base-cased"),
+        "gpt2": ("gpt2", "gpt2"),
+        "gpt2_medium": ("gpt2", "gpt2-medium"),
+        "gpt2_large": ("gpt2", "gpt2-large"),
+        "gpt2_xl": ("gpt2", "gpt2-xl"),
+    }
+    
+    if model_name not in model_map:
+        available = ', '.join(model_map.keys())
         raise ValueError(f"Unknown model: {model_name}. Available: {available}")
+    
+    model_type, variant = model_map[model_name]
+    return ModelFactory.get_model(model_type, variant, **kwargs)
 
 
-def list_models():
-    """Повертає список доступних моделей (Vireo v1.4.3)"""
-    return list(PRETRAINED_MODELS.keys())
+def list_models() -> List[str]:
+    """Повертає список доступних моделей."""
+    return [
+        "resnet18", "resnet34", "resnet50", "resnet101", "resnet152",
+        "bert_base", "bert_large", "bert_base_cased",
+        "gpt2", "gpt2_medium", "gpt2_large", "gpt2_xl"
+    ]
 
 
 # ============================================================
-# 9. ТЕСТУВАННЯ
+# 7. ТЕСТУВАННЯ
+# ============================================================
+
+def run_tests():
+    """Запускає тести для всіх моделей."""
+    print("=" * 60)
+    print("🧪 VIREO PRETRAINED MODELS v1.4.3 - TEST SUITE")
+    print("The World's First AI-to-AI Communication Language")
+    print("=" * 60)
+    
+    if not DEPS_AVAILABLE:
+        print("\n❌ Dependencies not available!")
+        print("   Run: pip install torch torchvision transformers")
+        return False
+    
+    print("\n✅ Dependencies loaded:")
+    print(f"   PyTorch: {torch.__version__}")
+    
+    try:
+        import transformers
+        print(f"   Transformers: {transformers.__version__}")
+    except:
+        pass
+    
+    print("\n" + "-" * 40)
+    
+    try:
+        # 1. ResNet
+        print("\n📦 Loading ResNet-18...")
+        model = load_model("resnet18")
+        print(f"   ✅ {model.variant} loaded on {model.device}")
+        print(f"   📊 Parameters: {sum(p.numel() for p in model.model.parameters()):,}")
+        
+        # 2. BERT
+        print("\n📦 Loading BERT Base...")
+        model = load_model("bert_base")
+        print(f"   ✅ {model.variant} loaded on {model.device}")
+        print(f"   📊 Parameters: {sum(p.numel() for p in model.model.parameters()):,}")
+        
+        # 3. GPT-2
+        print("\n📦 Loading GPT-2...")
+        model = load_model("gpt2")
+        print(f"   ✅ {model.variant} loaded on {model.device}")
+        print(f"   📊 Parameters: {sum(p.numel() for p in model.model.parameters()):,}")
+        
+        # 4. Тест генерації
+        print("\n🧪 Testing GPT-2 generation...")
+        model = load_model("gpt2")
+        result = model.predict("The future of AI is", max_new_tokens=20)
+        print(f"   Prompt: {result['prompt']}")
+        print(f"   Generated: {result['generated']}")
+        
+        print("\n" + "=" * 60)
+        print("✅ ALL TESTS PASSED!")
+        print("=" * 60)
+        return True
+        
+    except Exception as e:
+        print(f"\n❌ Test failed: {e}")
+        return False
+
+
+# ============================================================
+# 8. ЗАПУСК
 # ============================================================
 
 if __name__ == "__main__":
-    print("=" * 50)
-    print("🌿 Vireo Pretrained Models v1.4.3")
+    print("=" * 60)
+    print("🌿 VIREO PRETRAINED MODELS v1.4.3")
     print("The World's First AI-to-AI Communication Language")
-    print("=" * 50)
+    print("=" * 60)
+    print("\n📋 Available models:", list_models())
+    print("\n⚠️ First run will download model weights (~500MB-1GB)")
+    print("=" * 60)
     
-    print("\n⚠️ IMPORTANT: These are MODEL SKELETONS only!")
-    print("   No pre-trained weights are included.")
-    print("   Full implementations planned for v1.5.0.")
-    print("=" * 50)
-    
-    print("\n📋 Available model skeletons:", list_models())
-    print("")
-    
-    # Тестування ResNet
-    print("🧠 Loading ResNet-18 skeleton...")
-    model = load_model('resnet18')
-    print("   ✅ ResNet-18 structure loaded!")
-    
-    # Тестування BERT
-    print("🧠 Loading BERT Base skeleton...")
-    model = load_model('bert_base')
-    print("   ✅ BERT Base structure loaded!")
-    
-    # Тестування GPT
-    print("🧠 Loading GPT-2 skeleton...")
-    model = load_model('gpt2')
-    print("   ✅ GPT-2 structure loaded!")
-    
-    print("")
-    print("=" * 50)
-    print("✅ All model skeletons loaded successfully! (Vireo v1.4.3)")
-    print("⚠️ Remember: These are STRUCTURAL TEMPLATES only.")
-    print("   Pre-trained weights will be added in v1.5.0.")
-    print("=" * 50)
+    # Запускаємо тести
+    run_tests()
