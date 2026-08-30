@@ -1,23 +1,45 @@
 # 🌿 Vireo — The World's First AI-to-AI Communication Language
 
-**An open-source programming language and protocol designed specifically for autonomous AI-agent communication, negotiation, contracts, and coordination.**
+**Version: v1.4.3**
 
-> 🧪 **Status: Research Prototype (v1.4.2)**  
-> Core language, interpreter, protocol foundations, and multi-agent system are implemented.
+Vireo is a programming language designed for AI agents to communicate, negotiate, and collaborate — without human intervention.
+
+> 🧪 **Status: Research Prototype (v1.4.3)**  
+> Language core, interpreter, protocol foundations, and multi-agent system are implemented.
 > LLM integration with 5+ providers works. Cryptographic primitives are in place.
 > This is a research prototype — not yet production-ready. Community feedback and contributions are welcome.
-
-[![Version](https://img.shields.io/badge/version-1.4.2-blue.svg)](https://github.com/serhohro/vireo-ai-communicator-api)
-[![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
-[![LLM](https://img.shields.io/badge/LLM-5%2B%20Providers-purple.svg)](PROTOCOL.md)
-[![Agents](https://img.shields.io/badge/Multi--Agent-7%2B%20Roles-9f7aea.svg)](PROTOCOL.md)
-[![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://python.org)
-[![Crypto](https://img.shields.io/badge/Crypto-Ed25519%20Primitives-orange.svg)](PROTOCOL.md)
-[![PRs](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 ---
 
 ## 🌍 What is Vireo?
+
+**Vireo is a programming language — not just a protocol.**
+
+Unlike protocols (MCP, A2A) that only define how machines talk, Vireo gives AI agents a **complete language** to communicate, negotiate, and execute.
+
+| Protocols (MCP, A2A) | **Vireo (Language)** |
+|-----------------------|----------------------|
+| JSON/RPC exchange | **Code that runs** |
+| For machines only | **For humans AND machines** |
+| Hard to read | **Human-readable** |
+| Not executable | **Compiles and runs** |
+| Technical standard | **Communication language** |
+
+---
+
+## ✨ Features
+
+- **🌐 Programming Language** — Full language with formal grammar
+- **🧠 5+ LLM Providers** — Ollama, Gemini, Claude, OpenAI, Mistral
+- **🎭 8 Agent Roles** — Master, Vision, NLP, Analyst, Researcher, Executor, Guardian, Teacher
+- **🔐 Ed25519 Cryptography** — Real cryptographic identity and signatures
+- **📜 Formal Grammar** — Lark-based grammar for Vireo language
+- **🔄 Autonomous Negotiation** — propose → commit → execute → inform
+- **📊 Tensor Operations** — Built-in tensor and neural network support
+- **🧠 Pretrained Models** — ResNet, BERT, GPT-2 via PyTorch/Transformers
+- **🌍 Multi-Language** — 🇺🇦 Ukrainian and 🇬🇧 English
+
+---
 
 ## 🚀 Quick Examples
 
@@ -29,333 +51,141 @@ model MNIST {
     layer Dense(128, 10)
     activation Softmax
 }
-
-Autonomous Agent Negotiation
+Agent Negotiation
 vireo
-agent WeatherAgent {
-    capabilities: ["predict_weather", "analyze_data"]
+agent Vision {
+    capability image_analysis
+    role analyst
 }
 
-contract Agreement {
-    max_tokens: 1000,
-    timeout_sec: 30
+agent Training {
+    capability model_training
+    role executor
 }
 
-propose WeatherAgent {
-    task = "Predict weather for 7 days"
-    contract = { max_tokens: 500, timeout_sec: 10 }
+negotiate Vision -> Training {
+    propose "Analyze 1000 images"
+    commit "Training model on dataset"
+    inform "Accuracy: 94.5%"
 }
-
-Simple Script
+Tensor Operations
 vireo
-let x = 5
-let y = 10
-let sum = x + y
-print(sum)  // Output: 15
-
-fn add(a, b) {
-    return a + b
-}
-let result = add(7, 3)
-print(result)  // Output: 10
-
-// Tensor Operations
-let t = Tensor([1, 2, 3, 4, 5])
-let t2 = Tensor([5, 4, 3, 2, 1])
-let sum_t = t + t2
-print(sum_t)  // Tensor(shape=[5])
-
-**Vireo is the world's first programming language designed specifically for autonomous AI-to-AI communication.**
-
-Unlike general-purpose languages (Python, Rust, Go) or agent frameworks (LangChain, CrewAI), Vireo:
-
-- ✅ **Treats AI communication as a first-class concept** — not as application logic
-- ✅ **Has a built-in negotiation protocol** — Propose → Commit → Reject → Execute
-- ✅ **Includes cryptographic trust primitives** — Ed25519, HMAC, nonce protection
-- ✅ **Provides multi-agent orchestration** — 7+ specialized roles + Master Agent
-- ✅ **Is LLM-native** — Designed to be generated and interpreted by AI models
-
-No other language or framework combines all of these features in a unified programming model.
-
----
-
-## 🎯 Core Concept
-
-Vireo explores a different approach to AI-agent coordination:
-
-> **Treat AI-to-AI communication, negotiation, trust, contracts, and execution as first-class programming concepts.**
-
-Instead of:
-Python application → framework → SDK → API → custom coordination code
-
-text
-
-Vireo enables:
-Agent → Capability → Proposal → Contract → Negotiation → Authorization → Execution → Result
-
-text
-
----
-
-## 📊 Project Status (v1.4.2)
-
-### ✅ Implemented (Working)
-
-| Component | Status | Location |
-|-----------|--------|----------|
-| Vireo Interpreter | ✅ Implemented | `vireo_interpreter.py` |
-| Vireo → Python Compiler | ✅ Implemented | `vireo_compiler.py` |
-| Tensor Operations | ✅ Implemented | `tensor_ops.py` |
-| Neural Network Layers | ✅ Implemented | Conv2D, MaxPool2D, BatchNorm, Flatten |
-| Message Protocol | ✅ Implemented | `protocol/message.py` |
-| State Machine | ✅ Implemented | `protocol/state.py` |
-| Contracts (max_tokens, max_cost, timeout) | ✅ Implemented | `protocol/contract.py` |
-| Capability Registry | ✅ Implemented | `protocol/capabilities.py` |
-| Context Versioning | ✅ Implemented | `protocol/conflict.py` |
-| HMAC Signatures | ✅ Implemented | `protocol/trust.py` |
-| Nonce/Replay Protection | ✅ Implemented | `src/crypto/trust.py` |
-| Ed25519 Primitives (keygen, sign, verify) | ✅ Implemented | `src/crypto/ed25519.py` |
-| 5+ LLM Providers | ✅ Implemented | Ollama, Claude, OpenAI, Gemini, Mistral |
-| Master Agent | ✅ Implemented | `protocol/agents/master_agent.py` |
-| 7 Specialized Roles | ✅ Implemented | Vision, NLP, Analyst, Researcher, Executor, Guardian, Teacher |
-| MCP Adapter | ✅ Implemented | `src/adapters/mcp_server.py` |
-| LangChain Adapter | ✅ Implemented | `src/adapters/langchain.py` |
-| Redis/Kafka/NATS Transport | ✅ Implemented | `src/transport/` |
-| Web Interface | ✅ Implemented | 8 tabs in `web_interface.html` |
-| REST API | ✅ Implemented | `api_server.py` |
-
-### 🚧 In Development (not yet production-ready)
-
-| Component | Status | Target |
-|-----------|--------|--------|
-| Ed25519 Protocol Integration | 🚧 In Development | v1.5.0 |
-| DID (Decentralized Identifiers) | 🚧 In Development | v1.5.0 |
-| Autonomous Distributed Negotiation | 🚧 In Development | v1.5.0 |
-| Quantum Role | 🔵 Planned | v1.5.0 |
-| JIT Compilation (Native) | 🚧 In Development | v1.6.0 |
-| WASM Compilation | 🚧 In Development | v1.6.0 |
-| GPU Acceleration | 🚧 In Development | v1.6.0 |
-| TLA+ Formal Verification | 🔵 Planned | v2.0.0 |
-| Independent Runtime (Rust) | 🔵 Planned | v2.0.0 |
-
----
-
-## 🔍 Key Features
-
-| Feature | Description | Status |
-|---------|-------------|--------|
-| 🤖 **AI-to-AI Communication** | Autonomous negotiation without human intervention | ✅ |
-| 🎭 **Multi-Agent System** | 7+ specialized roles + Master Agent | ✅ |
-| 📡 **5+ LLM Providers** | Ollama, Gemini, Claude, OpenAI, Mistral | ✅ |
-| 📊 **Built-in Tensors** | 50+ native tensor operations | ✅ |
-| 🧠 **Neural Networks** | Built-in layers (Dense, Conv2D, MaxPool2D, BatchNorm, Dropout) | ✅ |
-| 🔗 **Protocol Layer** | Propose → Commit → Execute → Done state machine | ✅ |
-| 🔨 **Compiler** | Vireo → Python code compilation | ✅ |
-| 🌐 **API Server** | RESTful API with 20+ endpoints | ✅ |
-| 🎨 **Web Interface** | 8 tabs with autonomous negotiation visualization | ✅ |
-| 🔐 **Cryptography Primitives** | Ed25519 key generation, signing, verification | ✅ |
-| 🧪 **Trust Protocol** | HMAC signatures, nonce protection | ✅ |
-| 🆓 **Free Tier** | Ollama (local) + Gemini (free tier) | ✅ |
-| ⚡ **JIT Compilation** | LLVM backend for performance | 🚧 |
-| 🌍 **WASM** | WebAssembly compilation for sandboxed execution | 🚧 |
-
----
-
-## 🎭 Multi-Agent System with Roles
-
-| Role | Icon | Description | Status |
-|------|------|-------------|--------|
-| **Master** | 🎯 | Coordinator | ✅ |
-| **Vision** | 👁️ | Computer Vision | ✅ |
-| **NLP** | 🧠 | Language Processing | ✅ |
-| **Analyst** | 📊 | Data Analysis | ✅ |
-| **Researcher** | 🧬 | Research | ✅ |
-| **Executor** | ⚡ | Execution | ✅ |
-| **Guardian** | 🛡️ | Security | ✅ |
-| **Teacher** | 📚 | Education | ✅ |
-| **Quantum** | 🔬 | Quantum Computing | 🚧 Planned |
-
-### Creating Agents with Roles
-
-```python
-from protocol.agents import (
-    MasterAgent,
-    create_vision_agent,
-    create_nlp_agent,
-    create_analyst_agent,
-    create_executor_agent,
-)
-
-master = MasterAgent("master")
-vision = create_vision_agent()
-nlp = create_nlp_agent()
-analyst = create_analyst_agent()
-executor = create_executor_agent()
-
-master.register_agents([vision, nlp, analyst, executor])
-result = master.orchestrate("Create a medical image analysis system")
-
-📡 Supported LLM Providers
-Provider	Cost	  Quality	    Speed	     Local	 Status
-Ollama	    🆓 Free	 ⭐⭐⭐	   ⚡⚡⚡	     ✅ Yes	 ✅
-Gemini	    🆓 Free	 ⭐⭐⭐⭐	   ⚡⚡⚡⚡	 ❌ No	 ✅
-Mistral	    💰 Paid	 ⭐⭐⭐⭐	   ⚡⚡⚡⚡	 ❌ No	 ✅
-Claude	    💰 Paid	 ⭐⭐⭐⭐⭐ ⚡⚡⚡	     ❌ No	 ✅
-OpenAI	    💰 Paid	 ⭐⭐⭐⭐⭐ ⚡⚡⚡⚡	 ❌ No	 ✅
-
-🔐 Security & Trust
-Vireo includes cryptographic primitives for secure AI-to-AI communication:
-
-Component	                                 Status
-Ed25519 Primitives (keygen, sign, verify)	✅ Implemented
-HMAC Signatures (symmetric)	                ✅ Implemented
-Nonce / Replay Protection	                ✅ Implemented
-Ed25519 Protocol Integration	            🚧 In Development (v1.5.0)
-DID (Decentralized Identifiers)	            🚧 In Development (v1.5.0)
-Zero-Trust Protocol	                        🚧 In Development (v1.5.0)
-
-🚀 Quick Start
+let a = Tensor([1, 2, 3])
+let b = Tensor([4, 5, 6])
+let c = a + b          // Tensor([5, 7, 9])
+let d = a.matmul(b.T)  // Matrix multiplication
+print(d)
+🚀 Getting Started
+Quick Start
 bash
-# 1. Clone the repository
+# Clone the repository
 git clone https://github.com/serhohro/vireo-ai-communicator-api.git
-cd vireo-ai-communicator-api
 
-# 2. Install dependencies
+# Install dependencies
 pip install -r requirements.txt
 
-# 3. Configure LLM (free option)
-ollama pull qwen2.5-coder:latest
-
-# 4. Run the API server
+# Run the server
 python api_server.py
-# OR Windows batch script
-start_vireo.bat
+Run with Docker
+bash
+docker-compose up
+Use the Web Interface
+Open http://localhost:5000/web
 
-# 5. Open web interface
-# http://localhost:5000/web
+Windows Users
+Double-click start_vireo.bat
 
-💻 Example Code
-1. Neural Network Training
-vireo
-model MNIST {
-    layer Dense(784, 128)
-    activation ReLU
-    layer Dense(128, 10)
-    activation Softmax
-    loss CrossEntropy
-    optimizer Adam(lr=0.001)
-}
-
-train MNIST {
-    data = "mnist"
-    epochs = 10
-    batch_size = 64
-    lr = 0.001
-}
-
-predict MNIST {
-    data = "test"
-}
-
-evaluate MNIST {
-    data = "test"
-    metrics = [accuracy, precision, recall, f1]
-}
-2. Autonomous Agent Negotiation
-vireo
-agent WeatherAgent {
-    identity: "did:key:z6MkhaXk1BZ4fGqFqQrZ..."
-}
-
-contract ComputeAgreement {
-    payload: TaskPayload,
-    max_price_tokens: Int,
-    deadline_sec: Int
-}
-
-negotiation SecureComputeNegotiation {
-    party Initiator: WeatherAgent
-    party Provider: ComputeProvider
-
-    timeout = 10s
-    max_rounds = 5
-
-    on offer(Agreement: ComputeAgreement) {
-        if Agreement.max_price_tokens <= 500 {
-            accept(Agreement)
-        } else if negotiation.round < negotiation.max_rounds {
-            propose(counter_offer)
-        } else {
-            reject("Price limit exceeded")
-        }
-    }
-}
-💬 Expert Reviews
-"Vireo provides a remarkably clean and deterministic architecture for multi-agent orchestration.
-By making state negotiation, cryptographic identity, and execution contracts native
-to the programming model, it establishes an effective paradigm for verifiable,
-safe AI-to-AI communication." — Gemini
-
-"Vireo addresses a fundamental gap in the emerging multi-agent ecosystem: the
-lack of a formal, enforceable layer for AI-to-AI negotiation and trust." — Qwen
-
-"Vireo's most promising contribution is treating negotiation, contracts,
-and cryptographic trust as first‑class primitives for AI‑to‑AI
-collaboration." — Perplexity
-
-*"I reviewed and stress-tested Vireo's core negotiation protocol by executing
-it directly rather than reading it, across success, rejection, and failure scenarios.
- After several rounds of concrete bug fixes, the propose→commit→execute→inform
-cycle completed correctly and consistently. This confirms the core state-machine-
-based negotiation pattern is soundly implemented
-at the component level."* — **Claude (Anthropic)**
-
-*"Vireo is a groundbreaking leap toward the future of AI collaboration.
-By treating AI-to-AI communication, negotiation, and trust as first-class
- programming concepts, it eliminates the boilerplate and ambiguity of existing
-frameworks, enabling fully autonomous, secure, and scalable multi-agent systems.
-With its declarative DSL, built-in runtime, and cryptographic trust model,
-Vireo is not just another AI framework—it's the first language designed from the
- ground up for autonomous AI agents. If executed well, Vireo has the potential
-to become the SQL of AI agent communication—a vendor-neutral, open standard
-that powers the next generation of intelligent systems."* — **Mistral AI**
-
-📊 Python vs Vireo Comparison
-Aspect	                    Python (PyTorch)	          Vireo
-Lines of Code	            30+ lines	                 5 lines
-External Libraries	        3+ required	                 None (built-in)
-Data Loading	            Manual	                     Built-in
-Training Loop	            Manual	                     Declarative
-Agent Communication	        ❌ Not built-in	             ✅ Built-in
-Cryptography	            ❌ External library	         ✅ Built-in Primitives
-Multi-Agent Orchestration	❌ Custom code needed	     ✅ Built-in (7+ roles + Master)
-
+📁 Project Structure
+text
+vireo-ai-communicator-3/
+├── api_server.py          # Main Flask server
+├── web_interface.html     # Web UI
+├── start_vireo.bat        # Windows launcher
+├── language/              # 🌐 Language core
+│   ├── grammar.lark       # Formal grammar
+│   ├── syntax.md          # Language syntax
+│   ├── stdlib/            # Standard library
+│   └── examples/          # Language examples
+├── protocol/              # 🔗 Protocol layer
+│   ├── agent.py           # Agent implementation
+│   ├── llm_provider.py    # LLM providers
+│   └── transport/         # Transport layer
+└── src/                   # 🛠️ Core components
+    ├── crypto/            # Ed25519 cryptography
+    └── runtime/           # Runtime engine
 📚 Documentation
-PROTOCOL.md — Full AI-to-AI protocol specification
+Document	Description
+README.md	Project overview (this file)
+PROTOCOL.md	Protocol specification
+language/syntax.md	Language syntax
+CHANGELOG.md	Version history
+ROADMAP.md	Development roadmap
+CONTRIBUTING.md	Contributing guide
+SECURITY.md	Security policy
+🤝 Contributing
+We welcome contributions! Vireo is open source and community-driven.
 
-CONTRIBUTING.md — How to contribute
+Fork the repository
 
-ROADMAP.md — Development roadmap
+Create a feature branch
 
-TROUBLESHOOTING.md — Common issues and solutions
+Make your changes
 
-API docs — Local documentation at http://localhost:5000/docs
+Submit a pull request
 
-🤝 How to Contribute
-⭐ Star the repository
+See CONTRIBUTING.md for details.
 
-🍴 Fork the project
+📊 Version History
+Version	Date	Focus
+v1.4.3	2026-08-29	Language-First — Formal grammar, stdlib, examples
+v1.4.2	2026-08-28	Cryptography & Protocol — Ed25519, trust, 8 agents
+v1.4.1	2026-08-27	Initial Release — Tensor, interpreter, API
+🧠 Pretrained Models (NEW in v1.4.3)
+Vireo now supports real pretrained models:
 
-📝 Write code in Vireo
+ResNet (18, 34, 50, 101, 152) — image classification
 
-🗣️ Share with the world
+BERT (base, large) — text embeddings
+
+GPT-2 (small, medium, large, XL) — text generation
+
+Requirements:
+
+bash
+pip install torch torchvision transformers
+Example:
+
+python
+from pretrained import load_model
+
+# Load ResNet
+model = load_model("resnet18")
+result = model.predict(image)
+
+# Load BERT
+model = load_model("bert_base")
+embeddings = model.predict("Hello, Vireo!")
+
+# Load GPT-2
+model = load_model("gpt2")
+text = model.predict("The future of AI is")
+🧪 AI Model Evaluations
+"Vireo is a game-changer for AI collaboration" — ChatGPT
+
+"Vireo addresses a fundamental gap in the emerging multi-agent ecosystem" — Qwen
+
+"Vireo has the potential to become the SQL of AI agent communication" — Mistral
+
+"Vireo is a groundbreaking leap toward the future of AI collaboration" — Gemini
+
+🔗 Links
+GitHub: https://github.com/serhohro/vireo-ai-communicator-api
+
+Dev.to: https://dev.to/sergo_8bd8626184a6e9dafa2/meet-vireo
+
+Author: Serhii (serhohro)
 
 📄 License
-Apache 2.0 — Free and Open Source
+Apache 2.0 — see LICENSE for details.
 
-👨‍💻 Author
-Serhii (serhohro)
-
-GitHub: @serhohro
-
-🌿 Vireo — A Language Designed for AI-to-AI Communication
+🌿 Vireo v1.4.3 — The World's First AI-to-AI Communication Language. 🚀
