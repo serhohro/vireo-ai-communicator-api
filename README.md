@@ -169,7 +169,9 @@ embeddings = model.predict("Hello, Vireo!")
 # Load GPT-2
 model = load_model("gpt2")
 text = model.predict("The future of AI is")
-🧪 AI Model Evaluations
+
+🧪🧪 What They Say"
+ 
 "Vireo is a game-changer for AI collaboration" — ChatGPT
 
 "Vireo addresses a fundamental gap in the emerging multi-agent ecosystem" — Qwen
