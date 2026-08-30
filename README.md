@@ -1,11 +1,10 @@
-🌿Vireo — An Executable Coordination Language for Autonomous AI Agents 
+🌿 Vireo — The World's First AI-to-AI Communication Language
+Version: v1.4.5
 
-**Version: v1.4.3**
+Vireo is the first programming language designed specifically for autonomous AI-to-AI communication, negotiation, and collaboration — without human intervention.
 
-Vireo is a programming language designed for AI agents to communicate, negotiate, and collaborate — without human intervention.
-
-> 🧪 Status: Research Prototype (v1.4.5)
-Language core and interpreter are implemented. Protocol foundations are in active development. Multi-agent system is partially implemented — negotiation flow works, but transport layer (Redis) is being integrated.
+🧪 Status: Research Prototype (v1.4.5)
+The language core, interpreter, and multi-agent system are implemented. Protocol foundations are in active development. The autonomous negotiation flow (propose → commit → execute → inform) is working. The transport layer (Redis) is being integrated for distributed communication.
 ---
 ## 🌍 What is Vireo?
 
