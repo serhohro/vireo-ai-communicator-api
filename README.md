@@ -5,6 +5,7 @@ Vireo is the first programming language designed specifically for autonomous AI-
 
 🧪 Status: Research Prototype (v1.4.5)
 The language core, interpreter, and multi-agent system are implemented. Protocol foundations are in active development. The autonomous negotiation flow (propose → commit → execute → inform) is working. The transport layer (Redis) is being integrated for distributed communication.
+
 ---
 ## 🌍 What is Vireo?
 
