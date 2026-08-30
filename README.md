@@ -13,18 +13,15 @@ Language core and interpreter are implemented. Protocol foundations are in activ
 
 Unlike protocols (MCP, A2A) that only define how machines talk, Vireo gives AI agents a **complete language** to communicate, negotiate, and execute.
 
-| Protocols (MCP, A2A) | **Vireo (Language)** |
-|-----------------------|----------------------|
-| JSON/RPC exchange | **Code that runs** |
-| For machines only | **For humans AND machines** |
-| Hard to read | **Human-readable** |
-| Not executable | **Compiles and runs** |
-| Technical standard | **Communication language** |
-
+| Protocols (MCP, A2A)            | Vireo (Language)            |
+|----------------------           |------------------           |
+| Agent discovery & communication | Agent intent & coordination |
+| Tool access & context           | Contracts & negotiation     |
+| Message passing                 | Executable semantics        |
+| Transport layer                 | Control plane               |
+| For machines                    | For humans AND machines     |
 ---
-
 ## ✨ Features
-
 - **🌐 Programming Language** — Full language with formal grammar
 - **🧠 5+ LLM Providers** — Ollama, Gemini, Claude, OpenAI, Mistral
 - **🎭 8 Agent Roles** — Master, Vision, NLP, Analyst, Researcher, Executor, Guardian, Teacher
