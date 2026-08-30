@@ -1,7 +1,32 @@
 # ============================================================
-# PRETRAINED MODELS FOR VIREO
-# Готові моделі: ResNet, BERT, GPT (повноцінні реалізації)
+# ⚠️ IMPORTANT NOTICE: MODEL SKELETONS ONLY
 # ============================================================
+#
+# This file contains ARCHITECTURAL TEMPLATES (skeletons) of
+# popular models (ResNet, BERT, GPT) to demonstrate how they
+# will be integrated into Vireo.
+#
+# ⚠️ THESE ARE NOT TRAINED MODELS!
+#    - No pre-trained weights are included
+#    - Some methods are stubs (return input unchanged)
+#    - These are STRUCTURAL TEMPLATES only
+#
+# Full implementations with pre-trained weights are planned
+# for future releases (v1.5.0 and beyond).
+#
+# For actual model usage, please use:
+#   - PyTorch: torchvision.models.resnet18()
+#   - HuggingFace: transformers.BertModel.from_pretrained()
+#   - Or wait for Vireo v1.5.0
+# ============================================================
+
+# ============================================================
+# PRETRAINED MODELS FOR VIREO v1.4.3
+# Готові моделі: ResNet, BERT, GPT (повноцінні реалізації)
+# The World's First AI-to-AI Communication Language
+# ============================================================
+
+VERSION = "1.4.3"
 
 import math
 import random
@@ -13,7 +38,9 @@ from typing import List, Dict, Optional, Tuple, Union
 # ============================================================
 
 class Tensor:
-    """Спрощена реалізація тензорів для моделей"""
+    """Спрощена реалізація тензорів для моделей Vireo v1.4.3"""
+    
+    VERSION = "1.4.3"
     
     def __init__(self, data, dtype='float32', requires_grad=False):
         if isinstance(data, (int, float)):
@@ -281,10 +308,14 @@ def softmax(x):
 
 
 # ============================================================
-# 3. ШАРИ
+# 3. ШАРИ (БАЗОВІ)
 # ============================================================
 
 class Dense:
+    """Повнозв'язний шар. Vireo v1.4.3"""
+    
+    VERSION = "1.4.3"
+    
     def __init__(self, input_size, output_size, activation=None):
         self.weights = Tensor.random([input_size, output_size])
         self.bias = Tensor.random([output_size])
@@ -316,7 +347,15 @@ class Dense:
         return self.output
 
 
+# ============================================================
+# 4. MODEL SKELETONS (⚠️ ARCHITECTURAL TEMPLATES ONLY)
+# ============================================================
+
 class Conv2D:
+    """⚠️ SKELETON: Згортковий шар (неповна реалізація)."""
+    
+    VERSION = "1.4.3"
+    
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0):
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -324,62 +363,86 @@ class Conv2D:
         self.stride = stride
         self.padding = padding
         
-        # Ініціалізація ваг
         self.weights = Tensor.random([out_channels, in_channels, kernel_size, kernel_size])
         self.bias = Tensor.random([out_channels])
     
     def forward(self, x):
-        # Спрощена реалізація 2D згортки
-        # В реальності тут була б повна реалізація
+        # ⚠️ Спрощена реалізація (заглушка)
         return x
 
 
 class MaxPool2D:
+    """⚠️ SKELETON: MaxPool2D шар (неповна реалізація)."""
+    
+    VERSION = "1.4.3"
+    
     def __init__(self, kernel_size, stride=None, padding=0):
         self.kernel_size = kernel_size
         self.stride = stride if stride else kernel_size
         self.padding = padding
     
     def forward(self, x):
-        # Спрощена реалізація
+        # ⚠️ Заглушка
         return x
 
 
 class AvgPool2D:
+    """⚠️ SKELETON: AvgPool2D шар (неповна реалізація)."""
+    
+    VERSION = "1.4.3"
+    
     def __init__(self, kernel_size):
         self.kernel_size = kernel_size
     
     def forward(self, x):
-        # Спрощена реалізація
+        # ⚠️ Заглушка
         return x
 
 
 class BatchNorm:
+    """⚠️ SKELETON: Batch Normalization (неповна реалізація)."""
+    
+    VERSION = "1.4.3"
+    
     def __init__(self, num_features):
         self.num_features = num_features
         self.gamma = Tensor([1.0] * num_features)
         self.beta = Tensor([0.0] * num_features)
     
     def forward(self, x):
+        # ⚠️ Заглушка
         return x
 
 
 class LayerNorm:
+    """⚠️ SKELETON: Layer Normalization (неповна реалізація)."""
+    
+    VERSION = "1.4.3"
+    
     def __init__(self, hidden_size):
         self.hidden_size = hidden_size
         self.gamma = Tensor([1.0] * hidden_size)
         self.beta = Tensor([0.0] * hidden_size)
     
     def forward(self, x):
+        # ⚠️ Заглушка
         return x
 
 
 class Identity:
+    """Identity шар. Vireo v1.4.3"""
+    
+    VERSION = "1.4.3"
+    
     def forward(self, x):
         return x
 
 
 class Sequential:
+    """Послідовність шарів. Vireo v1.4.3"""
+    
+    VERSION = "1.4.3"
+    
     def __init__(self, layers):
         self.layers = layers
     
@@ -390,29 +453,42 @@ class Sequential:
 
 
 class Embedding:
+    """⚠️ SKELETON: Embedding шар (неповна реалізація)."""
+    
+    VERSION = "1.4.3"
+    
     def __init__(self, vocab_size, embedding_dim):
         self.vocab_size = vocab_size
         self.embedding_dim = embedding_dim
         self.weights = Tensor.random([vocab_size, embedding_dim])
     
     def forward(self, x):
-        # Спрощена реалізація
+        # ⚠️ Заглушка
         return x
 
 
 class PositionalEncoding:
+    """⚠️ SKELETON: Positional Encoding (неповна реалізація)."""
+    
+    VERSION = "1.4.3"
+    
     def __init__(self, hidden_size):
         self.hidden_size = hidden_size
     
     def forward(self, x):
+        # ⚠️ Заглушка
         return x
 
 
 # ============================================================
-# 4. RESNET
+# 5. RESNET SKELETON (⚠️ ARCHITECTURAL TEMPLATE ONLY)
 # ============================================================
 
 class ResNetBlock:
+    """⚠️ SKELETON: ResNet блок (неповна реалізація)."""
+    
+    VERSION = "1.4.3"
+    
     def __init__(self, in_channels, out_channels, stride=1):
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -432,6 +508,7 @@ class ResNetBlock:
             self.shortcut = Identity()
     
     def forward(self, x):
+        # ⚠️ Спрощена реалізація (заглушка)
         residual = self.shortcut.forward(x)
         x = self.conv1.forward(x)
         x = self.bn1.forward(x)
@@ -444,6 +521,10 @@ class ResNetBlock:
 
 
 class ResNet:
+    """⚠️ SKELETON: ResNet модель (НЕ МІСТИТЬ НАВЧЕНИХ ВАГ!)."""
+    
+    VERSION = "1.4.3"
+    
     def __init__(self, num_classes=1000):
         self.conv1 = Conv2D(3, 64, 7, 2, 3)
         self.bn1 = BatchNorm(64)
@@ -464,6 +545,7 @@ class ResNet:
         return Sequential(layers)
     
     def forward(self, x):
+        # ⚠️ Це лише демонстрація структури
         x = self.conv1.forward(x)
         x = self.bn1.forward(x)
         x = relu(x)
@@ -478,6 +560,7 @@ class ResNet:
         return x
     
     def predict(self, x):
+        # ⚠️ НЕПРАЦЮЮЧА ЗАГЛУШКА
         output = self.forward(x)
         if hasattr(output, 'flatten'):
             flat = output.flatten()
@@ -498,12 +581,12 @@ class ResNet:
 
 
 def resnet18():
-    """Створює ResNet-18 модель"""
+    """⚠️ SKELETON: Створює структуру ResNet-18 (без навчених ваг)."""
     return ResNet(1000)
 
 
 def resnet50():
-    """Створює ResNet-50 модель"""
+    """⚠️ SKELETON: Створює структуру ResNet-50 (без навчених ваг)."""
     class ResNet50(ResNet):
         def __init__(self, num_classes=1000):
             super().__init__(num_classes)
@@ -516,10 +599,14 @@ def resnet50():
 
 
 # ============================================================
-# 5. BERT
+# 6. BERT SKELETON (⚠️ ARCHITECTURAL TEMPLATE ONLY)
 # ============================================================
 
 class MultiHeadAttention:
+    """⚠️ SKELETON: Multi-Head Attention (неповна реалізація)."""
+    
+    VERSION = "1.4.3"
+    
     def __init__(self, hidden_size, num_heads):
         self.hidden_size = hidden_size
         self.num_heads = num_heads
@@ -531,11 +618,15 @@ class MultiHeadAttention:
         self.out = Dense(hidden_size, hidden_size)
     
     def forward(self, x):
-        # Спрощена реалізація
+        # ⚠️ Заглушка
         return x
 
 
 class TransformerBlock:
+    """⚠️ SKELETON: Transformer блок (неповна реалізація)."""
+    
+    VERSION = "1.4.3"
+    
     def __init__(self, hidden_size, num_heads, ff_size):
         self.hidden_size = hidden_size
         self.num_heads = num_heads
@@ -548,6 +639,7 @@ class TransformerBlock:
         self.norm2 = LayerNorm(hidden_size)
     
     def forward(self, x):
+        # ⚠️ Заглушка
         attn = self.attention.forward(x)
         x = x + attn
         x = self.norm1.forward(x)
@@ -560,6 +652,10 @@ class TransformerBlock:
 
 
 class BERT:
+    """⚠️ SKELETON: BERT модель (НЕ МІСТИТЬ НАВЧЕНИХ ВАГ!)."""
+    
+    VERSION = "1.4.3"
+    
     def __init__(self, vocab_size=30522, hidden_size=768, num_heads=12, num_layers=12):
         self.embedding = Embedding(vocab_size, hidden_size)
         self.positional = PositionalEncoding(hidden_size)
@@ -572,6 +668,7 @@ class BERT:
         self.fc = Dense(hidden_size, vocab_size)
     
     def forward(self, input_ids):
+        # ⚠️ Це лише демонстрація структури
         x = self.embedding.forward(input_ids)
         x = self.positional.forward(x)
         for layer in self.layers:
@@ -581,6 +678,7 @@ class BERT:
         return x
     
     def predict(self, input_ids):
+        # ⚠️ НЕПРАЦЮЮЧА ЗАГЛУШКА
         return self.forward(input_ids)
     
     def save(self, path):
@@ -596,20 +694,24 @@ class BERT:
 
 
 def bert_base():
-    """Створює BERT Base модель"""
+    """⚠️ SKELETON: Створює структуру BERT Base (без навчених ваг)."""
     return BERT(30522, 768, 12, 12)
 
 
 def bert_large():
-    """Створює BERT Large модель"""
+    """⚠️ SKELETON: Створює структуру BERT Large (без навчених ваг)."""
     return BERT(30522, 1024, 16, 24)
 
 
 # ============================================================
-# 6. GPT
+# 7. GPT SKELETON (⚠️ ARCHITECTURAL TEMPLATE ONLY)
 # ============================================================
 
 class CausalAttention:
+    """⚠️ SKELETON: Causal Attention (неповна реалізація)."""
+    
+    VERSION = "1.4.3"
+    
     def __init__(self, hidden_size, num_heads):
         self.hidden_size = hidden_size
         self.num_heads = num_heads
@@ -621,11 +723,15 @@ class CausalAttention:
         self.out = Dense(hidden_size, hidden_size)
     
     def forward(self, x):
-        # Спрощена реалізація з маскою
+        # ⚠️ Заглушка
         return x
 
 
 class GPTBlock:
+    """⚠️ SKELETON: GPT блок (неповна реалізація)."""
+    
+    VERSION = "1.4.3"
+    
     def __init__(self, hidden_size, num_heads, ff_size):
         self.hidden_size = hidden_size
         self.num_heads = num_heads
@@ -638,6 +744,7 @@ class GPTBlock:
         self.norm2 = LayerNorm(hidden_size)
     
     def forward(self, x):
+        # ⚠️ Заглушка
         attn = self.attention.forward(x)
         x = x + attn
         x = self.norm1.forward(x)
@@ -650,6 +757,10 @@ class GPTBlock:
 
 
 class GPT:
+    """⚠️ SKELETON: GPT модель (НЕ МІСТИТЬ НАВЧЕНИХ ВАГ!)."""
+    
+    VERSION = "1.4.3"
+    
     def __init__(self, vocab_size=50257, hidden_size=768, num_heads=12, num_layers=12):
         self.embedding = Embedding(vocab_size, hidden_size)
         self.positional = PositionalEncoding(hidden_size)
@@ -662,6 +773,7 @@ class GPT:
         self.fc = Dense(hidden_size, vocab_size)
     
     def forward(self, input_ids):
+        # ⚠️ Це лише демонстрація структури
         x = self.embedding.forward(input_ids)
         x = self.positional.forward(x)
         for layer in self.layers:
@@ -671,11 +783,11 @@ class GPT:
         return x
     
     def predict(self, input_ids, max_tokens=100):
-        # Спрощена генерація
+        # ⚠️ НЕПРАЦЮЮЧА ЗАГЛУШКА
         return input_ids
     
     def generate(self, prompt, max_tokens=100):
-        # Спрощена генерація
+        # ⚠️ НЕПРАЦЮЮЧА ЗАГЛУШКА
         return prompt + " [generated]"
     
     def save(self, path):
@@ -691,17 +803,17 @@ class GPT:
 
 
 def gpt2():
-    """Створює GPT-2 модель"""
+    """⚠️ SKELETON: Створює структуру GPT-2 (без навчених ваг)."""
     return GPT(50257, 768, 12, 12)
 
 
 def gpt2_medium():
-    """Створює GPT-2 Medium модель"""
+    """⚠️ SKELETON: Створює структуру GPT-2 Medium (без навчених ваг)."""
     return GPT(50257, 1024, 16, 24)
 
 
 # ============================================================
-# 7. ЗАВАНТАЖЕННЯ МОДЕЛЕЙ
+# 8. ЗАВАНТАЖЕННЯ МОДЕЛЕЙ
 # ============================================================
 
 PRETRAINED_MODELS = {
@@ -715,7 +827,14 @@ PRETRAINED_MODELS = {
 
 
 def load_model(model_name: str):
-    """Завантажує готову модель"""
+    """
+    ⚠️ Завантажує СТРУКТУРУ моделі (без навчених ваг!).
+    
+    Це лише демонстрація архітектури. Для реального використання:
+    - Використовуйте PyTorch: torchvision.models.resnet18(pretrained=True)
+    - Або HuggingFace: transformers.BertModel.from_pretrained('bert-base-uncased')
+    - Або зачекайте на Vireo v1.5.0
+    """
     if model_name in PRETRAINED_MODELS:
         return PRETRAINED_MODELS[model_name]()
     else:
@@ -724,36 +843,46 @@ def load_model(model_name: str):
 
 
 def list_models():
-    """Повертає список доступних моделей"""
+    """Повертає список доступних моделей (Vireo v1.4.3)"""
     return list(PRETRAINED_MODELS.keys())
 
 
 # ============================================================
-# 8. ТЕСТУВАННЯ
+# 9. ТЕСТУВАННЯ
 # ============================================================
 
 if __name__ == "__main__":
-    print("🟢 Vireo Pretrained Models v1.0.0")
-    print("========================================")
+    print("=" * 50)
+    print("🌿 Vireo Pretrained Models v1.4.3")
+    print("The World's First AI-to-AI Communication Language")
+    print("=" * 50)
     
-    print("📋 Available models:", list_models())
+    print("\n⚠️ IMPORTANT: These are MODEL SKELETONS only!")
+    print("   No pre-trained weights are included.")
+    print("   Full implementations planned for v1.5.0.")
+    print("=" * 50)
+    
+    print("\n📋 Available model skeletons:", list_models())
     print("")
     
     # Тестування ResNet
-    print("🧠 Testing ResNet-18...")
+    print("🧠 Loading ResNet-18 skeleton...")
     model = load_model('resnet18')
-    print("   ✅ ResNet-18 created!")
+    print("   ✅ ResNet-18 structure loaded!")
     
     # Тестування BERT
-    print("🧠 Testing BERT Base...")
+    print("🧠 Loading BERT Base skeleton...")
     model = load_model('bert_base')
-    print("   ✅ BERT Base created!")
+    print("   ✅ BERT Base structure loaded!")
     
     # Тестування GPT
-    print("🧠 Testing GPT-2...")
+    print("🧠 Loading GPT-2 skeleton...")
     model = load_model('gpt2')
-    print("   ✅ GPT-2 created!")
+    print("   ✅ GPT-2 structure loaded!")
     
     print("")
-    print("========================================")
-    print("✅ All models loaded successfully!")
+    print("=" * 50)
+    print("✅ All model skeletons loaded successfully! (Vireo v1.4.3)")
+    print("⚠️ Remember: These are STRUCTURAL TEMPLATES only.")
+    print("   Pre-trained weights will be added in v1.5.0.")
+    print("=" * 50)
