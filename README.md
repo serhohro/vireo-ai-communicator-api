@@ -136,10 +136,11 @@ Submit a pull request
 See CONTRIBUTING.md for details.
 
 📊 Version History
-Version	Date	Focus
-v1.4.3	2026-08-29	Language-First — Formal grammar, stdlib, examples
-v1.4.2	2026-08-28	Cryptography & Protocol — Ed25519, trust, 8 agents
-v1.4.1	2026-08-27	Initial Release — Tensor, interpreter, API
+Version	         Date	                    Focus
+v1.4.3	         2026-08-29	                Language-First — Formal grammar, stdlib, examples
+v1.4.2	         2026-08-28	                Cryptography & Protocol — Ed25519, trust, 8 agents
+v1.4.1	         2026-08-27	                Initial Release — Tensor, interpreter, API
+
 🧠 Pretrained Models (NEW in v1.4.3)
 Vireo now supports real pretrained models:
 
