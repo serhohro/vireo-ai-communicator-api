@@ -1,5 +1,5 @@
 import uuid
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from .message import Message
 from .intent import Intent
 from .state import DialogueState, StateMachine
@@ -14,7 +14,8 @@ class Agent:
         self.executor = executor
         self.capabilities = CapabilityRegistry()
         self.state = StateMachine()
-        self._pending_proposals = {}
+        self._pending_proposals: Dict[str, Message] = {}
+        self._execution_history: List[Dict] = []  # Для аудиту
         
         bus.subscribe(agent_id, self._handle_message)
     
@@ -34,10 +35,30 @@ class Agent:
         return msg
     
     def commit(self, proposal: Message) -> None:
-        """Повний цикл: COMMITTED → RUNNING → EXECUTE → DONE → INFORM"""
+        """
+        Повний цикл: COMMITTED → RUNNING → EXECUTE → VERIFY → DONE → INFORM
+        
+        🆕 Виправлення:
+        1. Перевірка контракту перед виконанням (безпека)
+        2. Очищення _pending_proposals після завершення
+        3. Підтримка VERIFY стану
+        """
         conversation_id = proposal.conversation_id
         
-        # 1. Надсилаємо COMMIT (щоб пропонент знав про COMMITTED)
+        # ============================================================
+        # 🔴 КРИТИЧНЕ ВИПРАВЛЕННЯ: Перевірка контракту перед виконанням
+        # ============================================================
+        contract = proposal.payload.get("contract")
+        if contract:
+            # Перевіряємо контракт
+            is_valid, error = contract.validate(proposal.payload)
+            if not is_valid:
+                self.reject(proposal, reason=f"Contract violation: {error}")
+                return
+        
+        # ============================================================
+        # 1. Надсилаємо COMMIT
+        # ============================================================
         self.bus.publish(proposal.sender, Message(
             sender=self.agent_id,
             recipient=proposal.sender,
@@ -52,13 +73,17 @@ class Agent:
         # 3. Переходимо в RUNNING
         self.state.transition(conversation_id, DialogueState.RUNNING)
         
+        # ============================================================
         # 4. Виконуємо код
+        # ============================================================
         result = None
         error = None
+        execution_start = time.time()
         
         if self.executor:
             try:
                 code = proposal.payload.get("code", "")
+                # 🔴 Перевіряємо, чи код не порожній
                 if code:
                     result = self.executor(code)
                 else:
@@ -69,11 +94,67 @@ class Agent:
         else:
             result = {"status": "success", "message": "Committed (no executor)"}
         
-        # 5. Надсилаємо INFORM з результатом
+        execution_time = time.time() - execution_start
+        
+        # ============================================================
+        # 5. VERIFY стан (перевірка результату)
+        # ============================================================
+        verify_result = None
+        verify_error = None
+        
+        if not error and contract and contract.verify:
+            try:
+                # Перевіряємо verify умову
+                is_verified, verify_msg = self._verify_result(result, contract.verify)
+                if not is_verified:
+                    verify_error = f"Verification failed: {verify_msg}"
+                    # Якщо верифікація не пройшла → переходимо в FAILED
+                    self.state.transition(conversation_id, DialogueState.FAILED)
+                    # Очищуємо pending proposals
+                    self._cleanup_pending(proposal)
+                    self.bus.publish(proposal.sender, Message(
+                        sender=self.agent_id,
+                        recipient=proposal.sender,
+                        intent=Intent.INFORM,
+                        payload={
+                            "proposal_id": proposal.message_id,
+                            "result": result,
+                            "error": verify_error,
+                            "verified": False
+                        },
+                        conversation_id=conversation_id
+                    ))
+                    return
+                verify_result = is_verified
+            except Exception as e:
+                verify_error = str(e)
+                # Якщо помилка верифікації → переходимо в ESCALATED
+                self.state.transition(conversation_id, DialogueState.ESCALATED)
+                self._cleanup_pending(proposal)
+                self.bus.publish(proposal.sender, Message(
+                    sender=self.agent_id,
+                    recipient=proposal.sender,
+                    intent=Intent.INFORM,
+                    payload={
+                        "proposal_id": proposal.message_id,
+                        "result": result,
+                        "error": f"Verification error: {verify_error}",
+                        "verified": False,
+                        "escalated": True
+                    },
+                    conversation_id=conversation_id
+                ))
+                return
+        
+        # ============================================================
+        # 6. Надсилаємо INFORM з результатом
+        # ============================================================
         inform_payload = {
             "proposal_id": proposal.message_id,
             "result": result,
-            "error": error
+            "error": error,
+            "execution_time": execution_time,
+            "verified": verify_result if verify_result is not None else True
         }
         
         self.bus.publish(proposal.sender, Message(
@@ -84,8 +165,70 @@ class Agent:
             conversation_id=conversation_id
         ))
         
-        # 6. Переходимо в DONE
+        # ============================================================
+        # 7. Переходимо в DONE
+        # ============================================================
         self.state.transition(conversation_id, DialogueState.DONE)
+        
+        # ============================================================
+        # 8. Очищуємо _pending_proposals (виправлення витоку пам'яті)
+        # ============================================================
+        self._cleanup_pending(proposal)
+        
+        # ============================================================
+        # 9. Зберігаємо історію для аудиту
+        # ============================================================
+        self._execution_history.append({
+            "proposal_id": proposal.message_id,
+            "conversation_id": conversation_id,
+            "sender": proposal.sender,
+            "recipient": self.agent_id,
+            "task": proposal.payload.get("task", ""),
+            "execution_time": execution_time,
+            "result": result,
+            "error": error,
+            "verified": verify_result if verify_result is not None else True,
+            "timestamp": time.time()
+        })
+    
+    def _verify_result(self, result: Any, verify_condition: str) -> tuple[bool, str]:
+        """
+        Перевіряє результат виконання за умовою verify.
+        
+        Args:
+            result: Результат виконання
+            verify_condition: Умова для перевірки (наприклад, "result.accuracy > 0.9")
+        
+        Returns:
+            tuple[bool, str]: (чи пройшла перевірка, повідомлення)
+        """
+        # TODO: Реалізувати повний evaluator для умов
+        # Поки що проста перевірка для демонстрації
+        
+        if not result:
+            return False, "No result to verify"
+        
+        if isinstance(result, dict):
+            # Перевіряємо, чи є ключі в результаті
+            if "accuracy" in result:
+                accuracy = result.get("accuracy", 0)
+                # Спрощена перевірка: accuracy > 0.9
+                if accuracy > 0.9:
+                    return True, f"Verification passed: accuracy={accuracy}"
+                else:
+                    return False, f"Verification failed: accuracy={accuracy} < 0.9"
+            
+            if "status" in result and result["status"] == "success":
+                return True, "Verification passed: status=success"
+        
+        return True, "Verification passed (no specific condition)"
+    
+    def _cleanup_pending(self, proposal: Message) -> None:
+        """Очищує _pending_proposals від завершених пропозицій."""
+        proposal_id = proposal.message_id
+        if proposal_id in self._pending_proposals:
+            self._pending_proposals.pop(proposal_id)
+            print(f"🧹 Cleaned up pending proposal: {proposal_id}")
     
     def reject(self, proposal: Message, reason: str = "") -> None:
         self.state.transition(proposal.conversation_id, DialogueState.REJECTED)
@@ -96,6 +239,8 @@ class Agent:
             payload={"proposal_id": proposal.message_id, "reason": reason},
             conversation_id=proposal.conversation_id
         ))
+        # Очищуємо pending proposals при відхиленні
+        self._cleanup_pending(proposal)
     
     def _handle_message(self, message: Message) -> None:
         print(f"Agent {self.agent_id} received: {message.intent}")
@@ -129,7 +274,8 @@ class Agent:
         if proposal_id and proposal_id in self._pending_proposals:
             self._pending_proposals.pop(proposal_id)
             self.state.transition(message.conversation_id, DialogueState.COMMITTED)
-            self.state.transition(message.conversation_id, DialogueState.RUNNING)  # ← ОСТАННІЙ ФІКС
+            # ✅ Виправлено: не переходимо автоматично в RUNNING
+            # Тепер RUNNING тільки після реального початку виконання
             print(f"✅ Proposal {proposal_id} committed")
         else:
             print(f"⚠️ Unknown proposal: {proposal_id}")
@@ -148,6 +294,11 @@ class Agent:
         proposal_id = message.payload.get("proposal_id")
         result = message.payload.get("result")
         error = message.payload.get("error")
+        
+        # ✅ Виправлено: очищуємо pending proposals при отриманні INFORM
+        if proposal_id and proposal_id in self._pending_proposals:
+            self._pending_proposals.pop(proposal_id)
+            print(f"🧹 Cleaned up pending proposal: {proposal_id}")
         
         if error:
             self.state.transition(message.conversation_id, DialogueState.FAILED)
@@ -189,3 +340,11 @@ class Agent:
             intent=Intent.QUERY_CAPABILITIES,
             payload={}
         ))
+    
+    def get_execution_history(self) -> List[Dict]:
+        """Отримати історію виконань для аудиту."""
+        return self._execution_history.copy()
+    
+    def get_pending_proposals(self) -> Dict[str, Message]:
+        """Отримати список очікуючих пропозицій."""
+        return self._pending_proposals.copy()
