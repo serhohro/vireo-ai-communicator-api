@@ -1,8 +1,9 @@
 import uuid
+import time
 from typing import Dict, Any, Optional, List
 from .message import Message
 from .intent import Intent
-from .state import DialogueState, StateMachine
+from .state import DialogueState, DialogueStateMachine
 from .capabilities import CapabilityRegistry
 
 
@@ -13,9 +14,12 @@ class Agent:
         self.model = model
         self.executor = executor
         self.capabilities = CapabilityRegistry()
-        self.state = StateMachine()
+        self.state = DialogueStateMachine()  # Використовуємо нову версію
         self._pending_proposals: Dict[str, Message] = {}
         self._execution_history: List[Dict] = []  # Для аудиту
+        
+        # Запускаємо таймаут-чекер
+        self.state.start()
         
         bus.subscribe(agent_id, self._handle_message)
     
@@ -36,28 +40,22 @@ class Agent:
     
     def commit(self, proposal: Message) -> None:
         """
-        Повний цикл: COMMITTED → RUNNING → EXECUTE → VERIFY → DONE → INFORM
-        
-        🆕 Виправлення:
-        1. Перевірка контракту перед виконанням (безпека)
-        2. Очищення _pending_proposals після завершення
-        3. Підтримка VERIFY стану
+        Повний цикл: PROPOSED → COMMITTED → RUNNING → VERIFYING → DONE
         """
         conversation_id = proposal.conversation_id
         
         # ============================================================
-        # 🔴 КРИТИЧНЕ ВИПРАВЛЕННЯ: Перевірка контракту перед виконанням
+        # 1. ПЕРЕВІРКА КОНТРАКТУ
         # ============================================================
         contract = proposal.payload.get("contract")
         if contract:
-            # Перевіряємо контракт
             is_valid, error = contract.validate(proposal.payload)
             if not is_valid:
                 self.reject(proposal, reason=f"Contract violation: {error}")
                 return
         
         # ============================================================
-        # 1. Надсилаємо COMMIT
+        # 2. НАДСИЛАЄМО COMMIT
         # ============================================================
         self.bus.publish(proposal.sender, Message(
             sender=self.agent_id,
@@ -66,16 +64,13 @@ class Agent:
             payload={"proposal_id": proposal.message_id},
             conversation_id=conversation_id
         ))
-        
-        # 2. Переходимо в COMMITTED
         self.state.transition(conversation_id, DialogueState.COMMITTED)
         
-        # 3. Переходимо в RUNNING
+        # ============================================================
+        # 3. ПЕРЕХОДИМО В RUNNING І ВИКОНУЄМО КОД
+        # ============================================================
         self.state.transition(conversation_id, DialogueState.RUNNING)
         
-        # ============================================================
-        # 4. Виконуємо код
-        # ============================================================
         result = None
         error = None
         execution_start = time.time()
@@ -83,7 +78,6 @@ class Agent:
         if self.executor:
             try:
                 code = proposal.payload.get("code", "")
-                # 🔴 Перевіряємо, чи код не порожній
                 if code:
                     result = self.executor(code)
                 else:
@@ -97,21 +91,24 @@ class Agent:
         execution_time = time.time() - execution_start
         
         # ============================================================
-        # 5. VERIFY стан (перевірка результату)
+        # 4. 🆕 ПЕРЕХОДИМО В VERIFYING (перевірка результату)
         # ============================================================
+        self.state.transition(conversation_id, DialogueState.VERIFYING)
+        
         verify_result = None
         verify_error = None
         
-        if not error and contract and contract.verify:
+        # Перевіряємо контракт на наявність verify умови
+        if not error and contract and hasattr(contract, 'verify') and contract.verify:
             try:
-                # Перевіряємо verify умову
                 is_verified, verify_msg = self._verify_result(result, contract.verify)
                 if not is_verified:
                     verify_error = f"Verification failed: {verify_msg}"
-                    # Якщо верифікація не пройшла → переходимо в FAILED
-                    self.state.transition(conversation_id, DialogueState.FAILED)
-                    # Очищуємо pending proposals
+                    
+                    # 🆕 Якщо верифікація не пройшла → ESCALATED
+                    self.state.transition(conversation_id, DialogueState.ESCALATED)
                     self._cleanup_pending(proposal)
+                    
                     self.bus.publish(proposal.sender, Message(
                         sender=self.agent_id,
                         recipient=proposal.sender,
@@ -120,17 +117,30 @@ class Agent:
                             "proposal_id": proposal.message_id,
                             "result": result,
                             "error": verify_error,
-                            "verified": False
+                            "verified": False,
+                            "escalated": True
                         },
                         conversation_id=conversation_id
                     ))
+                    
+                    # Зберігаємо історію
+                    self._execution_history.append({
+                        "proposal_id": proposal.message_id,
+                        "conversation_id": conversation_id,
+                        "status": "escalated",
+                        "error": verify_error,
+                        "timestamp": time.time()
+                    })
                     return
+                    
                 verify_result = is_verified
+                
             except Exception as e:
                 verify_error = str(e)
-                # Якщо помилка верифікації → переходимо в ESCALATED
+                # 🆕 Помилка верифікації → ESCALATED
                 self.state.transition(conversation_id, DialogueState.ESCALATED)
                 self._cleanup_pending(proposal)
+                
                 self.bus.publish(proposal.sender, Message(
                     sender=self.agent_id,
                     recipient=proposal.sender,
@@ -144,10 +154,26 @@ class Agent:
                     },
                     conversation_id=conversation_id
                 ))
+                
+                self._execution_history.append({
+                    "proposal_id": proposal.message_id,
+                    "conversation_id": conversation_id,
+                    "status": "escalated",
+                    "error": verify_error,
+                    "timestamp": time.time()
+                })
                 return
         
         # ============================================================
-        # 6. Надсилаємо INFORM з результатом
+        # 5. 🆕 ВЕРИФІКАЦІЯ ПРОЙШЛА → DONE
+        # ============================================================
+        if error:
+            self.state.transition(conversation_id, DialogueState.FAILED)
+        else:
+            self.state.transition(conversation_id, DialogueState.DONE)
+        
+        # ============================================================
+        # 6. НАДСИЛАЄМО INFORM
         # ============================================================
         inform_payload = {
             "proposal_id": proposal.message_id,
@@ -166,18 +192,10 @@ class Agent:
         ))
         
         # ============================================================
-        # 7. Переходимо в DONE
-        # ============================================================
-        self.state.transition(conversation_id, DialogueState.DONE)
-        
-        # ============================================================
-        # 8. Очищуємо _pending_proposals (виправлення витоку пам'яті)
+        # 7. ОЧИЩУЄМО ТА ЗБЕРІГАЄМО ІСТОРІЮ
         # ============================================================
         self._cleanup_pending(proposal)
         
-        # ============================================================
-        # 9. Зберігаємо історію для аудиту
-        # ============================================================
         self._execution_history.append({
             "proposal_id": proposal.message_id,
             "conversation_id": conversation_id,
@@ -194,25 +212,13 @@ class Agent:
     def _verify_result(self, result: Any, verify_condition: str) -> tuple[bool, str]:
         """
         Перевіряє результат виконання за умовою verify.
-        
-        Args:
-            result: Результат виконання
-            verify_condition: Умова для перевірки (наприклад, "result.accuracy > 0.9")
-        
-        Returns:
-            tuple[bool, str]: (чи пройшла перевірка, повідомлення)
         """
-        # TODO: Реалізувати повний evaluator для умов
-        # Поки що проста перевірка для демонстрації
-        
         if not result:
             return False, "No result to verify"
         
         if isinstance(result, dict):
-            # Перевіряємо, чи є ключі в результаті
             if "accuracy" in result:
                 accuracy = result.get("accuracy", 0)
-                # Спрощена перевірка: accuracy > 0.9
                 if accuracy > 0.9:
                     return True, f"Verification passed: accuracy={accuracy}"
                 else:
@@ -239,28 +245,31 @@ class Agent:
             payload={"proposal_id": proposal.message_id, "reason": reason},
             conversation_id=proposal.conversation_id
         ))
-        # Очищуємо pending proposals при відхиленні
         self._cleanup_pending(proposal)
+    
+    # ============================================================
+    # ОБРОБКА ПОВІДОМЛЕНЬ
+    # ============================================================
     
     def _handle_message(self, message: Message) -> None:
         print(f"Agent {self.agent_id} received: {message.intent}")
         
-        if message.intent == Intent.PROPOSE:
-            self._handle_propose(message)
-        elif message.intent == Intent.COMMIT:
-            self._handle_commit(message)
-        elif message.intent == Intent.REJECT:
-            self._handle_reject(message)
-        elif message.intent == Intent.INFORM:
-            self._handle_inform(message)
-        elif message.intent == Intent.QUERY_CAPABILITIES:
-            self._handle_query_capabilities(message)
-        elif message.intent == Intent.INFORM_CAPABILITIES:
-            self._handle_inform_capabilities(message)
-        elif message.intent == Intent.NEGOTIATE:
-            self._handle_negotiate(message)
-        elif message.intent == Intent.CANCEL:
-            self._handle_cancel(message)
+        handlers = {
+            Intent.PROPOSE: self._handle_propose,
+            Intent.COMMIT: self._handle_commit,
+            Intent.REJECT: self._handle_reject,
+            Intent.INFORM: self._handle_inform,
+            Intent.QUERY_CAPABILITIES: self._handle_query_capabilities,
+            Intent.INFORM_CAPABILITIES: self._handle_inform_capabilities,
+            Intent.NEGOTIATE: self._handle_negotiate,
+            Intent.CANCEL: self._handle_cancel,
+            Intent.VERIFY: self._handle_verify,  # 🆕
+            Intent.ESCALATE: self._handle_escalate,  # 🆕
+        }
+        
+        handler = handlers.get(message.intent)
+        if handler:
+            handler(message)
         else:
             print(f"⚠️ Unhandled intent: {message.intent}")
     
@@ -274,8 +283,6 @@ class Agent:
         if proposal_id and proposal_id in self._pending_proposals:
             self._pending_proposals.pop(proposal_id)
             self.state.transition(message.conversation_id, DialogueState.COMMITTED)
-            # ✅ Виправлено: не переходимо автоматично в RUNNING
-            # Тепер RUNNING тільки після реального початку виконання
             print(f"✅ Proposal {proposal_id} committed")
         else:
             print(f"⚠️ Unknown proposal: {proposal_id}")
@@ -294,8 +301,8 @@ class Agent:
         proposal_id = message.payload.get("proposal_id")
         result = message.payload.get("result")
         error = message.payload.get("error")
+        verified = message.payload.get("verified", True)
         
-        # ✅ Виправлено: очищуємо pending proposals при отриманні INFORM
         if proposal_id and proposal_id in self._pending_proposals:
             self._pending_proposals.pop(proposal_id)
             print(f"🧹 Cleaned up pending proposal: {proposal_id}")
@@ -304,8 +311,14 @@ class Agent:
             self.state.transition(message.conversation_id, DialogueState.FAILED)
             print(f"❌ Execution failed for {proposal_id}: {error}")
         else:
-            self.state.transition(message.conversation_id, DialogueState.DONE)
-            print(f"✅ Execution result for {proposal_id}: {result}")
+            # 🆕 Якщо result вже верифіковано → DONE
+            if verified:
+                self.state.transition(message.conversation_id, DialogueState.DONE)
+                print(f"✅ Verified result for {proposal_id}: {result}")
+            else:
+                # Якщо ще не верифіковано → VERIFYING
+                self.state.transition(message.conversation_id, DialogueState.VERIFYING)
+                print(f"🔍 Verification pending for {proposal_id}")
     
     def _handle_query_capabilities(self, message: Message) -> None:
         capabilities = self.capabilities.list()
@@ -333,6 +346,58 @@ class Agent:
         else:
             print(f"⚠️ Unknown proposal: {proposal_id}")
     
+    # ============================================================
+    # 🆕 НОВІ ОБРОБНИКИ ДЛЯ VERIFY ТА ESCALATE
+    # ============================================================
+    
+    def _handle_verify(self, message: Message) -> None:
+        """Обробка запиту на верифікацію."""
+        proposal_id = message.payload.get("proposal_id")
+        result = message.payload.get("result")
+        verify_condition = message.payload.get("condition", "")
+        
+        if not proposal_id:
+            print(f"⚠️ Verify request without proposal_id")
+            return
+        
+        print(f"🔍 Verifying proposal {proposal_id}")
+        
+        # Перевіряємо результат
+        is_verified, msg = self._verify_result(result, verify_condition)
+        
+        if is_verified:
+            self.state.transition(message.conversation_id, DialogueState.DONE)
+            print(f"✅ Verification passed for {proposal_id}")
+        else:
+            self.state.transition(message.conversation_id, DialogueState.ESCALATED)
+            print(f"⚠️ Verification failed for {proposal_id}: {msg}")
+    
+    def _handle_escalate(self, message: Message) -> None:
+        """Обробка ескалації диспуту."""
+        proposal_id = message.payload.get("proposal_id")
+        reason = message.payload.get("reason", "No reason provided")
+        
+        if proposal_id:
+            self.state.transition(message.conversation_id, DialogueState.ESCALATED)
+            print(f"🚨 Escalated proposal {proposal_id}: {reason}")
+            
+            # Повідомляємо Guardian (якщо є)
+            self.bus.publish("guardian", Message(
+                sender=self.agent_id,
+                recipient="guardian",
+                intent=Intent.INFORM,
+                payload={
+                    "type": "escalation",
+                    "proposal_id": proposal_id,
+                    "reason": reason,
+                    "conversation_id": message.conversation_id
+                }
+            ))
+    
+    # ============================================================
+    # ДОПОМІЖНІ МЕТОДИ
+    # ============================================================
+    
     def query_capabilities(self, agent_id: str) -> None:
         self.bus.publish(agent_id, Message(
             sender=self.agent_id,
@@ -348,3 +413,8 @@ class Agent:
     def get_pending_proposals(self) -> Dict[str, Message]:
         """Отримати список очікуючих пропозицій."""
         return self._pending_proposals.copy()
+    
+    def __del__(self):
+        """Зупиняємо таймаут-чекер при видаленні."""
+        if hasattr(self, 'state'):
+            self.state.stop()
