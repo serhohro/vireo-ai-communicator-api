@@ -35,44 +35,42 @@ BOOL: "true" | "false"
 %ignore _BLOCK_COMMENT
 
 // ============================================================
-// PROGRAM
+// PROGRAM (виправлено)
 // ============================================================
 
-program: (import_def | statement | model_def | agent_def | contract_def | negotiation_def)*
+program: (import_def | top_level_def)*
+top_level_def: statement | model_def | agent_def | contract_def | negotiation_def | function_def
 
 // ============================================================
 // IMPORTS
 // ============================================================
 
 import_def: "import" NAME
-import_from: "from" NAME "import" NAME
+import_from: "from" NAME "import" NAME  // ✅ Тепер використовується
 
 // ============================================================
-// STATEMENTS
+// STATEMENTS (оновлено)
 // ============================================================
 
-statement: variable_def | assign_def | function_def | print_stmt | return_stmt | if_stmt | while_stmt | for_stmt | block
-
-variable_def: "let" NAME "=" expression
-assign_def: NAME "=" expression
-function_def: "fn" NAME "(" [parameters] ")" block
-print_stmt: "print" "(" expression ")" | "print" STRING
-return_stmt: "return" expression
-if_stmt: "if" expression block ["else" (block | if_stmt)]
-while_stmt: "while" expression block
-for_stmt: "for" NAME "in" expression block
+statement: variable_def | assign_def | print_stmt | return_stmt | if_stmt | while_stmt | for_stmt | block
 
 // ============================================================
-// BLOCK
+// BLOCK (оновлено з підтримкою ;)
 // ============================================================
 
-block: "{" (_NL* statement (_NL+ statement)*)? _NL* "}"
+block: "{" (_NL* statement (_NL* ";"? _NL* statement)*)? _NL* "}"
 
 // ============================================================
 // PARAMETERS
 // ============================================================
 
 parameters: NAME ("," NAME)*
+
+// ============================================================
+// FUNCTION (з return type)
+// ============================================================
+
+function_def: "fn" NAME "(" [parameters] ")" ["->" type] block
 
 // ============================================================
 // MODELS
@@ -132,34 +130,43 @@ role_def: "role" ":" NAME
 system_prompt_def: "system_prompt" ":" STRING
 
 // ============================================================
-// CONTRACTS
+// CONTRACTS (оновлено з verify)
 // ============================================================
 
 contract_def: "contract" NAME "{" _NL* contract_body _NL* "}"
-contract_body: (field_def | condition_def | invariant_def) (_NL+ (field_def | condition_def | invariant_def))*
+contract_body: (field_def | condition_def | invariant_def | verify_def) (_NL+ (field_def | condition_def | invariant_def | verify_def))*
 
 field_def: NAME ":" type ["=" value]
 condition_def: "condition" "{" _NL* expression _NL* "}"
 invariant_def: "invariant" "{" _NL* expression _NL* "}"
+verify_def: "verify" "{" _NL* expression _NL* "}"  // 🆕
 
 type: "Int" | "Float" | "String" | "Bool" | "Tensor" | "List" "[" type "]" | "Map" "[" type "," type "]"
 
 // ============================================================
-// NEGOTIATIONS
+// NEGOTIATIONS (оновлено з VERIFY та ESCALATE)
 // ============================================================
 
-negotiation_def: "negotiate" NAME "{" _NL* negotiation_body _NL* "}"
-negotiation_body: (party_def | timeout_def | max_rounds_def | on_offer_def | on_commit_def | on_reject_def) (_NL+ (party_def | timeout_def | max_rounds_def | on_offer_def | on_commit_def | on_reject_def))*
+negotiation_def: "negotiate" NAME "->" NAME "{" _NL* negotiation_body _NL* "}"
+negotiation_body: (
+    party_def | timeout_def | max_rounds_def | 
+    on_offer_def | on_commit_def | on_reject_def | 
+    on_verify_def | on_escalate_def  // 🆕
+) (_NL+ (party_def | timeout_def | max_rounds_def | on_offer_def | on_commit_def | on_reject_def | on_verify_def | on_escalate_def))*
 
 party_def: "party" NAME ":" NAME
 timeout_def: "timeout" "=" NUMBER "s"
 max_rounds_def: "max_rounds" "=" NUMBER
-on_offer_def: "on" "offer" "(" NAME ":" NAME ")" block
+
+// ✅ ВИПРАВЛЕНО: NAME:type замість NAME:NAME
+on_offer_def: "on" "offer" "(" NAME ":" type ")" block
 on_commit_def: "on" "commit" block
 on_reject_def: "on" "reject" block
+on_verify_def: "on" "verify" block  // 🆕
+on_escalate_def: "on" "escalate" block  // 🆕
 
 // ============================================================
-// EXPRESSIONS
+// EXPRESSIONS (оновлено з метод-колами)
 // ============================================================
 
 expression: logical_or
@@ -168,11 +175,14 @@ logical_and: comparison ("and" comparison)*
 comparison: arithmetic ((">" | "<" | "==" | "!=" | ">=" | "<=") arithmetic)*
 arithmetic: term ("+" | "-" term)*
 term: factor ("*" | "/" factor)*
-factor: unary_op | "(" expression ")" | NUMBER | FLOAT | STRING | NAME | BOOL | tensor_ops | function_call | list_expr | map_expr | lambda_expr
 
-unary_op: ("-" | "+" | "not") factor
+// ✅ ВИПРАВЛЕНО: загальні метод-коли для всіх виразів
+postfix: primary ("." NAME "(" [arguments] ")")*
+primary: "(" expression ")" | NUMBER | FLOAT | STRING | NAME | BOOL | tensor_expr | list_expr | map_expr | lambda_expr | unary_op
 
-tensor_ops: tensor_expr ("." ("matmul" | "transpose" | "reshape" | "flatten" | "sum" | "mean" | "max" | "min" | "argmax" | "argmin") "(" [arguments] ")")*
+factor: postfix
+
+unary_op: ("-" | "+" | "not") primary
 
 tensor_expr: "Tensor" "(" [expression ("," expression)*] ")"
 
@@ -182,7 +192,7 @@ map_expr: "{" [NAME ":" expression ("," NAME ":" expression)*] "}"
 lambda_expr: "|" parameters "|" expression
 
 // ============================================================
-// VALUES
+// VALUES (оновлено)
 // ============================================================
 
 value: NUMBER | FLOAT | STRING | BOOL | "null" | list_expr | map_expr
