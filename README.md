@@ -163,6 +163,22 @@ embeddings = model.predict("Hello, Vireo!")
 model = load_model("gpt2")
 text = model.predict("The future of AI is")
 
+## 🧠 AI Evaluations
+
+Vireo has been reviewed by leading AI models. Their independent feedback helped shape the project.
+
+**[Full evaluations →](AI_EVALUATIONS.md)**
+---
+## 🙏 Acknowledgments
+
+We received valuable technical feedback from **Claude**, which helped us fix several critical issues:
+
+- `redis.py` — added `Message.from_dict(data)` to properly reconstruct Message objects
+- `grammar.lark` — fixed `_NL` definition, added operator precedence, fixed `on offer` parsing
+- `README.md` — removed misleading AI quotes, corrected status table
+
+We also thank **ChatGPT**, **Perplexity**, **Gemini**, **Mistral**, **Qwen**, and **Kimi** for their independent evaluations.
+
 🔗 Links
 GitHub: https://github.com/serhohro/vireo-ai-communicator-api
 
