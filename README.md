@@ -115,6 +115,8 @@ CHANGELOG.md	Version history
 ROADMAP.md	Development roadmap
 CONTRIBUTING.md	Contributing guide
 SECURITY.md	Security policy
+QUICKSTART.md](docs/QUICKSTART.md)  🚀 5-minute quickstart for beginners 
+TUTORIAL.md](docs/TUTORIAL.md)  📚 Complete step-by-step tutorial 
 
 🤝 Community Feedback
 We welcome feedback from the AI community. If you've tried Vireo, we'd love to hear your thoughts — whether positive or critical. Open an issue or reach out via GitHub Discussions.
