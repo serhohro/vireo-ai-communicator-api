@@ -1,12 +1,12 @@
 # ============================================================
-# VIREO API SERVER v1.4.3
+# VIREO API SERVER v1.4.5
 # Flask REST API сервер
 # The World's First AI-to-AI Communication Language
 # ============================================================
 
-__version__ = "1.4.3"
+__version__ = "1.4.5"
 
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
 import os
 import sys
@@ -78,7 +78,10 @@ def create_app(config: dict = None) -> Flask:
                 "/api/crypto/generate_keys",
                 "/api/crypto/sign",
                 "/api/crypto/verify",
-                "/api/crypto/test_trust"
+                "/api/crypto/test_trust",
+                # 🆕 Mistral endpoints
+                "/api/mistral/generate",
+                "/api/mistral/chat"
             ]
         })
     
@@ -137,7 +140,7 @@ def create_app(config: dict = None) -> Flask:
                 <p class="subtitle">The World's First AI-to-AI Communication Language</p>
                 <div class="error">⚠️ web_interface.html not found</div>
                 <p style="color:#718096; margin-top:20px;">Please place web_interface.html in the project root.</p>
-                <div class="version">v1.4.3</div>
+                <div class="version">v1.4.5</div>
             </div>
         </body>
         </html>
@@ -195,7 +198,7 @@ def create_app(config: dict = None) -> Flask:
                 <p class="subtitle">The World's First AI-to-AI Communication Language</p>
                 <div class="error">⚠️ README.md not found</div>
                 <p style="color:#718096; margin-top:20px;">Please place README.md in the project root.</p>
-                <div class="version">v1.4.3</div>
+                <div class="version">v1.4.5</div>
             </div>
         </body>
         </html>
@@ -206,7 +209,85 @@ def create_app(config: dict = None) -> Flask:
     def health():
         """Health check."""
         return HealthResponse().to_dict()
+
+    # ============================================================
+    # 🆕 MISTRAL AI ENDPOINTS
+    # ============================================================
     
+    @app.route('/api/mistral/generate', methods=['POST'])
+    def api_mistral_generate():
+        """Generate text using Mistral AI."""
+        try:
+            data = request.get_json()
+            if not data:
+                return jsonify({"success": False, "error": "Invalid request body"}), 400
+            
+            prompt = data.get('prompt', '')
+            model = data.get('model', os.getenv('MISTRAL_MODEL', 'mistral-large-latest'))
+            max_tokens = data.get('max_tokens', 1024)
+            temperature = data.get('temperature', 0.7)
+            
+            if not prompt:
+                return jsonify({"success": False, "error": "Prompt is required"}), 400
+            
+            from protocol.llm_provider import MistralProvider
+            provider = MistralProvider(model=model)
+            result = provider.generate(prompt, max_tokens=max_tokens, temperature=temperature)
+            
+            return jsonify({
+                "success": True,
+                "provider": "mistral",
+                "model": model,
+                "result": result
+            })
+        except Exception as e:
+            print(f"❌ Mistral API error: {e}")
+            return jsonify({"success": False, "error": str(e)}), 500
+
+    @app.route('/api/mistral/chat', methods=['POST'])
+    def api_mistral_chat():
+        """Chat with Mistral AI."""
+        try:
+            data = request.get_json()
+            if not data:
+                return jsonify({"success": False, "error": "Invalid request body"}), 400
+            
+            messages = data.get('messages', [])
+            model = data.get('model', os.getenv('MISTRAL_MODEL', 'mistral-large-latest'))
+            max_tokens = data.get('max_tokens', 1024)
+            temperature = data.get('temperature', 0.7)
+            
+            if not messages:
+                return jsonify({"success": False, "error": "Messages are required"}), 400
+            
+            from protocol.llm_provider import MistralProvider
+            provider = MistralProvider(model=model)
+            result = provider.chat(messages, max_tokens=max_tokens, temperature=temperature)
+            
+            return jsonify({
+                "success": True,
+                "provider": "mistral",
+                "model": model,
+                "result": result
+            })
+        except Exception as e:
+            print(f"❌ Mistral chat error: {e}")
+            return jsonify({"success": False, "error": str(e)}), 500
+
+    # ============================================================
+    # 🆕 GET AVAILABLE PROVIDERS
+    # ============================================================
+    
+    @app.route('/api/providers', methods=['GET'])
+    def api_get_providers():
+        """Get list of available LLM providers."""
+        from protocol.llm_provider import AVAILABLE_PROVIDERS, AVAILABLE_MODELS
+        return jsonify({
+            "success": True,
+            "providers": AVAILABLE_PROVIDERS,
+            "models": AVAILABLE_MODELS
+        })
+
     return app
 
 
@@ -223,7 +304,7 @@ app = create_app()
 
 if __name__ == '__main__':
     print("=" * 60)
-    print("🌿 VIREO API SERVER v1.4.3")
+    print("🌿 VIREO API SERVER v1.4.5")
     print("The World's First AI-to-AI Communication Language")
     print("=" * 60)
     print(f"📍 Server: http://localhost:5000")
@@ -231,6 +312,13 @@ if __name__ == '__main__':
     print(f"📚 Docs:   http://localhost:5000/docs")
     print(f"📡 API:    http://localhost:5000/api")
     print(f"🔐 Health: http://localhost:5000/health")
+    print("=" * 60)
+    print("🧠 LLM Providers:")
+    print("   - Ollama (local, free)")
+    print("   - Google Gemini (free/paid)")
+    print("   - OpenAI GPT (paid)")
+    print("   - Anthropic Claude (paid)")
+    print("   - Mistral AI (free/paid) 🆕")
     print("=" * 60)
     print("Press Ctrl+C to stop")
     print("=" * 60)

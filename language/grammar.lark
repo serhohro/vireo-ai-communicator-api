@@ -1,198 +1,96 @@
-// Vireo Language Grammar (Lark)
-// ============================================================
-// Version: 1.4.5 — An Executable Coordination Language
-// ============================================================
+// Vireo Language Grammar v2.0.1
+// Based on Lark parser
 
-// ============================================================
-// PRECEDENCE
-// ============================================================
+// Program
+program: (import_statement | agent_definition | contract_definition | statement)*
 
-%left "or"
-%left "and"
-%left "==" "!=" ">" "<" ">=" "<="
-%left "+" "-"
-%left "*" "/"
-%right "not"
-%left "."
+// Imports
+import_statement: "import" IDENTIFIER
 
-// ============================================================
-// TERMINALS
-// ============================================================
+// Agent
+agent_definition: "agent" STRING "{" (capability_definition | state_definition)* "}"
 
-_NL: /[\n\r]+/
-_WS: /[ \t]+/
-_COMMENT: "//" /[^\n]*/
-_BLOCK_COMMENT: "/*" /(.|\n)*?/ "*/"
+capability_definition: "capability" IDENTIFIER "{" 
+    (input_definition)+ 
+    [output_definition]
+    ["action" ":" STRING]
+    ["cost" ":" NUMBER]
+    ["estimated_tokens" ":" NUMBER]
+    ["timeout_sec" ":" NUMBER]
+    ["requires" ":" "[" IDENTIFIER ("," IDENTIFIER)* "]"]
+    ["async" ":" BOOLEAN]
+"}"
 
-FLOAT: /[0-9]+\.[0-9]+/
-NUMBER: /[0-9]+/
-STRING: /"([^"\\]|\\\\.)*"/
-NAME: /[a-zA-Z_][a-zA-Z0-9_]*/
-BOOL: "true" | "false"
+input_definition: "input" ":" IDENTIFIER ":" TYPE ["=" value]
+output_definition: "output" ":" IDENTIFIER ":" TYPE
 
-%ignore _WS
-%ignore _COMMENT
-%ignore _BLOCK_COMMENT
+state_definition: "state" ":" "{" (IDENTIFIER ":" value)+ "}"
 
-// ============================================================
-// PROGRAM (виправлено)
-// ============================================================
+// Contract
+contract_definition: "contract" STRING "{" 
+    "parties" ":" "[" IDENTIFIER ("," IDENTIFIER)* "]"
+    "terms" ":" "{" (term_entry)* "}"
+    "obligations" ":" "{" (obligation_entry)+ "}"
+    ["condition" ":" expression]
+    ["on_failure" ":" STRING]
+"}"
 
-program: (import_def | top_level_def)*
-top_level_def: statement | model_def | agent_def | contract_def | negotiation_def | function_def
+term_entry: IDENTIFIER ":" value
 
-// ============================================================
-// IMPORTS
-// ============================================================
+obligation_entry: IDENTIFIER ":" "{" 
+    "action" ":" IDENTIFIER
+    "input" ":" "{" (field_entry)* "}"
+    ["output" ":" "{" (field_entry)* "}"]
+    ["depends_on" ":" "[" IDENTIFIER ("," IDENTIFIER)* "]"]
+"}"
 
-import_def: "import" NAME
-import_from: "from" NAME "import" NAME  // ✅ Тепер використовується
+field_entry: IDENTIFIER ":" value
 
-// ============================================================
-// STATEMENTS (оновлено)
-// ============================================================
+// Statements
+statement: execute_statement | output_statement | if_statement | loop_statement
 
-statement: variable_def | assign_def | print_stmt | return_stmt | if_stmt | while_stmt | for_stmt | block
+execute_statement: "execute" IDENTIFIER "(" [argument_list] ")" ["->" IDENTIFIER]
 
-// ============================================================
-// BLOCK (оновлено з підтримкою ;)
-// ============================================================
+output_statement: "output" expression
 
-block: "{" (_NL* statement (_NL* ";"? _NL* statement)*)? _NL* "}"
+if_statement: "if" expression "{" statement* "}" ["else" "{" statement* "}"]
 
-// ============================================================
-// PARAMETERS
-// ============================================================
+loop_statement: "loop" (NUMBER | "while" expression | "for" IDENTIFIER "in" expression) "{" statement* "}"
 
-parameters: NAME ("," NAME)*
+argument_list: IDENTIFIER ":" value ("," IDENTIFIER ":" value)*
 
-// ============================================================
-// FUNCTION (з return type)
-// ============================================================
+// Expressions
+expression: comparison
 
-function_def: "fn" NAME "(" [parameters] ")" ["->" type] block
+comparison: addition (("==" | "!=" | "<" | ">" | "<=" | ">=") addition)*
 
-// ============================================================
-// MODELS
-// ============================================================
+addition: multiplication (("+" | "-") multiplication)*
 
-model_def: "model" NAME "{" _NL* model_body _NL* "}"
-model_body: (layer_def | activation_def | loss_def | optimizer_def | training_param) (_NL+ (layer_def | activation_def | loss_def | optimizer_def | training_param))*
+multiplication: unary (("*" | "/") unary)*
 
-// Layers
-layer_def: "layer" layer_type "(" [arguments] ")"
-layer_type: "Dense" | "Conv2D" | "MaxPool2D" | "AvgPool2D" | "BatchNorm" | "Dropout" | "Flatten" | "LSTM" | "GRU" | "BiLSTM" | "Attention" | "Transformer" | "Linear" | "Embedding" | "LayerNorm"
+unary: ("-" | "!") unary | primary
 
-// LSTM with parameters
-lstm_layer: "LSTM" "(" NUMBER "," NUMBER ["," "num_layers=" NUMBER] ["," "return_sequences=" ("True" | "False")] ["," "activation=" activation_type] ")"
-dense_layer: "Dense" "(" NUMBER "," NUMBER ")"
-conv2d_layer: "Conv2D" "(" NUMBER "," NUMBER "," NUMBER ["," "stride=" NUMBER] ["," "padding=" NUMBER] ")"
-dropout_layer: "Dropout" "(" NUMBER ("," "rate=" NUMBER)? ")"
+primary: STRING | NUMBER | BOOLEAN | "null" | "true" | "false"
+    | IDENTIFIER
+    | "$ref" "." IDENTIFIER ("." IDENTIFIER)*
+    | "{" field_entry ("," field_entry)* "}"
+    | "[" [expression ("," expression)*] "]"
+    | "(" expression ")"
+    | IDENTIFIER "(" [argument_list] ")"
 
-// Arguments
-arguments: expression ("," expression)*
+// Values
+value: STRING | NUMBER | BOOLEAN | "null" | "true" | "false"
+    | "[" [value ("," value)*] "]"
+    | "{" field_entry ("," field_entry)* "}"
+    | "$ref" "." IDENTIFIER ("." IDENTIFIER)*// Types
+TYPE: "string" | "number" | "boolean" | "json" | "array" | "map" | "agent" | "contract" | "capability"
 
-// Activations
-activation_def: "activation" activation_type
-activation_type: "ReLU" | "Sigmoid" | "Tanh" | "Softmax" | "LeakyReLU" | "ELU" | "GELU" | "Swish" | "Mish" | "SiLU"
+// Tokens
+IDENTIFIER: /[a-zA-Z_][a-zA-Z0-9_]*/
+STRING: /"[^"]*"/
+NUMBER: /[0-9]+(\.[0-9]+)?/
+BOOLEAN: "true" | "false"
 
-// Loss functions
-loss_def: "loss" loss_type
-loss_type: "CrossEntropy" | "MSE" | "MAE" | "Huber" | "KLDiv" | "BCE" | "BCEWithLogits" | "CTCLoss"
-
-// Optimizers
-optimizer_def: "optimizer" optimizer_type "(" [optimizer_params] ")"
-optimizer_type: "Adam" | "SGD" | "RMSprop" | "AdamW" | "Adamax" | "Nadam" | "Lion" | "Lamb" | "RAdam"
-
-// Optimizer parameters
-optimizer_params: param ("," param)*
-param: NAME "=" NUMBER | NAME "=" FLOAT
-
-// Training parameters
-training_param: NAME "=" (NUMBER | FLOAT | STRING)
-
-// ============================================================
-// AGENTS
-// ============================================================
-
-agent_def: "agent" NAME "{" _NL* agent_body _NL* "}"
-agent_body: (identity_def | capability_def | role_def | system_prompt_def) (_NL+ (identity_def | capability_def | role_def | system_prompt_def))*
-
-identity_def: "identity" ":" STRING
-capability_def: "capability" NAME ["(" [parameters] ")"] ["{" _NL* capability_body _NL* "}"]
-capability_body: (description_def | input_schema_def | output_schema_def) (_NL+ (description_def | input_schema_def | output_schema_def))*
-
-description_def: "description" ":" STRING
-input_schema_def: "input" ":" type
-output_schema_def: "output" ":" type
-
-role_def: "role" ":" NAME
-system_prompt_def: "system_prompt" ":" STRING
-
-// ============================================================
-// CONTRACTS (оновлено з verify)
-// ============================================================
-
-contract_def: "contract" NAME "{" _NL* contract_body _NL* "}"
-contract_body: (field_def | condition_def | invariant_def | verify_def) (_NL+ (field_def | condition_def | invariant_def | verify_def))*
-
-field_def: NAME ":" type ["=" value]
-condition_def: "condition" "{" _NL* expression _NL* "}"
-invariant_def: "invariant" "{" _NL* expression _NL* "}"
-verify_def: "verify" "{" _NL* expression _NL* "}"  // 🆕
-
-type: "Int" | "Float" | "String" | "Bool" | "Tensor" | "List" "[" type "]" | "Map" "[" type "," type "]"
-
-// ============================================================
-// NEGOTIATIONS (оновлено з VERIFY та ESCALATE)
-// ============================================================
-
-negotiation_def: "negotiate" NAME "->" NAME "{" _NL* negotiation_body _NL* "}"
-negotiation_body: (
-    party_def | timeout_def | max_rounds_def | 
-    on_offer_def | on_commit_def | on_reject_def | 
-    on_verify_def | on_escalate_def  // 🆕
-) (_NL+ (party_def | timeout_def | max_rounds_def | on_offer_def | on_commit_def | on_reject_def | on_verify_def | on_escalate_def))*
-
-party_def: "party" NAME ":" NAME
-timeout_def: "timeout" "=" NUMBER "s"
-max_rounds_def: "max_rounds" "=" NUMBER
-
-// ✅ ВИПРАВЛЕНО: NAME:type замість NAME:NAME
-on_offer_def: "on" "offer" "(" NAME ":" type ")" block
-on_commit_def: "on" "commit" block
-on_reject_def: "on" "reject" block
-on_verify_def: "on" "verify" block  // 🆕
-on_escalate_def: "on" "escalate" block  // 🆕
-
-// ============================================================
-// EXPRESSIONS (оновлено з метод-колами)
-// ============================================================
-
-expression: logical_or
-logical_or: logical_and ("or" logical_and)*
-logical_and: comparison ("and" comparison)*
-comparison: arithmetic ((">" | "<" | "==" | "!=" | ">=" | "<=") arithmetic)*
-arithmetic: term ("+" | "-" term)*
-term: factor ("*" | "/" factor)*
-
-// ✅ ВИПРАВЛЕНО: загальні метод-коли для всіх виразів
-postfix: primary ("." NAME "(" [arguments] ")")*
-primary: "(" expression ")" | NUMBER | FLOAT | STRING | NAME | BOOL | tensor_expr | list_expr | map_expr | lambda_expr | unary_op
-
-factor: postfix
-
-unary_op: ("-" | "+" | "not") primary
-
-tensor_expr: "Tensor" "(" [expression ("," expression)*] ")"
-
-function_call: NAME "(" [expression ("," expression)*] ")"
-list_expr: "[" [expression ("," expression)*] "]"
-map_expr: "{" [NAME ":" expression ("," NAME ":" expression)*] "}"
-lambda_expr: "|" parameters "|" expression
-
-// ============================================================
-// VALUES (оновлено)
-// ============================================================
-
-value: NUMBER | FLOAT | STRING | BOOL | "null" | list_expr | map_expr
+// Comments
+COMMENT: "//" /[^\n]*/ -> ignore
+WS: /[ \t\n\r]+/ -> ignore
