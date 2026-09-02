@@ -1,79 +1,94 @@
-# 🌿 Vireo Changelog
+```markdown
+# 📋 Changelog
 
-All notable changes to this project will be documented in this file.
-
----
-
-## [1.4.5] - 2026-08-30
-
-### Added
-- **EfficientNet (B0–B5)** — lightweight image classification models (5–30M parameters)
-- **UNet3+** — lightweight image segmentation model (3.5M parameters)
-- **Zipformer (Wav2Vec2)** — speech recognition / ASR model (291M parameters)
-- **LSTM with Activations** — support for ReLU, Sigmoid, Swish, GELU, LeakyReLU
-- **New "Models" Tab** — web interface for managing pretrained models
-- **New API Endpoints** — `/models/list`, `/models/load`, `/models/predict`, `/models/info`, `/models/cache/clear`
-- **requirements.txt** — added `efficientnet-pytorch`, `torchaudio`, `soundfile`, `librosa`
-
-### Fixed
-- Fixed syntax error in `.env.example` — `GEMINI_MODEL gemini-1.5-pro` → `GEMINI_MODEL=gemini-1.5-pro`
-- Fixed syntax error in `api_server.py` — removed extra closing parenthesis
-- Fixed `pretrained.py` — `GPT2Model` → `GPT2LMHeadModel` (adds `generate` method support)
-
-### Changed
-- **README.md** — updated with new model support
-- **language/grammar.lark** — added LSTM layer syntax
-- **web_interface.html** — now includes 9 tabs (added Models tab)
-- **api_server.py** — extended with LSTM and Pretrained Models endpoints
+All notable changes to Vireo will be documented in this file.
 
 ---
 
-## [1.4.3] - 2026-08-29
+## [2.0.1] - 2026-01-15
 
-### Added
-- **Language Positioning** — Vireo is now positioned as a full programming language
-- **Formal Grammar** — `language/grammar.lark` — complete grammar specification
-- **Syntax Documentation** — `language/syntax.md` — full language syntax
-- **Standard Library** — `language/stdlib/` — math, tensor, agent, contract modules
-- **Language Examples** — `language/examples/` — hello_world, neural_network, agent_negotiation, multi_agent
-- **CHANGELOG.md** — Version history
+### 🎯 Major Changes
 
-### Changed
-- **README.md** — Completely rewritten with focus on "Language" positioning
-- **ROADMAP.md** — Updated with language development priorities
+- **New Architecture**: `core/` directory with modular components
+- **Formal Specifications**: Complete specification suite in `specification/`
+- **Trust Bootstrap Protocol**: Initial implementation for secure agent identity
+- **VERIFY & ESCALATE States**: Added to protocol lifecycle
+- **European LLM Support**: Dedicated `llm_provider_eu.py` for EU models
+
+### 🆕 New Features
+
+- Core agent base with role-based capabilities
+- Contract validation pipeline
+- Capability discovery registry
+- Identity management with Ed25519
+- Execution runner with timeout support
+- Verification engine for contract validation
+
+### 📚 Documentation
+
+- Added `specification/` with 7 formal specs
+- Added `QUICKSTART.md` and `TUTORIAL.md`
+- Added `EU_LLM_GUIDE.md` for European AI providers
+- Added `GOVERNANCE.md` for RFC process
+- Added `AI_EVALUATIONS.md` with 7 AI model reviews
+
+### 🐛 Fixed (from v1.4.5)
+
+- Fixed `contract.py`: `is not None` checks for all fields
+- Fixed `agent.py`: Added contract validation in `commit()`
+- Fixed `master_agent.py`: Correct recipient in `auto_negotiate()`
+- Fixed `state.py`: Added timeout checking with background thread
+- Fixed `agent.py`: Added `_cleanup_pending()` for proposal cleanup
+- Fixed `grammar.lark`: Fixed `on offer(NAME:NAME)` → `NAME:type`
+- Fixed `redis.py`: Now uses `Message.from_dict()` correctly
+
+### ⚠️ Breaking Changes
+
+- Protocol state machine now includes VERIFY and ESCALATE
+- Contract validation is now mandatory before execution
 
 ---
 
-## [1.4.2] - 2026-08-28
+## [1.4.5] - 2026-01-10
 
-### Added
-- Real Ed25519 cryptography (keygen, sign, verify)
-- Full negotiation protocol (PROPOSE → COMMIT → REJECT → EXECUTE → DONE)
-- 7+ agent roles + Master Agent
-- Gemini LLM provider
-- MCP/LangChain adapters
-- Multi-language UI (Ukrainian/English)
+### 🐛 Critical Fixes
 
-### Fixed
-- `protocol/agent.py` — full commit cycle
-- `_handle_message` — full intent dispatching
-- Redis transport integration
+- 7 critical fixes across core components
+- Grammar fixes for `grammar.lark`
+- Redis transport now properly handles Message objects
+
+### 📚 Documentation
+
+- Added QUICKSTART.md
+- Added TUTORIAL.md
 
 ---
 
-## [1.4.1] - 2026-08-25
+## [1.4.0] - 2025-12-20
 
-### Added
-- Initial release
-- Core language features
-- Multi-agent system
-- Web interface with 8 tabs
+### 🎯 Major Features
+
+- Multi-Agent System with negotiation
+- 6+ LLM providers integrated
+- Ed25519 cryptography support
+- Contract validation
 
 ---
 
-## [1.4.0] - 2026-08-20
+## [1.3.0] - 2025-12-01
 
-### Added
-- Initial prototype
-- Basic interpreter
-- Tensor operations
+### 🎯 Features
+
+- Vireo language core
+- Interpreter implementation
+- Formal grammar (grammar.lark)
+
+---
+
+## [1.0.0] - 2025-10-01
+
+### 🎉 Initial Release
+
+- Basic language syntax
+- Single-agent execution
+- REST API

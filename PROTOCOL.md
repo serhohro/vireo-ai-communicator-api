@@ -1,285 +1,333 @@
-# 🌿 VIREO-A2A Protocol (Layer 3)
+markdown
+# 📡 Vireo Protocol Specification
 
-> 🧪 **Status: Protocol Foundations Implemented — LLM Integration Working (v1.4.3)**
-> Core protocol layers, state machine, capability discovery, contracts, and multi-agent orchestration are implemented.
-> LLM-driven autonomous negotiation works with 5+ providers.
-> Cryptographic primitives are in place; full protocol integration in progress.
-> **Vireo is a LANGUAGE, not just a protocol.**
-
----
-
-## 📋 Agent Coordination Protocol
-
-This document describes the protocol layer added on top of the existing DSL (Layer 1) and Runtime (Layer 2) — part of the **Vireo programming language**.
-
-### ✅ Fully Implemented:
-
-- [x] Message envelope (message format)
-- [x] Speech acts (PROPOSE, COMMIT, REJECT, INFORM, NEGOTIATE)
-- [x] Dialogue state machine (NEW → PROPOSED → COMMITTED → DONE)
-- [x] Capability discovery (QUERY_CAPABILITIES / INFORM_CAPABILITIES)
-- [x] Context versioning (optimistic concurrency control)
-- [x] HMAC-SHA256 signatures
-- [x] InMemoryEventBus (transport)
-- [x] Multi-Agent System with Roles (7 specialized roles + Master, Quantum planned)
-- [x] LLM Integration (5+ providers)
-- [x] Autonomous negotiation (propose → commit → execute → done)
-- [x] Negotiate with counter-offers (partial)
-- [x] Contract system with resource invariants
-- [x] Guardian Agent for security validation
-- [x] Ed25519 cryptographic primitives (key generation, signing, verification)
-- [x] Formal language grammar (`language/grammar.lark`)
-- [x] Standard library (`language/stdlib/`)
-
-### 🚧 In Development:
-
-- [ ] Distributed transport (Redis/Kafka/NATS) — code exists, integration partial
-- [ ] Ed25519 protocol integration — planned v1.5.0
-- [ ] Dialogue state persistence — planned v1.5.0
-- [ ] DID (Decentralized Identifiers) — partial, planned v1.5.0
-- [ ] WebAssembly compilation — mock, planned v1.6.0
-- [ ] Formal verification (TLA+) — planned v2.0.0
-- [ ] Full parser and compiler — planned v1.5.0
+**Version:** 2.0.1  
+**Status:** Draft  
+**Last Updated:** 2026-01-15
 
 ---
 
-## 🏗️ Architectural Advantages
+## 1. Overview
 
-### Deterministic State Machine
+Vireo Protocol defines the communication rules for autonomous AI agents to discover, negotiate, execute, and verify tasks.
 
-Enforcing state transitions (NEW → PROPOSED → COMMITTED → DONE) directly inside the protocol prevents protocol drift and unexpected execution loops. This ensures that both agents follow the same negotiation semantics, eliminating the non-determinism that plagues prompt-based agent coordination.
+### Core Principles
 
-**Why it matters:** Non-deterministic agent behavior is one of the biggest challenges in production multi-agent systems. Vireo's state machine guarantees that every conversation follows a predictable, verifiable path.
-
-### Native Cryptographic Identity & Contracts
-
-Embedding Ed25519 asymmetric signatures and resource invariants (max_tokens, timeout_sec) natively guarantees non-repudiation and prevents runaway agent execution costs.
-
-**Why it matters:** When agents execute autonomously, you need cryptographic proof of who authorized what, and hard limits on resource consumption. Vireo makes these first-class protocol concepts rather than optional middleware.
-
-### Dual Wire Format
-
-Offering standard human-readable JSON alongside a compact key format optimizes both LLM parsing and token-constrained transport efficiency.
-
-**Why it matters:** LLMs consume tokens, and every token costs money. Vireo's compact format reduces wire overhead while keeping the full semantic richness of the protocol for human-readable debugging and LLM comprehension.
+1. **Decentralized** — No central authority
+2. **Secure** — Cryptographic verification
+3. **Deterministic** — Well-defined state machine
+4. **Interoperable** — Language-agnostic
+5. **Extensible** — Capability-based
 
 ---
 
-## 🎭 Multi-Agent System with Roles
+## 2. Protocol Lifecycle
+┌────────────┐
+│ DISCOVER │ ← Agents discover each other's capabilities
+└─────┬──────┘
+│
+▼
+┌────────────┐
+│ PROPOSE │ ← Agent proposes a contract
+└─────┬──────┘
+│
+▼
+┌────────────┐
+│ NEGOTIATE │ ← Agents negotiate terms
+└─────┬──────┘
+│
+▼
+┌────────────┐
+│ COMMIT │ ← Agents commit to contract
+└─────┬──────┘
+│
+▼
+┌────────────┐
+│ EXECUTE │ ← Contract execution
+└─────┬──────┘
+│
+▼
+┌────────────┐
+│ VERIFY │ ← Cryptographic verification
+└─────┬──────┘
+│
+▼
+┌────────────┐
+│ DONE │ ← Completion
+└────────────┘
 
-### Agent Roles
-
-Vireo provides **7 specialized agent roles** plus the **Master coordinator** (Quantum role planned):
-
-| Role | Icon | Description | Status |
-|------|------|-------------|--------|
-| **Master** | 🎯 | Coordinator | ✅ |
-| **Vision** | 👁️ | Computer Vision | ✅ |
-| **NLP** | 🧠 | Language Processing | ✅ |
-| **Analyst** | 📊 | Data Analysis | ✅ |
-| **Researcher** | 🧬 | Research | ✅ |
-| **Executor** | ⚡ | Execution | ✅ |
-| **Guardian** | 🛡️ | Security | ✅ |
-| **Teacher** | 📚 | Education | ✅ |
-| **Quantum** | 🔬 | Quantum Computing | 🚧 Planned |
-
-### Creating Agents with Roles
-
-```python
-from protocol.agents import (
-    MasterAgent,
-    create_vision_agent,
-    create_nlp_agent,
-    create_analyst_agent,
-    create_executor_agent,
-)
-
-master = MasterAgent("master")
-vision = create_vision_agent()
-nlp = create_nlp_agent()
-analyst = create_analyst_agent()
-executor = create_executor_agent()
-
-master.register_agents([vision, nlp, analyst, executor])
-result = master.orchestrate("Create a medical image analysis system")
-📨 Message Format
-json
-{
-  "protocol": "VIREO-A2A",
-  "version": "1.0",
-  "message_id": "msg-a1b2c3d4",
-  "conversation_id": "conv-9956c9ec",
-  "sender": { "id": "agent-vision", "model": "qwen2.5-coder" },
-  "recipient": { "id": "agent-training", "model": null },
-  "intent": "propose",
-  "payload": {
-    "dsl": "vireo",
-    "code": "train MNIST { epochs: 10 }",
-    "reasoning": "Simple MNIST classifier"
-  },
-  "constraints": { "timeout_sec": 120, "max_tokens": 1000 },
-  "context_version": null,
-  "proposal_id": null,
-  "timestamp": 1787385246.235,
-  "signature": null
-}
-Compact Wire Format
-json
-{
-  "p": "VIREO-A2A",
-  "v": "1.0",
-  "i": "msg-a1b2c3d4",
-  "c": "conv-9956c9ec",
-  "s": { "id": "agent-vision", "m": "qwen2.5-coder" },
-  "r": { "id": "agent-training", "m": null },
-  "t": "propose",
-  "d": { "code": "train MNIST { epochs: 10 }" }
-}
-🗣️ Speech Acts (Intent)
-Intent	Meaning
-REQUEST	"Execute X"
-PROPOSE	"I propose to do X"
-QUERY	"What is the status/value of X?"
-INFORM	"I inform the fact/result"
-REJECT	"I reject the proposal/request"
-COMMIT	"I accept the proposal and commit"
-CANCEL	"I cancel a previously accepted commitment"
-NEGOTIATE	"I propose to change the terms"
-QUERY_CAPABILITIES	"What can you do?"
-INFORM_CAPABILITIES	"Here is my list of capabilities"
-⚙️ Dialogue State Machine
 text
-NEW → PROPOSED → COMMITTED → RUNNING → DONE
-        │            │           │
-        ├→ REJECTED  ├→ CANCELLED├→ FAILED
-        ├→ TIMEOUT               ├→ TIMEOUT
-        └→ CANCELLED             └→ CANCELLED
-Each conversation_id has its own state. Invalid transitions (e.g., NEW → RUNNING bypassing PROPOSED/COMMITTED) throw InvalidTransition — this ensures both agents follow the same negotiation protocol.
 
-🔐 Security & Trust
-Vireo includes cryptographic primitives for secure AI-to-AI communication:
+### Error States
 
-Component	Status	Details
-HMAC Signatures	✅ Implemented	Symmetric signing
-Nonce Protection	✅ Implemented	Replay attack prevention
-Ed25519 Primitives	✅ Implemented	Key generation, signing, verification
-Ed25519 Protocol Integration	🚧 In Development	Planned for v1.5.0
-DID Implementation	🚧 In Development	Planned for v1.5.0
-Zero-Trust Protocol	🚧 In Development	Planned for v1.5.0
-State Persistence	🔵 Planned	Planned for v1.5.0
-HMAC Signatures
-python
-from protocol import trust
+| State | Description |
+|-------|-------------|
+| **REJECTED** | Proposal/contract rejected |
+| **CANCELLED** | Cancelled by one party |
+| **FAILED** | Execution failure |
+| **ESCALATED** | Escalated for human review |
+| **TIMEOUT** | Timeout occurred |
 
-# Sign message
-trust.attach_signature(message, secret)
+---
 
-# Verify signature
-is_valid = trust.verify(message, secret)
-Nonce Protection
-python
-from protocol.trust import NonceManager
+## 3. Message Format
 
-manager = NonceManager(ttl=60)
-nonce, timestamp = manager.generate()
-is_valid = manager.validate(nonce, timestamp)
-Permissions & Identity
-python
-from protocol.trust import Identity, Permission, TrustManager
+All protocol messages follow this structure:
 
-identity = Identity(
-    id="agent-vision",
-    public_key="0x1234...",
-    permissions=[Permission.READ, Permission.EXECUTE],
-    trust_level=0.9
-)
-
-tm = TrustManager(secret="shared-secret")
-tm.register_identity(identity)
-
-if tm.check_permission("agent-vision", Permission.EXECUTE):
-    # Agent can execute
-    pass
-📋 Contracts (Resource Invariants)
-python
-from protocol.contract import Contract, Proposal, create_default_contract
-
-# Create contract with limits
-contract = Contract(
-    max_tokens=500,
-    max_cost_usd=0.01,
-    timeout_sec=30,
-    max_rounds=3,
-    allowed_actions=["train_model", "predict"]
-)
-
-# Validate proposal
-is_valid, error = contract.validate(proposal)
-Contract Example in Vireo Language
-vireo
-contract Agreement {
-    max_tokens: Int = 1000
-    max_cost_usd: Float = 0.05
-    timeout_sec: Int = 30
-    max_rounds: Int = 3
-    allowed_actions: List[String] = ["train_model", "predict"]
+```json
+{
+  "version": "2.0.1",
+  "type": "PROPOSAL | ACCEPT | REJECT | COMMIT | EXECUTE | VERIFY | ESCALATE",
+  "message_id": "uuid",
+  "timestamp": "2026-01-15T10:30:00Z",
+  "sender_id": "agent-123",
+  "recipient_id": "agent-456",
+  "payload": {
+    "contract": { ... },
+    "signature": "base64_encoded_signature",
+    "data": { ... }
+  },
+  "metadata": {
+    "capabilities": ["analyze", "report"],
+    "ttl": 60
+  }
 }
-🧪 Demonstrations
-1. Basic Demo (Manual Control) ✅
-bash
-python protocol/examples/two_agent_demo.py
-Human controls agents via code. Shows protocol operation.
+Message Types
+Type	Description
+DISCOVER	Request capability discovery
+PROPOSAL	Propose a contract
+ACCEPT	Accept proposal
+REJECT	Reject proposal
+COMMIT	Commit to contract
+EXECUTE	Execute contract
+VERIFY	Request verification
+ESCALATE	Escalate to human
+4. State Transitions
+Valid Transitions
+text
+DISCOVER → PROPOSE
+PROPOSE → ACCEPT | REJECT | TIMEOUT
+ACCEPT → COMMIT | TIMEOUT
+COMMIT → EXECUTE | CANCELLED | TIMEOUT
+EXECUTE → VERIFY | FAILED | TIMEOUT
+VERIFY → DONE | ESCALATED | FAILED
+ESCALATED → DONE | FAILED
+Invalid Transitions
+Any transition not listed above is invalid and MUST be rejected.
 
-2. Autonomous LLM Demo ✅
-bash
-python protocol/examples/llm_agent_demo.py
-Agents use LLM (Ollama, Claude, GPT-4, Gemini, Mistral) for decisions.
-Status: ✅ Working with 5+ providers.
+5. Contract Specification
+Contracts are the central mechanism of Vireo protocol.
 
-3. Multi-Agent Demo with Roles ✅
-bash
-python protocol/examples/multi_agent_demo.py
-Master Agent coordinates 7+ specialized agents.
+Contract Structure
+json
+{
+  "contract_id": "uuid",
+  "parties": ["agent-123", "agent-456"],
+  "terms": {
+    "max_tokens": 1000,
+    "timeout_sec": 60,
+    "max_cost_usd": 10.0,
+    "max_rounds": 5
+  },
+  "obligations": {
+    "agent-123": {
+      "action": "analyze_image",
+      "input": { "image_url": "..." },
+      "output": { "format": "json" }
+    },
+    "agent-456": {
+      "action": "report",
+      "input": { "analysis": "$ref:agent-123.output" },
+      "output": { "format": "json" }
+    }
+  },
+  "signatures": {
+    "agent-123": "base64_signature",
+    "agent-456": "base64_signature"
+  }
+}
+Contract Validation
+Syntax: All required fields present
 
-4. Negotiation Demo 🆕
-bash
-python protocol/examples/negotiation_demo.py
-Full negotiation cycle with counter-offers.
+Semantics: Terms are valid
 
-5. MCP Demo 🆕
-bash
-python protocol/examples/mcp_demo.py
-Integration with Model Context Protocol.
+Capabilities: Agents have required capabilities
 
-📊 Comparison: Vireo vs MCP vs A2A
-Feature	Vireo	MCP (Anthropic)	A2A (Google)
-Own Language	✅ Yes	❌ No	❌ No
-Protocol	✅ Yes	✅ Yes	✅ Yes
-Runtime	✅ Yes	❌ No	❌ No
-Tensors + Autodiff	✅ Yes	❌ No	❌ No
-Open Source	✅ Yes	✅ Yes	❌ No
-Free	✅ Yes	✅ Yes	❌ No
-Local Execution	✅ Yes (Ollama)	⚠️ Partial	❌ No
-Multi-Agent Roles	✅ Yes (7 roles + Master)	❌ No	✅ Yes
-Contracts	✅ Yes	❌ No	❌ No
-Guardian Agent	✅ Yes	❌ No	❌ No
-Formal Language	✅ Yes	❌ No	❌ No
-🚀 Next Version Priorities
-Priority	Feature	Target
-1	Ed25519 Protocol Integration	v1.5.0
-2	DID Implementation	v1.5.0
-3	Distributed Transport (Redis/Kafka/NATS)	v1.5.0
-4	State Persistence	v1.5.0
-5	Full Parser & Compiler	v1.5.0
-6	WebAssembly	v1.6.0
-7	Formal Verification (TLA+)	v2.0.0
-🔗 Links
-PROTOCOL.md — This document
+Signatures: All parties have signed
 
-README.md — Project overview
+6. VERIFY State
+The VERIFY state ensures contract execution is cryptographically verifiable.
 
-language/syntax.md — Language syntax
+Verification Process
+Collect evidence — Execution logs, outputs, signatures
 
-docs/contracts.md — Contracts documentation
+Validate signatures — All parties' signatures
 
-docs/security.md — Security documentation
+Verify outputs — Output matches contract specification
+
+Check constraints — Max tokens, cost, time
+
+Produce verification proof — Cryptographic attestation
+
+Verification Failure
+If verification fails:
+
+Move to ESCALATED state
+
+Notify all parties
+
+Log failure details
+
+7. ESCALATE State
+The ESCALATE state handles issues that require human intervention.
+
+Escalation Triggers
+Verification failure
+
+Contract violation
+
+Timeout
+
+Dispute between agents
+
+Unauthorized action
+
+Escalation Process
+Generate escalation report — Full context
+
+Notify human operator — Via API or UI
+
+Await decision — ACCEPT, REJECT, MODIFY
+
+Resolve — Based on human decision
+
+8. Trust Bootstrap Protocol
+Initial Trust Setup
+Identity Generation — Each agent generates Ed25519 keypair
+
+Public Key Registration — Register with discovery service
+
+Challenge-Response — Verify identity ownership
+
+Trust Establishment — Mutual verification
+
+Trust Verification
+python
+# Trust verification flow
+def verify_identity(agent_id, public_key, signature, challenge):
+    # 1. Verify signature
+    if not verify_signature(public_key, signature, challenge):
+        return False
+    
+    # 2. Check against registry
+    if not registry.check_public_key(agent_id, public_key):
+        return False
+    
+    # 3. Verify challenge matches
+    if not verify_challenge(agent_id, challenge):
+        return False
+    
+    return True
+9. Capability Discovery
+Discovery Request
+json
+{
+  "type": "DISCOVER",
+  "sender_id": "agent-123",
+  "payload": {
+    "capabilities_required": ["analyze_image", "report"],
+    "constraints": {
+      "max_cost_usd": 5.0,
+      "max_tokens": 1000
+    }
+  }
+}
+Discovery Response
+json
+{
+  "type": "DISCOVER_RESPONSE",
+  "sender_id": "agent-456",
+  "payload": {
+    "capabilities": [
+      {
+        "name": "analyze_image",
+        "description": "Analyze medical images",
+        "cost": 1.0,
+        "estimated_tokens": 500
+      }
+    ],
+    "accepts_contract": true
+  }
+}
+10. Transport Layer
+Redis Transport
+python
+# Message serialization
+class Message:
+    def to_dict(self):
+        return {
+            "version": self.version,
+            "type": self.type,
+            "message_id": self.message_id,
+            "timestamp": self.timestamp,
+            "sender_id": self.sender_id,
+            "recipient_id": self.recipient_id,
+            "payload": self.payload,
+            "metadata": self.metadata
+        }
+    
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            version=data.get("version", "2.0.1"),
+            type=data["type"],
+            message_id=data["message_id"],
+            timestamp=data["timestamp"],
+            sender_id=data["sender_id"],
+            recipient_id=data["recipient_id"],
+            payload=data["payload"],
+            metadata=data.get("metadata", {})
+        )
+11. Error Codes
+Code	Description
+E001	Invalid message format
+E002	Unauthorized sender
+E003	Contract validation failed
+E004	Capability not available
+E005	Timeout occurred
+E006	Verification failed
+E007	Escalation required
+E008	Signature verification failed
+12. Security Considerations
+Cryptographic Requirements
+Signing: Ed25519 (SHA-512)
+
+Hashing: SHA-256
+
+Encryption: AES-256-GCM (optional)
+
+Attack Vectors
+Vector	Mitigation
+Replay attack	Message IDs + timestamps
+MITM	Signatures + TLS
+Identity spoofing	Public key verification
+Denial of service	Rate limiting
+13. Future Extensions
+WASM Runtime: Execute Vireo code in sandboxed environment
+
+MCP Adapter: Integration with Model Context Protocol
+
+A2A Adapter: Compatibility with Google's A2A
+
+Formal Verification: Mathematical proof of contract correctness
+
+References
+LANGUAGE.md
+
+AST.md
+
+WIRE_FORMAT.md
+
+CONTRACTS.md
+
+TRUST_BOOTSTRAP.md
