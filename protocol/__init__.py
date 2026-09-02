@@ -3,7 +3,18 @@
 # ============================================================
 
 from .config import LLMConfig
-from .llm_provider import LLMProvider, create_llm_provider
+from .llm_provider import (
+    LLMProvider,
+    create_llm_provider,
+    OllamaProvider,
+    GeminiProvider,
+    OpenAIProvider,
+    ClaudeProvider,
+    MistralProvider,  # 🆕
+    get_provider,
+    AVAILABLE_PROVIDERS,
+    AVAILABLE_MODELS,
+)
 from .llm_agent import LLMAgent
 from .agent import Agent
 from .message import Message, make_message
@@ -22,44 +33,65 @@ from .transport.in_memory import InMemoryEventBus
 __all__ = [
     # Config
     'LLMConfig',
-    # LLM
+    
+    # LLM Providers
     'LLMProvider',
     'create_llm_provider',
+    'OllamaProvider',
+    'GeminiProvider',
+    'OpenAIProvider',
+    'ClaudeProvider',
+    'MistralProvider',  # 🆕
+    'get_provider',
+    'AVAILABLE_PROVIDERS',
+    'AVAILABLE_MODELS',
+    
+    # LLM Agent
     'LLMAgent',
+    
     # Agent
     'Agent',
+    
     # Message
     'Message',
     'make_message',
+    
     # Intent
     'Intent',
+    
     # State
     'DialogueState',
     'DialogueStateMachine',
     'InvalidTransition',
+    
     # Capabilities
     'CapabilityRegistry',
     'Capability',
+    
     # Trust
     'TrustManager',
     'Identity',
     'Permission',
     'verify',
     'attach_signature',
+    
     # Contract
     'Contract',
     'Proposal',
     'create_default_contract',
+    
     # Conflict
     'ContextStore',
     'ConflictStrategy',
     'ConflictError',
+    
     # Runtime
     'RuntimeBridge',
     'real_vireo_executor',
     'create_runtime_bridge',
+    
     # Transport
     'Transport',
     'Handler',
-    'InMemoryEventBus'
+    'InMemoryEventBus',
 ]
