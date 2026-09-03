@@ -30,20 +30,25 @@ Protocols define how agents communicate. Vireo defines what they communicate.
 
 ### 🎯 Architecture
 
-Vireo works as a **control plane** above existing agent protocols:
-
-┌─────────────────────────────────────────────────────────┐
-│                    VIREO PROTOCOL                       │
-│              (Candidate for standardization)            │
-│                                                         │
-│  Intent • Contracts • Negotiation • Trust               │
-│  Capabilities • Verification • Execution                │
-└────────────────────────┬────────────────────────────────┘
-                         │
-         ┌───────────────┼───────────────┐
-         ▼               ▼               ▼
-   VIREO LANGUAGE   REFERENCE PLATFORM   EXTENSIONS
-   (Core + Ext)     (v2.0.2)            (ML, Vision, ASR)
+```text
+┌─────────────────────────────────────────┐
+│             VIREO PROTOCOL              │
+│                                         │
+│  Intent · Contracts · Negotiation       │
+│  Trust · Capabilities · Verification    │
+│  Execution · Lifecycle                  │
+└───────────────────┬─────────────────────┘
+                    │
+        ┌───────────┼───────────┐
+        │           │           │
+        ▼           ▼           ▼
+     LANGUAGE   PLATFORM    EXTENSIONS
+     ─────────   ────────    ──────────
+     Core +     Reference    ML
+     Extensions Implementation Vision
+                  v2.0.2     ASR
+                             Edge
+```
 Key principle:
 
 "LLMs provide intelligence. Vireo provides structure, execution, verification and interoperability."
