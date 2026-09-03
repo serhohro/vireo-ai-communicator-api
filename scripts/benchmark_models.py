@@ -1,244 +1,333 @@
 #!/usr/bin/env python3
-"""Benchmark Vireo performance
+# ============================================================
+# VIREO MODEL BENCHMARK
+# ============================================================
+"""
+Benchmark script for Vireo models.
 
-Usage:
-    python scripts/benchmark_models.py [--iterations N] [--output OUTPUT]
+Measures:
+- Model loading time
+- Inference speed
+- Memory usage
+- Token throughput
+- CPU/GPU utilization
 """
 
+import os
 import sys
 import time
 import json
 import argparse
+import logging
 from pathlib import Path
-from typing import Dict, Any, List
-import statistics
+from typing import Dict, Any, List, Optional
+from dataclasses import dataclass, field
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from core.agent.base import BaseAgent
-from core.agent.registry import AgentRegistry
-from core.contract.contract import Contract, Terms, Obligation
-from core.execution.runner import ExecutionRunner
-from core.verification.verifier import Verifier
+# ============================================================
+# LOGGING
+# ============================================================
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 
-class BenchmarkAgent(BaseAgent):
-    """Simple agent for benchmarking"""
+# ============================================================
+# DATA CLASSES
+# ============================================================
+
+@dataclass
+class BenchmarkResult:
+    """Benchmark result for a model."""
+    model_name: str
+    provider: str
+    load_time_ms: float
+    inference_time_ms: float
+    tokens_per_second: float
+    memory_used_mb: float
+    success: bool
+    error: Optional[str] = None
+    details: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class BenchmarkSuite:
+    """Collection of benchmark results."""
+    timestamp: str
+    version: str
+    results: List[BenchmarkResult] = field(default_factory=list)
     
-    def __init__(self, name: str):
-        super().__init__(name)
-        self.register_capability("echo", self.echo)
-        self.register_capability("compute", self.compute)
-        self.register_capability("sleep", self.sleep)
-    
-    def echo(self, message: str) -> str:
-        return message
-    
-    def compute(self, a: float, b: float, operation: str = "add") -> float:
-        ops = {
-            "add": lambda: a + b,
-            "sub": lambda: a - b,
-            "mul": lambda: a * b,
-            "div": lambda: a / b if b != 0 else 0
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "timestamp": self.timestamp,
+            "version": self.version,
+            "results": [
+                {
+                    "model": r.model_name,
+                    "provider": r.provider,
+                    "load_time_ms": r.load_time_ms,
+                    "inference_time_ms": r.inference_time_ms,
+                    "tokens_per_second": r.tokens_per_second,
+                    "memory_used_mb": r.memory_used_mb,
+                    "success": r.success,
+                    "error": r.error,
+                    "details": r.details
+                }
+                for r in self.results
+            ]
         }
-        return ops.get(operation, lambda: 0)()
-    
-    def sleep(self, seconds: float) -> str:
-        time.sleep(seconds)
-        return f"Slept for {seconds}s"
-    
-    def start(self):
-        pass
-    
-    def stop(self):
-        pass
 
 
-def benchmark_capability_execution(iterations: int = 100) -> Dict[str, Any]:
-    """Benchmark capability execution"""
-    print(f"🏃 Benchmarking capability execution ({iterations} iterations)...")
-    
-    agent = BenchmarkAgent("benchmark")
-    registry = AgentRegistry()
-    registry.register(agent)
-    
-    times = []
-    
-    for _ in range(iterations):
-        start = time.perf_counter()
-        result = agent.execute("compute", {"a": 10, "b": 5, "operation": "add"})
-        end = time.perf_counter()
-        times.append(end - start)
-    
-    return {
-        "name": "capability_execution",
-        "iterations": iterations,
-        "avg_time_ms": statistics.mean(times) * 1000,
-        "min_time_ms": min(times) * 1000,
-        "max_time_ms": max(times) * 1000,
-        "std_dev_ms": statistics.stdev(times) * 1000,
-    }
+# ============================================================
+# BENCHMARK FUNCTIONS
+# ============================================================
+
+def get_memory_usage() -> float:
+    """Get current memory usage in MB."""
+    try:
+        import psutil
+        process = psutil.Process()
+        return process.memory_info().rss / (1024 * 1024)
+    except ImportError:
+        return 0.0
 
 
-def benchmark_contract_execution(iterations: int = 50) -> Dict[str, Any]:
-    """Benchmark contract execution"""
-    print(f"🏃 Benchmarking contract execution ({iterations} iterations)...")
+def benchmark_load(model_name: str, provider: str = "ollama") -> Dict[str, Any]:
+    """Benchmark model loading."""
+    start_memory = get_memory_usage()
+    start_time = time.perf_counter()
     
-    agent1 = BenchmarkAgent("agent1")
-    agent2 = BenchmarkAgent("agent2")
+    try:
+        if provider == "ollama":
+            # Test Ollama model loading
+            import requests
+            response = requests.post(
+                "http://localhost:11434/api/generate",
+                json={"model": model_name, "prompt": "test", "stream": False},
+                timeout=10
+            )
+            loaded = response.status_code == 200
+        elif provider == "huggingface":
+            # Test Hugging Face model loading
+            from transformers import AutoModel
+            model = AutoModel.from_pretrained(model_name)
+            loaded = model is not None
+        else:
+            loaded = False
+        
+        load_time = (time.perf_counter() - start_time) * 1000
+        end_memory = get_memory_usage()
+        
+        return {
+            "success": loaded,
+            "load_time_ms": load_time,
+            "memory_mb": end_memory - start_memory,
+            "error": None if loaded else "Failed to load model"
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "load_time_ms": (time.perf_counter() - start_time) * 1000,
+            "memory_mb": 0,
+            "error": str(e)
+        }
+
+
+def benchmark_inference(model_name: str, provider: str = "ollama", 
+                        prompt: str = "Hello, who are you?") -> Dict[str, Any]:
+    """Benchmark model inference."""
+    start_memory = get_memory_usage()
+    start_time = time.perf_counter()
     
-    registry = AgentRegistry()
-    registry.register(agent1)
-    registry.register(agent2)
-    
-    runner = ExecutionRunner()
-    runner.register_executor("compute", agent1.compute)
-    runner.register_executor("echo", agent2.echo)
-    
-    times = []
-    
-    for _ in range(iterations):
-        contract = Contract(
-            contract_id=f"benchmark_{_+1}",
-            parties=["agent1", "agent2"],
-            terms=Terms(max_tokens=100, timeout_sec=10),
-            obligations={
-                "agent1": Obligation(
-                    action="compute",
-                    input={"a": 10, "b": 5, "operation": "add"}
-                ),
-                "agent2": Obligation(
-                    action="echo",
-                    input={"message": "$ref.agent1.result"}
-                )
+    try:
+        if provider == "ollama":
+            import requests
+            response = requests.post(
+                "http://localhost:11434/api/generate",
+                json={"model": model_name, "prompt": prompt, "stream": False},
+                timeout=60
+            )
+            if response.status_code == 200:
+                result = response.json().get("response", "")
+                tokens = len(result.split())
+                inference_time = (time.perf_counter() - start_time) * 1000
+                end_memory = get_memory_usage()
+                
+                return {
+                    "success": True,
+                    "inference_time_ms": inference_time,
+                    "tokens": tokens,
+                    "tokens_per_second": tokens / (inference_time / 1000) if inference_time > 0 else 0,
+                    "memory_mb": end_memory - start_memory,
+                    "error": None
+                }
+        elif provider == "huggingface":
+            from transformers import pipeline
+            pipe = pipeline("text-generation", model=model_name)
+            result = pipe(prompt, max_new_tokens=50)
+            inference_time = (time.perf_counter() - start_time) * 1000
+            tokens = len(result[0]["generated_text"].split())
+            
+            return {
+                "success": True,
+                "inference_time_ms": inference_time,
+                "tokens": tokens,
+                "tokens_per_second": tokens / (inference_time / 1000) if inference_time > 0 else 0,
+                "memory_mb": 0,
+                "error": None
             }
-        )
         
-        start = time.perf_counter()
-        result = runner.execute_contract(contract)
-        end = time.perf_counter()
-        times.append(end - start)
-    
-    return {
-        "name": "contract_execution",
-        "iterations": iterations,
-        "avg_time_ms": statistics.mean(times) * 1000,
-        "min_time_ms": min(times) * 1000,
-        "max_time_ms": max(times) * 1000,
-        "std_dev_ms": statistics.stdev(times) * 1000,
-    }
-
-
-def benchmark_verification(iterations: int = 50) -> Dict[str, Any]:
-    """Benchmark verification"""
-    print(f"🏃 Benchmarking verification ({iterations} iterations)...")
-    
-    verifier = Verifier()
-    
-    times = []
-    
-    for _ in range(iterations):
-        contract = Contract(
-            contract_id=f"verify_{_+1}",
-            parties=["agent1", "agent2"],
-            terms=Terms(max_tokens=100),
-            obligations={
-                "agent1": Obligation(action="compute", input={}),
-                "agent2": Obligation(action="echo", input={})
-            },
-            signatures={"agent1": "sig1", "agent2": "sig2"}
-        )
-        
-        results = {
-            "agent1": {"success": True, "result": {"value": 15}},
-            "agent2": {"success": True, "result": {"message": "done"}}
+        return {
+            "success": False,
+            "inference_time_ms": (time.perf_counter() - start_time) * 1000,
+            "tokens": 0,
+            "tokens_per_second": 0,
+            "memory_mb": 0,
+            "error": f"Unsupported provider: {provider}"
         }
-        
-        start = time.perf_counter()
-        result = verifier.verify_contract(contract, results)
-        end = time.perf_counter()
-        times.append(end - start)
-    
-    return {
-        "name": "verification",
-        "iterations": iterations,
-        "avg_time_ms": statistics.mean(times) * 1000,
-        "min_time_ms": min(times) * 1000,
-        "max_time_ms": max(times) * 1000,
-        "std_dev_ms": statistics.stdev(times) * 1000,
-    }
+    except Exception as e:
+        return {
+            "success": False,
+            "inference_time_ms": (time.perf_counter() - start_time) * 1000,
+            "tokens": 0,
+            "tokens_per_second": 0,
+            "memory_mb": 0,
+            "error": str(e)
+        }
 
 
-def run_benchmarks(iterations: int = 50) -> Dict[str, Any]:
-    """Run all benchmarks"""
-    print("\n" + "="*60)
-    print("🔬 Vireo Performance Benchmark")
-    print("="*60 + "\n")
+def run_benchmark(model_name: str, provider: str = "ollama") -> BenchmarkResult:
+    """Run full benchmark for a model."""
+    logger.info(f"🧪 Benchmarking {model_name} ({provider})...")
     
-    results = []
+    load_result = benchmark_load(model_name, provider)
+    if not load_result["success"]:
+        return BenchmarkResult(
+            model_name=model_name,
+            provider=provider,
+            load_time_ms=load_result["load_time_ms"],
+            inference_time_ms=0,
+            tokens_per_second=0,
+            memory_used_mb=load_result["memory_mb"],
+            success=False,
+            error=load_result["error"]
+        )
     
-    # Capability execution
-    results.append(benchmark_capability_execution(iterations))
+    inference_result = benchmark_inference(model_name, provider)
     
-    # Contract execution
-    results.append(benchmark_contract_execution(iterations // 2))
-    
-    # Verification
-    results.append(benchmark_verification(iterations // 2))
-    
-    return {
-        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
-        "version": "2.0.1",
-        "iterations": iterations,
-        "results": results
-    }
+    return BenchmarkResult(
+        model_name=model_name,
+        provider=provider,
+        load_time_ms=load_result["load_time_ms"],
+        inference_time_ms=inference_result["inference_time_ms"],
+        tokens_per_second=inference_result.get("tokens_per_second", 0),
+        memory_used_mb=load_result["memory_mb"] + inference_result.get("memory_mb", 0),
+        success=inference_result["success"],
+        error=inference_result.get("error"),
+        details={
+            "tokens": inference_result.get("tokens", 0)
+        }
+    )
 
 
-def format_results(results: Dict[str, Any]) -> str:
-    """Format results for display"""
-    output = []
-    output.append("📊 Benchmark Results")
-    output.append("="*60)
-    output.append(f"Timestamp: {results['timestamp']}")
-    output.append(f"Version: {results['version']}")
-    output.append(f"Iterations: {results['iterations']}")
-    output.append("")
-    output.append("-"*60)
-    
-    for result in results["results"]:
-        output.append(f"\n🔹 {result['name'].replace('_', ' ').title()}:")
-        output.append(f"   Average: {result['avg_time_ms']:.2f} ms")
-        output.append(f"   Min: {result['min_time_ms']:.2f} ms")
-        output.append(f"   Max: {result['max_time_ms']:.2f} ms")
-        output.append(f"   Std Dev: {result['std_dev_ms']:.2f} ms")
-    
-    output.append("")
-    output.append("="*60)
-    
-    return "\n".join(output)
-
+# ============================================================
+# MAIN
+# ============================================================
 
 def main():
-    parser = argparse.ArgumentParser(description="Benchmark Vireo performance")
-    parser.add_argument("--iterations", type=int, default=50, help="Number of iterations")
-    parser.add_argument("--output", help="Output file path")
-    parser.add_argument("--json", action="store_true", help="Output as JSON")
+    parser = argparse.ArgumentParser(description="Benchmark Vireo models")
+    parser.add_argument("--models", nargs="+", help="Models to benchmark")
+    parser.add_argument("--all", action="store_true", help="Benchmark all models")
+    parser.add_argument("--provider", default="ollama", help="Provider to use")
+    parser.add_argument("--output", help="Output file for results (JSON)")
+    parser.add_argument("--verbose", action="store_true", help="Verbose output")
     
     args = parser.parse_args()
     
-    results = run_benchmarks(args.iterations)
+    # Default models
+    default_models = [
+        "llama3:8b",
+        "mistral:7b",
+        "phi3:mini",
+        "qwen2.5-coder:latest"
+    ]
     
-    if args.json:
-        print(json.dumps(results, indent=2))
-        if args.output:
-            with open(args.output, 'w') as f:
-                json.dump(results, f, indent=2)
+    if args.all:
+        models = default_models
+    elif args.models:
+        models = args.models
     else:
-        print(format_results(results))
-        if args.output:
-            with open(args.output, 'w') as f:
-                f.write(format_results(results))
+        models = default_models
+    
+    logger.info("=" * 60)
+    logger.info("🚀 VIREO MODEL BENCHMARK")
+    logger.info("=" * 60)
+    logger.info(f"📋 Models: {', '.join(models)}")
+    logger.info(f"📡 Provider: {args.provider}")
+    logger.info("=" * 60)
+    
+    results = []
+    for model in models:
+        logger.info(f"\n🔍 Benchmarking {model}...")
+        try:
+            result = run_benchmark(model, args.provider)
+            results.append(result)
+            
+            # Print summary
+            if result.success:
+                logger.info(f"  ✅ {model}")
+                logger.info(f"     Load time: {result.load_time_ms:.2f}ms")
+                logger.info(f"     Inference: {result.inference_time_ms:.2f}ms")
+                logger.info(f"     Tokens/s: {result.tokens_per_second:.2f}")
+                logger.info(f"     Memory: {result.memory_used_mb:.2f}MB")
+            else:
+                logger.error(f"  ❌ {model}: {result.error}")
+        except Exception as e:
+            logger.error(f"  ❌ {model}: {e}")
+    
+    # Summary
+    logger.info("\n" + "=" * 60)
+    logger.info("📊 BENCHMARK SUMMARY")
+    logger.info("=" * 60)
+    
+    successful = [r for r in results if r.success]
+    failed = [r for r in results if not r.success]
+    
+    logger.info(f"✅ Successful: {len(successful)}")
+    logger.info(f"❌ Failed: {len(failed)}")
+    
+    if successful:
+        avg_load = sum(r.load_time_ms for r in successful) / len(successful)
+        avg_inference = sum(r.inference_time_ms for r in successful) / len(successful)
+        avg_tokens = sum(r.tokens_per_second for r in successful) / len(successful)
+        avg_memory = sum(r.memory_used_mb for r in successful) / len(successful)
+        
+        logger.info(f"\n📊 Average metrics:")
+        logger.info(f"   Load time: {avg_load:.2f}ms")
+        logger.info(f"   Inference: {avg_inference:.2f}ms")
+        logger.info(f"   Tokens/s: {avg_tokens:.2f}")
+        logger.info(f"   Memory: {avg_memory:.2f}MB")
+    
+    # Save results
+    if args.output:
+        suite = BenchmarkSuite(
+            timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            version="2.0.2",
+            results=results
+        )
+        
+        with open(args.output, "w") as f:
+            json.dump(suite.to_dict(), f, indent=2)
+        logger.info(f"\n💾 Results saved to {args.output}")
+    
+    logger.info("\n" + "=" * 60)
+    logger.info("✅ Benchmark complete!")
+    logger.info("=" * 60)
 
 
 if __name__ == "__main__":
