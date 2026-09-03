@@ -1,10 +1,10 @@
 # 🌿 Vireo — The World's First AI-to-AI Communication Language
 
-**Version: v2.0.1**
+**Version: v2.0.2**
 
 Vireo is an open programming language and protocol designed for secure AI-to-AI communication, negotiation, and coordination.
 
-> 🧪 **Status: Research Prototype (v2.0.1)**  
+> 🧪 **Status: Research Prototype (v2.0.2)**  
 > Language core and interpreter are implemented. Protocol foundations are in active development.  
 > Multi-agent system is partially implemented — negotiation flow works.  
 > LLM integration with 6+ providers works.  
@@ -44,44 +44,39 @@ Vireo works as a **control plane** above existing agent protocols:
          ┌───────────────┼───────────────┐
          ▼               ▼               ▼
    VIREO LANGUAGE   REFERENCE PLATFORM   EXTENSIONS
-   (Core + Ext)     (v2.0.1)            (ML, Vision, ASR)
+   (Core + Ext)     (v2.0.2)            (ML, Vision, ASR)
+Key principle:
 
-**Key principle:**
+"LLMs provide intelligence. Vireo provides structure, execution, verification and interoperability."
 
-> *"LLMs provide intelligence. Vireo provides structure, execution, verification and interoperability."*
+"Let PyTorch handle the tensors; let Vireo handle the trust."
 
-> *"Let PyTorch handle the tensors; let Vireo handle the trust."*
-
----
-
-## 🔄 Lifecycle
-DISCOVER → PROPOSE → NEGOTIATE → COMMIT → EXECUTE → VERIFY → DONE
-│ │ │ │ │
-├→ REJECTED ├→ REJECTED ├→ CANCELLED ├→ FAILED ├→ ESCALATED
-└→ TIMEOUT └→ TIMEOUT └→ TIMEOUT └→ TIMEOUT
-
+🔄 Lifecycle
 text
+DISCOVER → PROPOSE → NEGOTIATE → COMMIT → EXECUTE → VERIFY → DONE
+     │              │            │            │            │
+     ├→ REJECTED   ├→ REJECTED  ├→ CANCELLED ├→ FAILED   ├→ ESCALATED
+     └→ TIMEOUT     └→ TIMEOUT   └→ TIMEOUT    └→ TIMEOUT
+✨ Features
+🌐 Programming Language — Full language with formal grammar (core + extensions)
 
----
+🧠 6+ LLM Providers — Ollama, Gemini, Claude, OpenAI, Mistral
 
-## ✨ Features
+🎭 8 Agent Roles — Master, Vision, NLP, Analyst, Researcher, Executor, Guardian, Teacher
 
-- **🌐 Programming Language** — Full language with formal grammar (core + extensions)
-- **🧠 6+ LLM Providers** — Ollama, Gemini, Claude, OpenAI, Mistral
-- **🎭 8 Agent Roles** — Master, Vision, NLP, Analyst, Researcher, Executor, Guardian, Teacher
-- **🔐 Ed25519 Cryptography** — Real cryptographic identity and signatures
-- **🔄 Autonomous Negotiation** — propose → negotiate → commit → execute → verify → inform
-- **📊 Tensor Operations** — Built-in tensor and neural network support
-- **🌍 Multi-Language** — 🇺🇦 Ukrainian and 🇬🇧 English
-- **🔒 Trust Bootstrap Protocol** — Ed25519-based identity and whitelist
+🔐 Ed25519 Cryptography — Real cryptographic identity and signatures
 
----
+🔄 Autonomous Negotiation — propose → negotiate → commit → execute → verify → inform
 
-## 🚀 Quick Examples
+📊 Tensor Operations — Built-in tensor and neural network support
 
-### Agent with Contract
+🌍 Multi-Language — 🇺🇦 Ukrainian and 🇬🇧 English
 
-```vireo
+🔒 Trust Bootstrap Protocol — Ed25519-based identity and whitelist
+
+🚀 Quick Examples
+Agent with Contract
+vireo
 contract Agreement {
     max_tokens: Int = 1000
     timeout_sec: Int = 30
