@@ -50,12 +50,103 @@ Key principle:
 
 "Let PyTorch handle the tensors; let Vireo handle the trust."
 
-🔄 Lifecycle
+🔄 Agent Lifecycle
 
-DISCOVER → PROPOSE → NEGOTIATE → COMMIT → EXECUTE → VERIFY → DONE
-     │              │            │            │            │
-     ├→ REJECTED   ├→ REJECTED  ├→ CANCELLED ├→ FAILED   ├→ ESCALATED
-     └→ TIMEOUT     └→ TIMEOUT   └→ TIMEOUT    └→ TIMEOUT
+Vireo uses a formal lifecycle for agent-to-agent interactions:
+
+```mermaid
+stateDiagram-v2
+    [*] --> DISCOVER
+
+    DISCOVER --> PROPOSE
+    DISCOVER --> REJECTED
+    DISCOVER --> TIMEOUT
+
+    PROPOSE --> NEGOTIATE
+    PROPOSE --> REJECTED
+    PROPOSE --> TIMEOUT
+
+    NEGOTIATE --> COMMIT
+    NEGOTIATE --> REJECTED
+    NEGOTIATE --> TIMEOUT
+
+    COMMIT --> EXECUTE
+    COMMIT --> CANCELLED
+    COMMIT --> TIMEOUT
+
+    EXECUTE --> VERIFY
+    EXECUTE --> FAILED
+    EXECUTE --> TIMEOUT
+
+    VERIFY --> DONE
+    VERIFY --> ESCALATED
+
+    ESCALATED --> DONE
+    ESCALATED --> FAILED
+
+    DONE --> [*]
+    REJECTED --> [*]
+    CANCELLED --> [*]
+    FAILED --> [*]
+```
+
+### Lifecycle Flow
+
+```text
+DISCOVER
+   │
+   ▼
+PROPOSE
+   │
+   ▼
+NEGOTIATE
+   │
+   ▼
+COMMIT
+   │
+   ▼
+EXECUTE
+   │
+   ▼
+VERIFY
+   │
+   ├──────────────► DONE
+   │
+   └──────────────► ESCALATED
+                         │
+                         ▼
+                        DONE
+```
+
+### Terminal & Exceptional States
+
+| State       | Meaning                                           |
+| ----------- | ------------------------------------------------- |
+| `DONE`      | Interaction completed and verified successfully   |
+| `REJECTED`  | Proposal or negotiation was rejected              |
+| `CANCELLED` | Committed operation was cancelled                 |
+| `FAILED`    | Execution or resolution failed                    |
+| `ESCALATED` | Verification could not be completed automatically |
+| `TIMEOUT`   | Protocol operation exceeded its allowed time      |
+
+### Protocol Principle
+
+The important distinction is that **`EXECUTE` does not directly mean success**.
+
+Every execution must pass through:
+
+```text
+EXECUTE → VERIFY → DONE
+```
+
+If verification cannot establish a valid result:
+
+```text
+EXECUTE → VERIFY → ESCALATED
+```
+
+This creates an explicit separation between **execution** and **verification**, allowing Vireo to support more reliable and auditable autonomous agent workflows.
+
 ✨ Features
 🌐 Programming Language — Full language with formal grammar (core + extensions)
 
