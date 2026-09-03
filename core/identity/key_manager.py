@@ -1,97 +1,319 @@
-"""Key Management for Vireo v2.0.1"""
+"""
+Key Manager — управління ключами та їх ротація
+"""
 
-from typing import Optional, Tuple
+import time
 import base64
-import os
-import json
+from typing import Dict, Optional, List, Tuple
+from dataclasses import dataclass, field
+from cryptography.hazmat.primitives.asymmetric.ed25519 import (
+    Ed25519PrivateKey, Ed25519PublicKey
+)
+from cryptography.exceptions import InvalidSignature
+import logging
 
-from cryptography.hazmat.primitives import ed25519
-from cryptography.hazmat.primitives.asymmetric import ed25519 as ed25519_asym
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class KeyRecord:
+    """Запис про ключ агента."""
+    public_key_hex: str
+    created_at: float
+    active: bool = True
+    previous_key: Optional[str] = None
+    revoked_at: Optional[float] = None
 
 
 class KeyManager:
-    """Ed25519 key management"""
+    """
+    Управління ключами агентів.
     
-    def __init__(self, agent_id: str):
-        self.agent_id = agent_id
-        self._private_key: Optional[ed25519_asym.Ed25519PrivateKey] = None
-        self._public_key: Optional[bytes] = None
-        self._load_or_generate_keys()
+    Підтримує:
+    - Генерацію ключів
+    - Ротацію ключів
+    - Відкликання ключів
+    - Історію ключів
+    """
     
-    def _load_or_generate_keys(self) -> None:
-        """Load existing keys or generate new ones"""
-        # Try to load from file
-        key_path = f"./keys/{self.agent_id}.key"
+    def __init__(self):
+        self._keys: Dict[str, KeyRecord] = {}  # agent_id → KeyRecord
+        self._history: Dict[str, List[KeyRecord]] = {}  # agent_id → history
+        self._private_key = Ed25519PrivateKey.generate()
+        self._public_key = self._private_key.public_key()
+        self._public_key_hex = self._public_key.public_bytes_raw().hex()
+    
+    def register_key(self, agent_id: str, public_key_hex: str) -> bool:
+        """
+        Реєструє ключ агента.
         
-        if os.path.exists(key_path):
-            try:
-                with open(key_path, 'r') as f:
-                    data = json.load(f)
-                    private_bytes = base64.b64decode(data["private_key"])
-                    self._private_key = ed25519_asym.Ed25519PrivateKey.from_private_bytes(private_bytes)
-                    self._public_key = self._private_key.public_key().public_bytes_raw()
-                return
-            except Exception:
-                pass
+        Args:
+            agent_id: ID агента
+            public_key_hex: Публічний ключ у hex (64 символи)
         
-        # Generate new keys
-        self._private_key = ed25519_asym.Ed25519PrivateKey.generate()
-        self._public_key = self._private_key.public_key().public_bytes_raw()
+        Returns:
+            True якщо реєстрація успішна
+        """
+        # Валідація ключа
+        if not self._validate_public_key(public_key_hex):
+            logger.error(f"Invalid public key for {agent_id}")
+            return False
         
-        # Save keys
-        os.makedirs("./keys", exist_ok=True)
-        with open(key_path, 'w') as f:
-            json.dump({
-                "agent_id": self.agent_id,
-                "private_key": base64.b64encode(
-                    self._private_key.private_bytes_raw()
-                ).decode()
-            }, f, indent=2)
+        # Перевіряємо, чи агент вже існує
+        if agent_id in self._keys:
+            logger.warning(f"Agent {agent_id} already registered")
+            return False
+        
+        # Створюємо запис
+        record = KeyRecord(
+            public_key_hex=public_key_hex,
+            created_at=time.time()
+        )
+        self._keys[agent_id] = record
+        self._history.setdefault(agent_id, []).append(record)
+        
+        logger.info(f"✅ Key registered for {agent_id}")
+        return True
     
-    def get_public_key(self) -> bytes:
-        """Get public key"""
-        return self._public_key
+    def rotate_key(self, agent_id: str, old_public_key_hex: str,
+                   new_public_key_hex: str, signature_hex: str) -> bool:
+        """
+        Ротація ключа.
+        
+        Args:
+            agent_id: ID агента
+            old_public_key_hex: Старий публічний ключ
+            new_public_key_hex: Новий публічний ключ
+            signature_hex: Підпис старого ключа (hex)
+        
+        Returns:
+            True якщо ротація успішна
+        """
+        # Перевіряємо, чи існує агент
+        if agent_id not in self._keys:
+            logger.error(f"Agent {agent_id} not found")
+            return False
+        
+        record = self._keys[agent_id]
+        
+        # Перевіряємо старий ключ
+        if record.public_key_hex != old_public_key_hex:
+            logger.error(f"Old key mismatch for {agent_id}")
+            return False
+        
+        if not record.active:
+            logger.error(f"Agent {agent_id} key is revoked")
+            return False
+        
+        # Валідація нового ключа
+        if not self._validate_public_key(new_public_key_hex):
+            logger.error(f"Invalid new public key for {agent_id}")
+            return False
+        
+        # Перевіряємо підпис старого ключа
+        if not self._verify_key_rotation_signature(
+            agent_id, old_public_key_hex, new_public_key_hex, signature_hex
+        ):
+            logger.error(f"Invalid signature for key rotation for {agent_id}")
+            return False
+        
+        # Деактивуємо старий ключ
+        record.active = False
+        
+        # Створюємо новий запис
+        new_record = KeyRecord(
+            public_key_hex=new_public_key_hex,
+            created_at=time.time(),
+            active=True,
+            previous_key=old_public_key_hex
+        )
+        self._keys[agent_id] = new_record
+        self._history.setdefault(agent_id, []).append(new_record)
+        
+        logger.info(f"🔄 Key rotated for {agent_id}")
+        return True
     
-    def get_public_key_b64(self) -> str:
-        """Get public key as base64"""
-        return base64.b64encode(self._public_key).decode()
+    def revoke_key(self, agent_id: str) -> bool:
+        """
+        Відкликає ключ агента.
+        
+        Args:
+            agent_id: ID агента
+        
+        Returns:
+            True якщо відкликання успішне
+        """
+        if agent_id not in self._keys:
+            logger.error(f"Agent {agent_id} not found")
+            return False
+        
+        record = self._keys[agent_id]
+        if not record.active:
+            logger.warning(f"Agent {agent_id} key already revoked")
+            return False
+        
+        record.active = False
+        record.revoked_at = time.time()
+        
+        logger.info(f"🗑️ Key revoked for {agent_id}")
+        return True
     
-    def sign(self, message: bytes) -> bytes:
-        """Sign a message"""
-        if self._private_key is None:
-            raise ValueError("Private key not available")
-        return self._private_key.sign(message)
+    def get_public_key(self, agent_id: str) -> Optional[str]:
+        """
+        Отримує активний публічний ключ агента.
+        
+        Returns:
+            Публічний ключ у hex або None
+        """
+        record = self._keys.get(agent_id)
+        if record and record.active:
+            return record.public_key_hex
+        return None
     
-    def verify(self, message: bytes, signature: bytes, public_key: bytes) -> bool:
-        """Verify a signature"""
+    def get_key_history(self, agent_id: str) -> List[Dict]:
+        """
+        Отримує історію ключів агента.
+        
+        Returns:
+            Список записів про ключі
+        """
+        records = self._history.get(agent_id, [])
+        return [
+            {
+                "public_key": r.public_key_hex,
+                "created_at": r.created_at,
+                "active": r.active,
+                "previous_key": r.previous_key,
+                "revoked_at": r.revoked_at
+            }
+            for r in records
+        ]
+    
+    def is_active(self, agent_id: str) -> bool:
+        """Перевіряє, чи активний ключ агента."""
+        record = self._keys.get(agent_id)
+        return record is not None and record.active
+    
+    def is_registered(self, agent_id: str) -> bool:
+        """Перевіряє, чи зареєстрований агент."""
+        return agent_id in self._keys
+    
+    def get_own_public_key_hex(self) -> str:
+        """Отримує власний публічний ключ."""
+        return self._public_key_hex
+    
+    def get_own_private_key(self) -> Ed25519PrivateKey:
+        """Отримує власний приватний ключ."""
+        return self._private_key
+    
+    def sign_with_own_key(self, message: bytes) -> str:
+        """Підписує повідомлення власним ключем."""
+        signature = self._private_key.sign(message)
+        return signature.hex()
+    
+    def verify_signature(self, agent_id: str, message: bytes, 
+                         signature_hex: str) -> bool:
+        """
+        Перевіряє підпис повідомлення.
+        
+        Args:
+            agent_id: ID агента
+            message: Повідомлення (bytes)
+            signature_hex: Підпис у hex
+        
+        Returns:
+            True якщо підпис валідний
+        """
+        public_key_hex = self.get_public_key(agent_id)
+        if not public_key_hex:
+            return False
+        
         try:
-            pub_key = ed25519_asym.Ed25519PublicKey.from_public_bytes(public_key)
-            pub_key.verify(signature, message)
+            public_key_bytes = bytes.fromhex(public_key_hex)
+            public_key = Ed25519PublicKey.from_public_bytes(public_key_bytes)
+            signature = bytes.fromhex(signature_hex)
+            public_key.verify(signature, message)
+            return True
+        except InvalidSignature:
+            return False
+        except Exception as e:
+            logger.error(f"Signature verification error: {e}")
+            return False
+    
+    def get_all_active_keys(self) -> Dict[str, str]:
+        """Отримує всі активні ключі."""
+        return {
+            agent_id: record.public_key_hex
+            for agent_id, record in self._keys.items()
+            if record.active
+        }
+    
+    def get_all_agents(self) -> List[str]:
+        """Отримує список всіх зареєстрованих агентів."""
+        return list(self._keys.keys())
+    
+    def get_stats(self) -> Dict[str, int]:
+        """Отримує статистику ключів."""
+        total = len(self._keys)
+        active = sum(1 for r in self._keys.values() if r.active)
+        revoked = total - active
+        return {
+            "total": total,
+            "active": active,
+            "revoked": revoked
+        }
+    
+    def _validate_public_key(self, public_key_hex: str) -> bool:
+        """Валідує публічний ключ."""
+        # Перевіряємо довжину (32 байти = 64 hex символи)
+        if len(public_key_hex) != 64:
+            return False
+        
+        try:
+            public_key_bytes = bytes.fromhex(public_key_hex)
+            Ed25519PublicKey.from_public_bytes(public_key_bytes)
             return True
         except Exception:
             return False
     
-    def rotate_keys(self) -> Tuple[bytes, bytes]:
-        """Rotate keys (generate new ones)"""
-        # Generate new keys
-        self._private_key = ed25519_asym.Ed25519PrivateKey.generate()
-        self._public_key = self._private_key.public_key().public_bytes_raw()
-        
-        # Save new keys
-        key_path = f"./keys/{self.agent_id}.key"
-        with open(key_path, 'w') as f:
-            json.dump({
-                "agent_id": self.agent_id,
-                "private_key": base64.b64encode(
-                    self._private_key.private_bytes_raw()
-                ).decode()
-            }, f, indent=2)
-        
-        return self._public_key, self._private_key.private_bytes_raw()
-    
-    @classmethod
-    def generate_keypair(cls) -> Tuple[bytes, bytes]:
-        """Generate a new keypair"""
-        private_key = ed25519_asym.Ed25519PrivateKey.generate()
-        public_key = private_key.public_key().public_bytes_raw()
-        return public_key, private_key.private_bytes_raw()
+    def _verify_key_rotation_signature(self, agent_id: str, 
+                                        old_key_hex: str, 
+                                        new_key_hex: str, 
+                                        signature_hex: str) -> bool:
+        """Перевіряє підпис для ротації ключа."""
+        try:
+            public_key_bytes = bytes.fromhex(old_key_hex)
+            public_key = Ed25519PublicKey.from_public_bytes(public_key_bytes)
+            
+            # Повідомлення для підпису
+            message = f"key_rotation:{agent_id}:{new_key_hex}".encode('utf-8')
+            signature = bytes.fromhex(signature_hex)
+            
+            public_key.verify(signature, message)
+            return True
+        except InvalidSignature:
+            return False
+        except Exception as e:
+            logger.error(f"Rotation signature verification error: {e}")
+            return False
+
+
+# ============================================================
+# ФАБРИКА
+# ============================================================
+
+_default_key_manager: Optional[KeyManager] = None
+
+
+def get_key_manager() -> KeyManager:
+    """Отримує глобальний менеджер ключів."""
+    global _default_key_manager
+    if _default_key_manager is None:
+        _default_key_manager = KeyManager()
+    return _default_key_manager
+
+
+def reset_key_manager():
+    """Скидає глобальний менеджер ключів."""
+    global _default_key_manager
+    _default_key_manager = None

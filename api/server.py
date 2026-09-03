@@ -1,106 +1,140 @@
 # ============================================================
-# VIREO API SERVER v1.4.5
-# Flask REST API сервер
-# The World's First AI-to-AI Communication Language
+# VIREO API SERVER
 # ============================================================
+"""
+Async API server for Vireo.
 
-__version__ = "1.4.5"
+Provides:
+- Async FastAPI endpoints
+- Agent management
+- LLM provider integration
+- Model serving
+- Web interface
+"""
 
-from flask import Flask, jsonify, send_from_directory, request
-from flask_cors import CORS
 import os
 import sys
+import logging
 from pathlib import Path
+from contextlib import asynccontextmanager
 
-# Додаємо корінь проекту до шляху
+# Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-try:
-    from .routes import api_bp
-    from .models import HealthResponse
-except ImportError as e:
-    print(f"❌ Import error: {e}")
-    print("   Make sure routes.py and models.py exist in the same directory")
-    sys.exit(1)
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
+
+from .routes import router
+from .models import HealthResponse, VersionResponse
+
+logger = logging.getLogger(__name__)
 
 
-def create_app(config: dict = None) -> Flask:
-    """
-    Створює Flask додаток з конфігурацією.
+# ============================================================
+# LIFESPAN
+# ============================================================
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan manager."""
+    logger.info("🚀 Starting Vireo API server...")
     
-    Args:
-        config: Словник конфігурації
-        
-    Returns:
-        Flask: Налаштований Flask додаток
-    """
-    app = Flask(__name__)
+    # Initialize components
+    from protocol.llm_provider import AVAILABLE_PROVIDERS
+    logger.info(f"✅ LLM Providers: {AVAILABLE_PROVIDERS}")
     
-    # Базові налаштування
-    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'vireo-secret-key')
-    app.config['JSON_AS_ASCII'] = False
-    app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
+    yield
     
-    # Застосовуємо кастомну конфігурацію
-    if config:
-        app.config.update(config)
+    logger.info("🛑 Shutting down Vireo API server...")
+
+
+# ============================================================
+# APP CREATION
+# ============================================================
+
+def create_app() -> FastAPI:
+    """Create and configure the FastAPI application."""
+    
+    app = FastAPI(
+        title="Vireo AI Communicator API",
+        description="The World's First AI-to-AI Communication Language",
+        version="2.0.2",
+        lifespan=lifespan
+    )
     
     # CORS
-    CORS(app)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     
-    # Реєструємо API Blueprint
-    app.register_blueprint(api_bp, url_prefix='/api')
+    # Include router
+    app.include_router(router)
     
-    # ===== ГОЛОВНА СТОРІНКА =====
-    @app.route('/')
-    def home():
-        return jsonify({
-            "name": "Vireo AI Communicator API",
-            "version": __version__,
-            "status": "running",
-            "service": "The World's First AI-to-AI Communication Language",
-            "endpoints": [
+    # ============================================================
+    # ROOT ENDPOINT
+    # ============================================================
+    
+    @app.get("/", response_model=VersionResponse)
+    async def root():
+        """Root endpoint with API information."""
+        return VersionResponse(
+            name="Vireo AI Communicator API",
+            version="2.0.2",
+            status="running",
+            service="The World's First AI-to-AI Communication Language",
+            endpoints=[
                 "/",
                 "/web",
                 "/docs",
                 "/health",
                 "/api/health",
-                "/api/status",
                 "/api/providers",
                 "/api/agent/register",
                 "/api/agent/list",
-                "/api/agent/<id>/status",
-                "/api/agent/<id>/capability",
+                "/api/agent/{id}/status",
+                "/api/agent/{id}/capability",
                 "/api/interpreter",
                 "/api/neural",
                 "/api/chat",
-                "/api/llm/agent/<id>/auto_negotiate",
+                "/api/llm/agent/{id}/auto_negotiate",
                 "/api/crypto/generate_keys",
                 "/api/crypto/sign",
                 "/api/crypto/verify",
                 "/api/crypto/test_trust",
-                # 🆕 Mistral endpoints
                 "/api/mistral/generate",
-                "/api/mistral/chat"
+                "/api/mistral/chat",
+                "/models/list",
+                "/models/load/{model_name}",
+                "/models/predict/{model_name}",
+                "/models/info/{model_name}",
+                "/models/cache/clear",
+                "/lstm"
             ]
-        })
+        )
     
-    # ===== ВЕБ-ІНТЕРФЕЙС =====
-    @app.route('/web')
-    def web_interface():
-        """Веб-інтерфейс."""
-        # Шукаємо файл у кількох місцях
+    # ============================================================
+    # WEB INTERFACE
+    # ============================================================
+    
+    @app.get("/web")
+    async def web_interface():
+        """Web interface."""
         possible_paths = [
-            Path('web_interface.html'),
-            Path(__file__).parent.parent / 'web_interface.html',
-            Path('.').absolute() / 'web_interface.html'
+            Path("web_interface.html"),
+            Path(__file__).parent.parent / "web_interface.html",
         ]
         
         for path in possible_paths:
             if path.exists():
-                return send_from_directory(str(path.parent), path.name)
+                return FileResponse(path)
         
-        return """
+        return HTMLResponse("""
         <!DOCTYPE html>
         <html>
         <head>
@@ -140,192 +174,54 @@ def create_app(config: dict = None) -> Flask:
                 <p class="subtitle">The World's First AI-to-AI Communication Language</p>
                 <div class="error">⚠️ web_interface.html not found</div>
                 <p style="color:#718096; margin-top:20px;">Please place web_interface.html in the project root.</p>
-                <div class="version">v1.4.5</div>
+                <div class="version">v2.0.2</div>
             </div>
         </body>
         </html>
-        """, 404
+        """, status_code=404)
     
-    # ===== ДОКУМЕНТАЦІЯ =====
-    @app.route('/docs')
-    def docs():
-        """Документація."""
-        possible_paths = [
-            Path('README.md'),
-            Path(__file__).parent.parent / 'README.md',
-            Path('.').absolute() / 'README.md'
-        ]
-        
-        for path in possible_paths:
-            if path.exists():
-                return send_from_directory(str(path.parent), path.name)
-        
-        return """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <title>📚 Vireo Documentation</title>
-            <style>
-                body {
-                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-                    min-height: 100vh;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    color: #e2e8f0;
-                    padding: 20px;
-                }
-                .container {
-                    text-align: center;
-                    background: rgba(255,255,255,0.05);
-                    backdrop-filter: blur(10px);
-                    border-radius: 24px;
-                    padding: 50px 40px;
-                    border: 1px solid rgba(255,255,255,0.1);
-                    max-width: 600px;
-                }
-                h1 { font-size: 2.5em; background: linear-gradient(135deg, #48bb78, #667eea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-                .subtitle { color: #a0aec0; font-size: 1.2em; margin-bottom: 20px; }
-                .error { color: #fc8181; background: rgba(245,101,101,0.1); padding: 15px; border-radius: 10px; border: 1px solid #fc8181; }
-                .version { color: #48bb78; margin-top: 20px; font-size: 0.9em; }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <h1>📚 Vireo Documentation</h1>
-                <p class="subtitle">The World's First AI-to-AI Communication Language</p>
-                <div class="error">⚠️ README.md not found</div>
-                <p style="color:#718096; margin-top:20px;">Please place README.md in the project root.</p>
-                <div class="version">v1.4.5</div>
-            </div>
-        </body>
-        </html>
-        """, 404
+    # ============================================================
+    # HEALTH CHECK
+    # ============================================================
     
-    # ===== HEALTH CHECK =====
-    @app.route('/health')
-    def health():
+    @app.get("/health")
+    @app.get("/api/health")
+    async def health():
         """Health check."""
-        return HealthResponse().to_dict()
-
-    # ============================================================
-    # 🆕 MISTRAL AI ENDPOINTS
-    # ============================================================
+        return HealthResponse(
+            status="healthy",
+            version="2.0.2",
+            name="Vireo AI Communicator API"
+        )
     
-    @app.route('/api/mistral/generate', methods=['POST'])
-    def api_mistral_generate():
-        """Generate text using Mistral AI."""
-        try:
-            data = request.get_json()
-            if not data:
-                return jsonify({"success": False, "error": "Invalid request body"}), 400
-            
-            prompt = data.get('prompt', '')
-            model = data.get('model', os.getenv('MISTRAL_MODEL', 'mistral-large-latest'))
-            max_tokens = data.get('max_tokens', 1024)
-            temperature = data.get('temperature', 0.7)
-            
-            if not prompt:
-                return jsonify({"success": False, "error": "Prompt is required"}), 400
-            
-            from protocol.llm_provider import MistralProvider
-            provider = MistralProvider(model=model)
-            result = provider.generate(prompt, max_tokens=max_tokens, temperature=temperature)
-            
-            return jsonify({
-                "success": True,
-                "provider": "mistral",
-                "model": model,
-                "result": result
-            })
-        except Exception as e:
-            print(f"❌ Mistral API error: {e}")
-            return jsonify({"success": False, "error": str(e)}), 500
-
-    @app.route('/api/mistral/chat', methods=['POST'])
-    def api_mistral_chat():
-        """Chat with Mistral AI."""
-        try:
-            data = request.get_json()
-            if not data:
-                return jsonify({"success": False, "error": "Invalid request body"}), 400
-            
-            messages = data.get('messages', [])
-            model = data.get('model', os.getenv('MISTRAL_MODEL', 'mistral-large-latest'))
-            max_tokens = data.get('max_tokens', 1024)
-            temperature = data.get('temperature', 0.7)
-            
-            if not messages:
-                return jsonify({"success": False, "error": "Messages are required"}), 400
-            
-            from protocol.llm_provider import MistralProvider
-            provider = MistralProvider(model=model)
-            result = provider.chat(messages, max_tokens=max_tokens, temperature=temperature)
-            
-            return jsonify({
-                "success": True,
-                "provider": "mistral",
-                "model": model,
-                "result": result
-            })
-        except Exception as e:
-            print(f"❌ Mistral chat error: {e}")
-            return jsonify({"success": False, "error": str(e)}), 500
-
-    # ============================================================
-    # 🆕 GET AVAILABLE PROVIDERS
-    # ============================================================
-    
-    @app.route('/api/providers', methods=['GET'])
-    def api_get_providers():
-        """Get list of available LLM providers."""
-        from protocol.llm_provider import AVAILABLE_PROVIDERS, AVAILABLE_MODELS
-        return jsonify({
-            "success": True,
-            "providers": AVAILABLE_PROVIDERS,
-            "models": AVAILABLE_MODELS
-        })
-
     return app
 
 
 # ============================================================
-# ГОЛОВНИЙ ДОДАТОК
+# MAIN
 # ============================================================
 
 app = create_app()
 
 
-# ============================================================
-# ЗАПУСК
-# ============================================================
-
-if __name__ == '__main__':
+if __name__ == "__main__":
+    import uvicorn
+    
     print("=" * 60)
-    print("🌿 VIREO API SERVER v1.4.5")
+    print("🌿 VIREO API SERVER v2.0.2")
     print("The World's First AI-to-AI Communication Language")
     print("=" * 60)
     print(f"📍 Server: http://localhost:5000")
     print(f"🌐 Web:    http://localhost:5000/web")
-    print(f"📚 Docs:   http://localhost:5000/docs")
-    print(f"📡 API:    http://localhost:5000/api")
-    print(f"🔐 Health: http://localhost:5000/health")
+    print(f"📡 API:    http://localhost:5000/api/health")
     print("=" * 60)
-    print("🧠 LLM Providers:")
-    print("   - Ollama (local, free)")
-    print("   - Google Gemini (free/paid)")
-    print("   - OpenAI GPT (paid)")
-    print("   - Anthropic Claude (paid)")
-    print("   - Mistral AI (free/paid) 🆕")
-    print("=" * 60)
-    print("Press Ctrl+C to stop")
+    print("🧠 LLM Providers: Ollama, Gemini, Claude, OpenAI, Mistral")
+    print("🔥 European LLM support: Mistral, BLOOM, OpenChat")
     print("=" * 60)
     
-    app.run(
-        host='0.0.0.0',
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
         port=5000,
-        debug=True,
-        threaded=True
+        log_level="info"
     )
