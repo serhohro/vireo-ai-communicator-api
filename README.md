@@ -32,7 +32,6 @@ Protocols define how agents communicate. Vireo defines what they communicate.
 
 Vireo works as a **control plane** above existing agent protocols:
 
-```text
 ┌─────────────────────────────────────────────────────────┐
 │                    VIREO PROTOCOL                       │
 │              (Candidate for standardization)            │
@@ -52,7 +51,7 @@ Key principle:
 "Let PyTorch handle the tensors; let Vireo handle the trust."
 
 🔄 Lifecycle
-text
+
 DISCOVER → PROPOSE → NEGOTIATE → COMMIT → EXECUTE → VERIFY → DONE
      │              │            │            │            │
      ├→ REJECTED   ├→ REJECTED  ├→ CANCELLED ├→ FAILED   ├→ ESCALATED
