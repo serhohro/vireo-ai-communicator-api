@@ -1,5 +1,5 @@
 // ============================================================
-// VIREO CORE GRAMMAR — v2.0.1
+// VIREO CORE GRAMMAR — v2.0.2
 // Без ML розширень — тільки агенти, контракти, переговори
 // ============================================================
 
@@ -13,6 +13,7 @@
 %left "+" "-"
 %left "*" "/"
 %right "not"
+%left "."
 
 // ============================================================
 // TERMINALS
@@ -37,7 +38,16 @@ BOOL: "true" | "false"
 // PROGRAM
 // ============================================================
 
-program: (agent_def | contract_def | negotiation_def | statement)*
+program: (import_def | top_level_def)*
+
+top_level_def: statement | agent_def | contract_def | negotiation_def | function_def
+
+// ============================================================
+// IMPORTS
+// ============================================================
+
+import_def: "import" NAME
+import_from: "from" NAME "import" NAME
 
 // ============================================================
 // STATEMENTS
@@ -91,7 +101,7 @@ role_def: "role" ":" NAME
 system_prompt_def: "system_prompt" ":" STRING
 
 // ============================================================
-// CONTRACTS (з verify)
+// CONTRACTS (з verify та verify_timeout)
 // ============================================================
 
 contract_def: "contract" NAME "{" _NL* contract_body _NL* "}"
@@ -102,20 +112,23 @@ condition_def: "condition" "{" _NL* expression _NL* "}"
 invariant_def: "invariant" "{" _NL* expression _NL* "}"
 verify_def: "verify" "{" _NL* expression _NL* "}"
 
+type: "Int" | "Float" | "String" | "Bool" | "List" "[" type "]" | "Map" "[" type "," type "]"
+
 // ============================================================
 // NEGOTIATIONS (з VERIFY та ESCALATE)
 // ============================================================
 
 negotiation_def: "negotiate" NAME "->" NAME "{" _NL* negotiation_body _NL* "}"
 negotiation_body: (
-    party_def | timeout_def | max_rounds_def | 
+    party_def | timeout_def | max_rounds_def | verify_timeout_def |
     on_offer_def | on_commit_def | on_reject_def | 
     on_verify_def | on_escalate_def
-) (_NL+ (party_def | timeout_def | max_rounds_def | on_offer_def | on_commit_def | on_reject_def | on_verify_def | on_escalate_def))*
+) (_NL+ (party_def | timeout_def | max_rounds_def | verify_timeout_def | on_offer_def | on_commit_def | on_reject_def | on_verify_def | on_escalate_def))*
 
 party_def: "party" NAME ":" NAME
 timeout_def: "timeout" "=" NUMBER "s"
 max_rounds_def: "max_rounds" "=" NUMBER
+verify_timeout_def: "verify_timeout" "=" NUMBER "s"
 
 on_offer_def: "on" "offer" "(" NAME ":" type ")" block
 on_commit_def: "on" "commit" block
