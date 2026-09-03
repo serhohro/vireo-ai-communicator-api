@@ -1,0 +1,279 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://vireo.dev/schema/v1/message.json",
+  "title": "Vireo Message Schema",
+  "description": "JSON Schema for Vireo protocol messages. Any implementation claiming Vireo compatibility MUST validate against this schema.",
+  "version": "2.0.2",
+  "type": "object",
+  "properties": {
+    "protocol": {
+      "type": "string",
+      "const": "VIREO-A2A",
+      "description": "Protocol identifier. MUST be exactly 'VIREO-A2A'."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Protocol version (semantic versioning)."
+    },
+    "message_id": {
+      "type": "string",
+      "pattern": "^msg-[a-f0-9]{8}$",
+      "description": "Unique message identifier. Format: msg-{8 hex digits}."
+    },
+    "conversation_id": {
+      "type": "string",
+      "pattern": "^conv-[a-f0-9]{8}$",
+      "description": "Conversation identifier. Format: conv-{8 hex digits}."
+    },
+    "sender": {
+      "$ref": "#/definitions/AgentRef",
+      "description": "Agent sending the message."
+    },
+    "recipient": {
+      "$ref": "#/definitions/AgentRef",
+      "description": "Intended recipient of the message."
+    },
+    "intent": {
+      "type": "string",
+      "enum": [
+        "PROPOSE",
+        "NEGOTIATE",
+        "COMMIT",
+        "REJECT",
+        "EXECUTE",
+        "VERIFY",
+        "INFORM",
+        "CANCEL",
+        "QUERY_CAPABILITIES",
+        "INFORM_CAPABILITIES",
+        "ESCALATE"
+      ],
+      "description": "Speech act / intent of the message."
+    },
+    "payload": {
+      "type": "object",
+      "description": "Message payload. Structure varies by intent.",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "Vireo code to execute (for PROPOSE/EXECUTE)."
+        },
+        "task": {
+          "type": "string",
+          "description": "Task description (for PROPOSE)."
+        },
+        "reasoning": {
+          "type": "string",
+          "description": "Reasoning behind the proposal."
+        },
+        "contract": {
+          "$ref": "#/definitions/Contract",
+          "description": "Contract (for PROPOSE/COMMIT)."
+        },
+        "result": {
+          "type": "object",
+          "description": "Execution result (for INFORM)."
+        },
+        "error": {
+          "type": "string",
+          "description": "Error message (for INFORM/REJECT)."
+        },
+        "capabilities": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of capabilities (for INFORM_CAPABILITIES)."
+        },
+        "proposal_id": {
+          "type": "string",
+          "pattern": "^msg-[a-f0-9]{8}$",
+          "description": "Reference to a proposal (for COMMIT/REJECT/INFORM)."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Reason for rejection or escalation."
+        },
+        "verified": {
+          "type": "boolean",
+          "description": "Whether verification passed (for INFORM)."
+        },
+        "escalated": {
+          "type": "boolean",
+          "description": "Whether escalation occurred (for INFORM)."
+        }
+      },
+      "additionalProperties": true
+    },
+    "contract": {
+      "$ref": "#/definitions/Contract",
+      "description": "Contract associated with the message. DEPRECATED: Use payload.contract instead."
+    },
+    "timestamp": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Unix timestamp (seconds since epoch)."
+    },
+    "signature": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{128}$",
+      "description": "Ed25519 signature of the canonical message (64 bytes, hex encoded)."
+    },
+    "context_version": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 0,
+      "description": "Optimistic concurrency control version."
+    }
+  },
+  "required": [
+    "protocol",
+    "version",
+    "message_id",
+    "sender",
+    "recipient",
+    "intent",
+    "timestamp"
+  ],
+  "definitions": {
+    "AgentRef": {
+      "type": "object",
+      "description": "Reference to an agent.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_-]+$",
+          "description": "Agent identifier."
+        },
+        "model": {
+          "type": ["string", "null"],
+          "description": "LLM model used by the agent (optional)."
+        },
+        "did": {
+          "type": "string",
+          "pattern": "^did:key:z[1-9A-HJ-NP-Za-km-z]+$",
+          "description": "Decentralized Identifier (optional)."
+        }
+      },
+      "required": ["id"]
+    },
+    "Contract": {
+      "type": "object",
+      "description": "Contract with resource limits and verification conditions.",
+      "properties": {
+        "max_tokens": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum tokens allowed. 0 means zero tokens allowed (MUST NOT be used as 'unlimited')."
+        },
+        "max_cost_usd": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Maximum cost in USD."
+        },
+        "timeout_sec": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum execution time in seconds."
+        },
+        "verify_timeout_sec": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum verification time in seconds."
+        },
+        "max_rounds": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum negotiation rounds."
+        },
+        "max_memory_mb": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum memory usage in MB."
+        },
+        "allowed_actions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of allowed action types."
+        },
+        "required_approvals": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1,
+          "description": "Number of approvals required (multisig)."
+        },
+        "verify": {
+          "type": "string",
+          "description": "Verification condition (expression)."
+        },
+        "condition": {
+          "type": "string",
+          "description": "Condition that must be met (expression)."
+        },
+        "invariant": {
+          "type": "string",
+          "description": "Invariant that must hold (expression)."
+        },
+        "contract_id": {
+          "type": "string",
+          "pattern": "^contract-[a-f0-9]{8}$",
+          "description": "Unique contract identifier."
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "intent": { "const": "PROPOSE" } }
+      },
+      "then": {
+        "required": ["payload"],
+        "properties": {
+          "payload": {
+            "required": ["task", "code"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "intent": { "const": "COMMIT" } }
+      },
+      "then": {
+        "required": ["payload"],
+        "properties": {
+          "payload": {
+            "required": ["proposal_id"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "intent": { "const": "REJECT" } }
+      },
+      "then": {
+        "required": ["payload"],
+        "properties": {
+          "payload": {
+            "required": ["proposal_id", "reason"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "intent": { "const": "INFORM" } }
+      },
+      "then": {
+        "required": ["payload"],
+        "properties": {
+          "payload": {
+            "required": ["proposal_id"]
+          }
+        }
+      }
+    }
+  ]
+}

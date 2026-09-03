@@ -282,3 +282,19 @@ Hardware Security Modules: Secure key storage
 Formal Verification: Mathematical proof of security
 
 Smart Contracts: Blockchain-based trust
+
+## 13. Conformance Testing
+
+### Security Conformance Tests
+
+All Vireo implementations **MUST** pass the security conformance tests:
+
+| Test | Description | Requirement |
+|------|-------------|-------------|
+| **T-SEC-001** | Ed25519 signature verification | MUST pass |
+| **T-SEC-002** | Trust Bootstrap Protocol | MUST pass |
+| **T-SEC-003** | Contract validation | MUST pass |
+| **T-SEC-004** | Replay attack protection | MUST pass |
+| **T-SEC-005** | Key rotation | SHOULD pass |
+
+📄 **[Full conformance suite →](tests/conformance/)**

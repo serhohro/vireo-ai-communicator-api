@@ -1,15 +1,15 @@
 @echo off
-title Vireo AI Communicator v2.0.1
+title Vireo AI Communicator v2.0.2
 color 0A
 
 echo.
 echo ========================================
-echo  🌿 VIREO AI COMMUNICATOR v2.0.1
+echo  🌿 VIREO AI COMMUNICATOR v2.0.2
 echo  The World's First AI-to-AI Communication Language
 echo ========================================
 echo.
 
-cd /d "C:\Users\Startklar\Desktop\vireo-ai-communicator-3"
+cd /d "%~dp0"
 
 echo [1] Checking Python...
 python --version >nul 2>&1
@@ -37,7 +37,7 @@ if exist "api_server.py" (
 )
 
 echo [3] Installing dependencies...
-pip install flask flask-cors python-dotenv cryptography mistralai -q 2>nul
+pip install flask flask-cors python-dotenv cryptography mistralai llvmlite numba transformers torch -q 2>nul
 echo [OK] Dependencies ready
 
 echo [4] Stopping old server...
@@ -72,7 +72,7 @@ echo  📚 Docs: http://localhost:5000/docs
 echo  📖 API Docs: http://localhost:5000/api/docs
 echo  🔐 Health: http://localhost:5000/api/health
 echo.
-echo  🚀 Vireo v2.0.1 — Language-First
+echo  🚀 Vireo v2.0.2 — Language-First
 echo  🔥 Mistral AI support added!
 echo.
 echo  Close this window to stop server

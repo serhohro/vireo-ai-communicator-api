@@ -1,30 +1,109 @@
-markdown
 # 🌿 Vireo — The World's First AI-to-AI Communication Language
 
-**Vireo is a programming language + protocol for secure AI-to-AI communication, negotiation, and coordination.**
+**Version: v2.0.1**
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/)
-[![Status](https://img.shields.io/badge/Status-v2.0.1-green.svg)](CHANGELOG.md)
+Vireo is an open programming language and protocol designed for secure AI-to-AI communication, negotiation, and coordination.
 
----
-
-## 🎯 Vision
-
-> **"LLMs provide intelligence. Vireo provides structure, execution, verification and interoperability."**
-
-Vireo enables autonomous AI agents to:
-- **Discover** each other's capabilities
-- **Negotiate** contracts and terms
-- **Execute** tasks collaboratively
-- **Verify** results cryptographically
-- **Escalate** issues when needed
+> 🧪 **Status: Research Prototype (v2.0.1)**  
+> Language core and interpreter are implemented. Protocol foundations are in active development.  
+> Multi-agent system is partially implemented — negotiation flow works.  
+> LLM integration with 6+ providers works.  
+> Cryptographic primitives are in place. Trust Bootstrap Protocol is implemented.  
+> This is a research prototype — not yet production-ready. Community feedback and contributions are welcome.
 
 ---
 
-## 🚀 Quick Start
+## 🌍 What is Vireo?
 
-```bash
+**Vireo is a programming language — not just a protocol.**
+
+Protocols define how agents communicate. Vireo defines what they communicate.
+
+| Protocols (MCP, A2A) | **Vireo (Language)** |
+|----------------------|----------------------|
+| Agent discovery & communication | **Agent intent & coordination** |
+| Tool access & context | **Contracts & negotiation** |
+| Message passing | **Executable semantics** |
+| Transport layer | **Control plane** |
+
+---
+
+### 🎯 Architecture
+
+Vireo works as a **control plane** above existing agent protocols:
+
+```text
+┌─────────────────────────────────────────────────────────┐
+│                    VIREO PROTOCOL                       │
+│              (Candidate for standardization)            │
+│                                                         │
+│  Intent • Contracts • Negotiation • Trust               │
+│  Capabilities • Verification • Execution                │
+└────────────────────────┬────────────────────────────────┘
+                         │
+         ┌───────────────┼───────────────┐
+         ▼               ▼               ▼
+   VIREO LANGUAGE   REFERENCE PLATFORM   EXTENSIONS
+   (Core + Ext)     (v2.0.1)            (ML, Vision, ASR)
+
+**Key principle:**
+
+> *"LLMs provide intelligence. Vireo provides structure, execution, verification and interoperability."*
+
+> *"Let PyTorch handle the tensors; let Vireo handle the trust."*
+
+---
+
+## 🔄 Lifecycle
+DISCOVER → PROPOSE → NEGOTIATE → COMMIT → EXECUTE → VERIFY → DONE
+│ │ │ │ │
+├→ REJECTED ├→ REJECTED ├→ CANCELLED ├→ FAILED ├→ ESCALATED
+└→ TIMEOUT └→ TIMEOUT └→ TIMEOUT └→ TIMEOUT
+
+text
+
+---
+
+## ✨ Features
+
+- **🌐 Programming Language** — Full language with formal grammar (core + extensions)
+- **🧠 6+ LLM Providers** — Ollama, Gemini, Claude, OpenAI, Mistral
+- **🎭 8 Agent Roles** — Master, Vision, NLP, Analyst, Researcher, Executor, Guardian, Teacher
+- **🔐 Ed25519 Cryptography** — Real cryptographic identity and signatures
+- **🔄 Autonomous Negotiation** — propose → negotiate → commit → execute → verify → inform
+- **📊 Tensor Operations** — Built-in tensor and neural network support
+- **🌍 Multi-Language** — 🇺🇦 Ukrainian and 🇬🇧 English
+- **🔒 Trust Bootstrap Protocol** — Ed25519-based identity and whitelist
+
+---
+
+## 🚀 Quick Examples
+
+### Agent with Contract
+
+```vireo
+contract Agreement {
+    max_tokens: Int = 1000
+    timeout_sec: Int = 30
+    verify { result.accuracy > 0.9 }
+}
+
+agent Vision {
+    capability image_analysis
+    role analyst
+}
+
+negotiate Vision -> Training {
+    propose "Analyze 1000 images"
+    negotiate "Need more tokens"
+    commit "Training model on dataset"
+    execute "Process images"
+    verify "Check accuracy > 0.9"
+    inform "Accuracy: 94.5%"
+}
+🚀 Getting Started
+Quick Start
+bash
 # Clone the repository
 git clone https://github.com/serhohro/vireo-ai-communicator-api.git
 cd vireo-ai-communicator-3
@@ -32,248 +111,46 @@ cd vireo-ai-communicator-3
 # Install dependencies
 pip install -r requirements.txt
 
-# Set up environment
-cp .env.example .env
-# Edit .env with your API keys
+# Run the server
+python api_server.py
+Use the Web Interface
+Open http://localhost:5000/web
 
-# Start the system
-python start_vireo.bat
-# Or: python api/server.py
-Write Your First Agent
-python
-from protocol.agents.base_agent import BaseAgent
-from protocol.contract import Contract
+📚 Documentation
+Document	Description
+README.md	Project overview (this file)
+QUICKSTART.md	🚀 5-minute quickstart
+TUTORIAL.md	📚 Complete step-by-step tutorial
+PROTOCOL.md	Protocol specification
+SECURITY.md	Security model
+GOVERNANCE.md	RFC process & governance
+EVALUATIONS.md	🧠 Independent AI evaluations
+docs/EU_LLM_GUIDE.md	European LLM guide
+⚠️ Windows Users: Unblock the File
+If Windows SmartScreen blocks start_vireo.bat:
 
-class MyAgent(BaseAgent):
-    def __init__(self):
-        super().__init__(name="analyst", capabilities=["analyze", "report"])
-    
-    def analyze(self, data):
-        return {"result": f"Analysis of {data}"}
+Right-click start_vireo.bat → Properties
 
-# Create and run agent
-agent = MyAgent()
-agent.start()
-Write a Vireo Program
-vireo
-// hello_world.v
-agent "greeter" {
-    capability "greet" {
-        input: name: string
-        output: message: string
-        action: "Hello, {name}!"
-    }
-}
+In the Security section, check "Unblock"
 
-contract "greeting_contract" {
-    parties: [greeter, client]
-    terms: {
-        max_tokens: 100
-        timeout_sec: 30
-    }
-}
+Click Apply → OK
 
-## 📖 Learn More
+Run start_vireo.bat again
 
-- **[QUICKSTART.md](docs/QUICKSTART.md)** — Get started in 5 minutes
-- **[TUTORIAL.md](docs/TUTORIAL.md)** — Complete tutorial with 5 parts
-- **[HOW_TO_USE.md](HOW_TO_USE.md)** — Full guide on how to work with Vireo 🆕
-- **[EU_LLM_GUIDE.md](docs/EU_LLM_GUIDE.md)** — European LLM providers
-     execute greet("World") -> result
+Alternative Launch Methods
+Method 1: Run via Python
 
-🏗️ Architecture
-text
-┌─────────────────────────────────────────────────────────────┐
-│                        Application                          │
-├─────────────────────────────────────────────────────────────┤
-│   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐     │
-│   │   Agent A   │    │   Agent B   │    │   Agent C   │     │
-│   │  (Python)   │    │   (Rust)    │    │   (JS)      │     │
-│   └──────┬──────┘    └──────┬──────┘    └──────┬──────┘     │
-│          │                  │                  │            │
-│          └──────────────────┼──────────────────┘            │
-│                             │                               │
-│                   ┌─────────▼─────────┐                     │
-│                   │   Vireo Protocol  │                     │
-│                   │  (Control Plane)  │                     │
-│                   └─────────┬─────────┘                     │
-│                             │                               │
-│          ┌──────────────────┼──────────────────┐            │
-│          │                  │                  │            │
-│   ┌──────▼──────┐   ┌───────▼───────┐   ┌──────▼──────┐     │
-│   │   LLM       │   │   Transport   │   │   Crypto    │     │
-│   │  (Reasoning)│   │  (A2A/MCP)    │   │  (Ed25519)  │     │
-│   └─────────────┘   └───────────────┘   └─────────────┘     │
-├─────────────────────────────────────────────────────────────┤
-│   ┌─────────────────────────────────────────────────────┐   │
-│   │  Specification: LANGUAGE.md · PROTOCOL.md · AST.md  │   │
-│   │  WIRE_FORMAT.md · CONTRACTS.md · TRUST_BOOTSTRAP.md │   │
-│   └─────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
-🔄 Lifecycle
-
-DISCOVER → PROPOSE → NEGOTIATE → COMMIT → EXECUTE → VERIFY → DONE
-     │              │            │            │            │
-     ├→ REJECTED   ├→ REJECTED  ├→ CANCELLED ├→ FAILED   ├→ ESCALATED
-     └→ TIMEOUT     └→ TIMEOUT   └→ TIMEOUT    └→ TIMEOUT
-📁 Project Structure
-
-vireo-ai-communicator-3/
-├── README.md                 # This file
-├── CHANGELOG.md              # Release notes
-├── ROADMAP.md                # Development roadmap
-├── PROTOCOL.md               # Protocol specification
-├── SECURITY.md               # Security model
-├── GOVERNANCE.md             # Governance & RFC process
-├── AI_EVALUATIONS.md         # AI model evaluations
-├── requirements.txt          # Python dependencies
-├── .env.example              # Environment template
-├── start_vireo.bat           # Startup script
-│
-├── specification/            # 📋 Formal specifications
-│   ├── LANGUAGE.md
-│   ├── PROTOCOL.md
-│   ├── AST.md
-│   ├── WIRE_FORMAT.md
-│   ├── CONTRACTS.md
-│   ├── TRUST_BOOTSTRAP.md
-│   └── INTEROPERABILITY.md
-│
-├── core/                     # 🧠 Core implementation
-│   ├── agent/                # Agent base & registry
-│   ├── protocol/             # Protocol states & messages
-│   ├── contract/             # Contract validation
-│   ├── capability/           # Capability discovery
-│   ├── identity/             # Identity & trust bootstrap
-│   ├── execution/            # Execution runner
-│   └── verification/         # Verification engine
-│
-├── language/                 # 📝 Vireo language
-│   ├── grammar.lark          # Formal grammar
-│   ├── parser.py             # Parser
-│   ├── ast.py                # AST nodes
-│   ├── codegen.py            # Code generator
-│   ├── validator.py          # AST validator
-│   └── stdlib/               # Standard library
-│
-├── protocol/                 # 🔌 Protocol implementation
-│   ├── agents/               # Agent implementations
-│   ├── transport/            # Redis, In-Memory
-│   ├── llm_provider.py       # LLM integrations
-│   └── llm_provider_eu.py    # 🇪🇺 European LLMs
-│
-├── api/                      # 🌐 REST API
-│   ├── server.py             # FastAPI server
-│   ├── routes.py             # API routes
-│   └── models.py             # Pydantic models
-│
-├── docs/                     # 📚 Documentation
-│   ├── QUICKSTART.md
-│   ├── TUTORIAL.md
-│   ├── EU_LLM_GUIDE.md
-│   └── ...
-│
-├── evaluations/              # 📊 AI evaluations 
-│   ├── ChatGPT.md            
-│   ├── Perplexity.md
-│   ├── Gemini.md
-│   ├── Mistral.md
-│   ├── Qwen.md
-│   ├── Claude.md
-│   └── Kimi.md
-│
-└── examples/                 # 💡 Example programs
-    ├── hello_world.v
-    ├── neural_network.v
-    ├── agent_negotiation.v
-    ├── multi_agent_medical.v
-    └── ...
-🗺️ Roadmap
-Phase	Description	Status
-v1.4.5	Hardening: 7 critical fixes, VERIFY/ESCALATE	✅ Done
-v2.0.1	Specification: Formal language & protocol specs	🚧 In Progress
-v2.1	Core: Trust Bootstrap, Core Agent, Verification	📅 Planned
-v2.2	Interoperability: Python SDK, TypeScript SDK, Rust	📅 Planned
-v3.0	Production: WASM runtime, GPU support, MCP	📅 Planned
-
-🤖 AI Evaluations
-Vireo has been evaluated by 7 leading AI models:
-
-Model	Key Insight
-ChatGPT	"Control plane, not just another framework"
-Perplexity	"Standards are born from open specifications"
-Gemini	"WASM runtime for true interoperability"
-Mistral	"Only solution combining language + runtime + protocol"
-Qwen	"Let PyTorch handle tensors; let Vireo handle trust"
-Claude	"Change the code, then tell me, in that order"
-Kimi	"Technical depth: VERIFY/ESCALATE, Trust Bootstrap"
-See AI_EVALUATIONS.md for full details.
-
-🔐 Security
-Ed25519 cryptographic signatures
-
-Trust Bootstrap Protocol for identity verification
-
-Contract validation before execution
-
-Sandboxing for untrusted code
-
-Key rotation support
-
-🌍 European AI Independence
-Vireo natively supports European LLM providers:
-
-🇫🇷 Mistral AI
-
-🇩🇪 Aleph Alpha
-
-🇨🇭 Cohere
-
-🇬🇧 Stability AI
-
-🇫🇷 LightOn
-
-See EU_LLM_GUIDE.md
-
-🤝 Contributing
-We welcome contributions! Please see:
-
-CONTRIBUTING.md — How to contribute
-
-GOVERNANCE.md — RFC process & governance
-
-CODE_OF_CONDUCT.md — Code of conduct
-
-## ⚠️ Windows Users: Unblock the File
-
-If Windows SmartScreen blocks `start_vireo.bat` with a security warning:
-
-1. **Right-click** `start_vireo.bat` → **Properties**
-2. In the **Security** section (at the bottom), check **"Unblock"**
-3. Click **Apply** → **OK**
-4. Run `start_vireo.bat` again
-
-### Alternative Launch Methods
-
-If the issue persists, try one of these:
-
-**Method 1: Run via Python**
-```bash
+bash
 python run.py
+Method 2: Run via Command Line
+
+bash
+cd vireo-ai-communicator-3
+python api_server.py
+🔗 Links
+GitHub: https://github.com/serhohro/vireo-ai-communicator-api
+
+Dev.to: https://dev.to/sergo_8bd8626184a6e9dafa2/meet-vireo
 
 📄 License
-Copyright © 2026 Serhii Hr
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-
-See LICENSE for details.
-
-🔗 Links
-GitHub: github.com/serhohro/vireo-ai-communicator-api
-
-Issues: github.com/serhohro/vireo-ai-communicator-api/issues
-
-Documentation: docs/
-
-License: Apache 2.0
+Apache 2.0 — see LICENSE for details.
