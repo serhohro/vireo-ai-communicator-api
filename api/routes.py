@@ -1,455 +1,234 @@
-# ============================================================
-# VIREO API ROUTES
-# ============================================================
-"""
-Async API routes for Vireo.
+# api/routes.py
+"""Vireo API routes."""
 
-Provides:
-- Agent management endpoints
-- LLM provider endpoints
-- Model serving endpoints
-- Cryptography endpoints
-- Interpreter endpoints
-"""
-
-import os
 import json
-import logging
-from typing import Dict, Any, Optional, List
-from fastapi import APIRouter, HTTPException, Request
+from flask import Blueprint, request, jsonify
+from .auth import AuthManager, require_auth, require_api_key, get_auth_manager
 
-from .models import (
-    AgentRegisterRequest,
-    AgentResponse,
-    CapabilityRequest,
-    ChatRequest,
-    ChatResponse,
-    CryptoKeysResponse,
-    CryptoSignRequest,
-    CryptoSignResponse,
-    CryptoVerifyRequest,
-    CryptoVerifyResponse,
-    InterpreterRequest,
-    InterpreterResponse,
-    MistralGenerateRequest,
-    MistralGenerateResponse,
-    ModelLoadResponse,
-    ModelPredictResponse,
-    NeuralRequest,
-    NeuralResponse,
-    ProviderResponse,
-)
+# Create blueprint
+router = Blueprint('api', __name__, url_prefix='/api')
 
-logger = logging.getLogger(__name__)
+# Auth manager
+_auth_manager = None
 
-router = APIRouter(prefix="/api", tags=["vireo"])
+def get_auth_manager():
+    global _auth_manager
+    if _auth_manager is None:
+        _auth_manager = AuthManager()
+    return _auth_manager
 
 
 # ============================================================
-# AGENTS
+# AUTH ENDPOINTS
 # ============================================================
 
-# Temporary storage for agents
-_agents: Dict[str, Dict] = {}
-
-
-@router.post("/agent/register", response_model=AgentResponse)
-async def register_agent(request: AgentRegisterRequest):
-    """Register an agent."""
-    agent_id = request.id
-    model = request.model or "qwen2.5-coder:latest"
+@router.route('/auth/api-key', methods=['POST'])
+def create_api_key():
+    """Create a new API key."""
+    data = request.get_json() or {}
+    agent_id = data.get('agent_id')
+    did = data.get('did', '')
     
     if not agent_id:
-        raise HTTPException(status_code=400, detail="Agent ID is required")
+        return jsonify({'error': 'agent_id required'}), 400
     
-    _agents[agent_id] = {
-        "id": agent_id,
-        "model": model,
-        "status": "registered",
-        "capabilities": []
-    }
-    
-    return AgentResponse(
-        success=True,
-        agent=agent_id,
-        model=model,
-        message=f"Agent {agent_id} registered"
-    )
+    manager = get_auth_manager()
+    result = manager.create_api_key(agent_id, did)
+    return jsonify(result)
 
 
-@router.get("/agent/list")
-async def list_agents():
-    """List all registered agents."""
-    return {
-        "success": True,
-        "agents": list(_agents.keys()),
-        "details": _agents
-    }
+@router.route('/auth/api-key/verify', methods=['POST'])
+def verify_api_key():
+    """Verify an API key."""
+    data = request.get_json() or {}
+    api_key = data.get('api_key')
+    
+    if not api_key:
+        return jsonify({'error': 'api_key required'}), 400
+    
+    manager = get_auth_manager()
+    result = manager.verify_api_key(api_key)
+    
+    if result:
+        return jsonify({'valid': True, 'agent_id': result['agent_id']})
+    return jsonify({'valid': False}), 401
 
 
-@router.get("/agent/{agent_id}/status")
-async def get_agent_status(agent_id: str):
-    """Get agent status."""
-    if agent_id not in _agents:
-        raise HTTPException(status_code=404, detail=f"Agent {agent_id} not found")
-    
-    return {
-        "success": True,
-        "agent": _agents[agent_id]
-    }
+@router.route('/auth/api-key/<agent_id>', methods=['GET'])
+@require_api_key
+def list_api_keys(agent_id):
+    """List API keys for an agent."""
+    manager = get_auth_manager()
+    keys = manager.list_api_keys(agent_id)
+    return jsonify({'keys': keys})
 
 
-@router.post("/agent/{agent_id}/capability")
-async def add_capability(agent_id: str, request: CapabilityRequest):
-    """Add a capability to an agent."""
-    if agent_id not in _agents:
-        raise HTTPException(status_code=404, detail=f"Agent {agent_id} not found")
+@router.route('/auth/api-key', methods=['DELETE'])
+def revoke_api_key():
+    """Revoke an API key."""
+    data = request.get_json() or {}
+    api_key = data.get('api_key')
     
-    capability = request.name
-    description = request.description or f"{capability} capability"
+    if not api_key:
+        return jsonify({'error': 'api_key required'}), 400
     
-    if not capability:
-        raise HTTPException(status_code=400, detail="Capability name is required")
-    
-    _agents[agent_id]["capabilities"].append({
-        "name": capability,
-        "description": description
+    manager = get_auth_manager()
+    success = manager.revoke_api_key(api_key)
+    return jsonify({'success': success})
+
+
+# ============================================================
+# V3.0.0 ENDPOINTS (MOCK)
+# ============================================================
+
+@router.route('/v3/protocol/version', methods=['GET'])
+def protocol_version():
+    """Get protocol version."""
+    return jsonify({
+        'version': '3.0.0',
+        'protocol': 'Open Wire v3.0.0',
+        'wire_format': 'Protobuf + FlatBuffers',
+        'features': [
+            'binary_serialization',
+            'canonical_hashing',
+            'ed25519_signatures'
+        ]
     })
+
+
+@router.route('/v3/agent/register', methods=['POST'])
+def register_agent():
+    """Register an agent."""
+    data = request.get_json() or {}
+    agent_id = data.get('id')
     
-    return {
-        "success": True,
-        "agent": agent_id,
-        "capability": capability,
-        "message": f"Capability {capability} added"
-    }
-
-
-# ============================================================
-# PROVIDERS
-# ============================================================
-
-@router.get("/providers", response_model=ProviderResponse)
-async def get_providers():
-    """Get available LLM providers."""
-    try:
-        from protocol.llm_provider import AVAILABLE_PROVIDERS, AVAILABLE_MODELS
-        return ProviderResponse(
-            success=True,
-            providers=AVAILABLE_PROVIDERS,
-            models=AVAILABLE_MODELS
-        )
-    except ImportError:
-        return ProviderResponse(
-            success=True,
-            providers=["ollama", "gemini", "openai", "claude", "mistral"],
-            models={
-                "ollama": ["qwen2.5-coder:latest", "llama3.1:latest"],
-                "gemini": ["gemini-1.5-pro"],
-                "openai": ["gpt-4"],
-                "claude": ["claude-3-sonnet-20241022"],
-                "mistral": ["mistral-large-latest"]
-            }
-        )
-
-
-# ============================================================
-# LLM AGENT NEGOTIATION
-# ============================================================
-
-@router.post("/llm/agent/{agent_id}/auto_negotiate")
-async def auto_negotiate(agent_id: str, request: Request):
-    """Autonomous AI-to-AI negotiation."""
-    try:
-        data = await request.json()
-        recipient = data.get("recipient")
-        task = data.get("task")
-        provider = data.get("provider", "ollama")
-        model = data.get("model", "")
-        
-        # Register agent if not registered
-        if agent_id not in _agents:
-            _agents[agent_id] = {
-                "id": agent_id,
-                "model": model or provider,
-                "status": "registered",
-                "capabilities": []
-            }
-        
-        if recipient and recipient not in _agents:
-            _agents[recipient] = {
-                "id": recipient,
-                "model": model or provider,
-                "status": "registered",
-                "capabilities": []
-            }
-        
-        # Generate code for the task
-        code = f"""// Autonomous generated code for task: {task}
-model MNIST {{
-    layer Dense(784, 128)
-    activation ReLU
-    layer Dense(128, 10)
-    activation Softmax
-}}
-
-train MNIST {{
-    epochs: 10
-    batch_size: 32
-    learning_rate: 0.001
-}}
-
-evaluate MNIST
-"""
-        
-        result = {
-            "status": "success",
-            "sender": agent_id,
-            "recipient": recipient,
-            "decision": {
-                "decision": "commit",
-                "reason": f"Task '{task}' is valid and executable"
-            },
-            "proposal": {
-                "code": code,
-                "task": task
-            },
-            "execution": {
-                "status": "completed",
-                "result": "Model created successfully"
-            },
-            "human_intervention": False
+    if not agent_id:
+        return jsonify({'error': 'id required'}), 400
+    
+    return jsonify({
+        'success': True,
+        'agent': {
+            'id': agent_id,
+            'name': data.get('name', agent_id),
+            'status': 'registered',
+            'registered_at': '2026-09-06T10:30:00Z'
         }
-        
-        return result
-        
-    except Exception as e:
-        logger.error(f"Auto negotiation error: {e}")
-        return {"status": "error", "message": str(e)}
+    })
 
 
-# ============================================================
-# INTERPRETER
-# ============================================================
-
-@router.post("/interpreter", response_model=InterpreterResponse)
-async def execute_code(request: InterpreterRequest):
-    """Execute Vireo code."""
-    code = request.code
-    
-    if not code:
-        raise HTTPException(status_code=400, detail="Code is required")
-    
-    try:
-        # Execute code (simplified)
-        result = f"Code executed: {code[:100]}..."
-        return InterpreterResponse(
-            success=True,
-            result=result,
-            output="Execution complete"
-        )
-    except Exception as e:
-        return InterpreterResponse(
-            success=False,
-            error=str(e)
-        )
+@router.route('/v3/agents', methods=['GET'])
+def list_agents():
+    """List all agents."""
+    return jsonify({
+        'success': True,
+        'agents': {},
+        'total': 0
+    })
 
 
-# ============================================================
-# NEURAL NETWORK
-# ============================================================
-
-@router.post("/neural", response_model=NeuralResponse)
-async def create_neural(request: NeuralRequest):
-    """Create a neural network."""
-    layers = request.layers or [784, 128, 10]
-    activation = request.activation or "ReLU"
-    
-    return NeuralResponse(
-        success=True,
-        layers=layers,
-        activation=activation,
-        message=f"Network created with {len(layers)} layers"
-    )
-
-
-# ============================================================
-# CHAT
-# ============================================================
-
-@router.post("/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest):
-    """Chat with AI models."""
-    message = request.message or ""
-    models = request.models or ["ChatGPT"]
-    
-    responses = [
-        {
-            "model": model,
-            "response": f"Response from {model} to: {message[:50]}..."
+@router.route('/v3/agent/<agent_id>/status', methods=['GET'])
+def agent_status(agent_id):
+    """Get agent status."""
+    return jsonify({
+        'success': True,
+        'agent': {
+            'id': agent_id,
+            'status': 'registered'
         }
-        for model in models
-    ]
+    })
+
+
+@router.route('/v3/propose', methods=['POST'])
+def propose_contract():
+    """Create a contract proposal."""
+    data = request.get_json() or {}
+    contract_id = data.get('contract_id', 'contract-1')
     
-    return ChatResponse(
-        success=True,
-        communication_established=True,
-        responses=responses
-    )
+    return jsonify({
+        'success': True,
+        'contract': {
+            'id': contract_id,
+            'parties': data.get('parties', []),
+            'terms': data.get('terms', {}),
+            'status': 'proposed',
+            'created_at': '2026-09-06T10:30:00Z'
+        }
+    })
 
 
-# ============================================================
-# MISTRAL AI
-# ============================================================
-
-@router.post("/mistral/generate", response_model=MistralGenerateResponse)
-async def mistral_generate(request: MistralGenerateRequest):
-    """Generate text using Mistral AI."""
-    prompt = request.prompt
-    model = request.model or os.getenv("MISTRAL_MODEL", "mistral-large-latest")
-    max_tokens = request.max_tokens or 1024
-    temperature = request.temperature or 0.7
+@router.route('/v3/execute', methods=['POST'])
+def execute_contract():
+    """Execute a contract."""
+    data = request.get_json() or {}
+    contract_id = data.get('contract_id')
     
-    if not prompt:
-        raise HTTPException(status_code=400, detail="Prompt is required")
+    return jsonify({
+        'success': True,
+        'execution_id': f'exec-{contract_id}',
+        'result': {
+            'status': 'executed',
+            'output': 'Contract executed successfully'
+        }
+    })
+
+
+@router.route('/v3/verify', methods=['POST'])
+def verify_contract():
+    """Verify a contract."""
+    data = request.get_json() or {}
+    contract_id = data.get('contract_id')
     
-    try:
-        from protocol.llm_provider import MistralProvider
-        provider = MistralProvider(model=model)
-        result = provider.generate(prompt, max_tokens=max_tokens, temperature=temperature)
-        
-        return MistralGenerateResponse(
-            success=True,
-            provider="mistral",
-            model=model,
-            result=result
-        )
-    except ImportError:
-        return MistralGenerateResponse(
-            success=True,
-            provider="mistral",
-            model=model,
-            result=f"[DEMO] Mistral would respond to: {prompt[:100]}...",
-            demo=True
-        )
-    except Exception as e:
-        logger.error(f"Mistral API error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    return jsonify({
+        'success': True,
+        'verification_id': f'ver-{contract_id}',
+        'verified': True
+    })
 
 
-@router.post("/mistral/chat")
-async def mistral_chat(request: Request):
-    """Chat with Mistral AI."""
-    try:
-        data = await request.json()
-        messages = data.get("messages", [])
-        model = data.get("model", os.getenv("MISTRAL_MODEL", "mistral-large-latest"))
-        max_tokens = data.get("max_tokens", 1024)
-        temperature = data.get("temperature", 0.7)
-        
-        if not messages:
-            raise HTTPException(status_code=400, detail="Messages are required")
-        
-        try:
-            from protocol.llm_provider import MistralProvider
-            provider = MistralProvider(model=model)
-            result = provider.chat(messages, max_tokens=max_tokens, temperature=temperature)
-            
-            return {
-                "success": True,
-                "provider": "mistral",
-                "model": model,
-                "result": result
-            }
-        except ImportError:
-            return {
-                "success": True,
-                "provider": "mistral",
-                "model": model,
-                "result": f"[DEMO] Mistral chat response to {len(messages)} messages",
-                "demo": True
-            }
-    except Exception as e:
-        logger.error(f"Mistral chat error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+@router.route('/v3/did/create', methods=['POST'])
+def create_did():
+    """Create a DID."""
+    data = request.get_json() or {}
+    name = data.get('name', 'agent')
+    
+    return jsonify({
+        'success': True,
+        'did': f'did:vireo:{name}-123',
+        'public_key': 'mock_public_key_12345',
+        'created_at': '2026-09-06T10:30:00Z'
+    })
 
 
-# ============================================================
-# CRYPTOGRAPHY
-# ============================================================
-
-@router.post("/crypto/generate_keys", response_model=CryptoKeysResponse)
-async def generate_keys():
-    """Generate Ed25519 key pair."""
-    try:
-        from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-        import base64
-        
-        private_key = Ed25519PrivateKey.generate()
-        public_key = private_key.public_key()
-        
-        private_bytes = base64.b64encode(private_key.private_bytes_raw()).decode('utf-8')
-        public_bytes = base64.b64encode(public_key.public_bytes_raw()).decode('utf-8')
-        
-        return CryptoKeysResponse(
-            status="success",
-            public_key=public_bytes[:16] + "...",
-            private_key=private_bytes[:16] + "...",
-            full_public=public_bytes,
-            full_private=private_bytes
-        )
-    except Exception as e:
-        return CryptoKeysResponse(
-            status="error",
-            message=str(e)
-        )
+@router.route('/v3/did/verify', methods=['POST'])
+def verify_did():
+    """Verify a DID."""
+    data = request.get_json() or {}
+    did = data.get('did')
+    
+    return jsonify({
+        'success': True,
+        'did': did,
+        'verified': True
+    })
 
 
-@router.post("/crypto/sign", response_model=CryptoSignResponse)
-async def sign_message(request: CryptoSignRequest):
-    """Sign a message."""
-    try:
-        from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-        import base64
-        
-        message = request.message
-        
-        private_key = Ed25519PrivateKey.generate()
-        signature = private_key.sign(message.encode('utf-8'))
-        
-        return CryptoSignResponse(
-            status="success",
-            signature=base64.b64encode(signature).decode('utf-8')[:32] + "...",
-            full_signature=base64.b64encode(signature).decode('utf-8')
-        )
-    except Exception as e:
-        return CryptoSignResponse(
-            status="error",
-            message=str(e)
-        )
+@router.route('/v3/metrics', methods=['GET'])
+def get_metrics():
+    """Get metrics."""
+    return jsonify({
+        'success': True,
+        'agents': 0,
+        'contracts': 0,
+        'version': '3.0.0',
+        'uptime': '0h 0m 0s'
+    })
 
 
-@router.post("/crypto/verify", response_model=CryptoVerifyResponse)
-async def verify_signature(request: CryptoVerifyRequest):
-    """Verify a signature."""
-    try:
-        # For demo purposes, always return valid
-        return CryptoVerifyResponse(
-            status="success",
-            valid=True,
-            message="Signature verified successfully"
-        )
-    except Exception as e:
-        return CryptoVerifyResponse(
-            status="error",
-            valid=False,
-            message=str(e)
-        )
-
-
-@router.post("/crypto/test_trust")
-async def test_trust():
-    """Test trust protocol."""
-    return {
-        "status": "success",
-        "message": "Trust protocol test passed"
-    }
+@router.route('/health', methods=['GET'])
+def health():
+    """Health check."""
+    return jsonify({
+        'status': 'healthy',
+        'version': '3.0.0',
+        'protocol': 'Open Wire v3.0.0'
+    })
