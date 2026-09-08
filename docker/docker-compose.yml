@@ -1,0 +1,52 @@
+# Vireo v3.0.0 — Docker Compose
+
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: vireo
+      POSTGRES_PASSWORD: vireo
+      POSTGRES_DB: vireo
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  vireo-api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.python
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://vireo:vireo@postgres:5432/vireo
+    depends_on:
+      - redis
+      - postgres
+    volumes:
+      - ./:/app
+    command: uvicorn api.server:app --host 0.0.0.0 --port 8000 --reload
+
+  vireo-wasm:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.wasm
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./runtime/wasm:/app
+
+volumes:
+  redis_data:
+  postgres_data:

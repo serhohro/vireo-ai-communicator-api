@@ -1,982 +1,631 @@
-# 📚 Vireo Tutorial — Complete Guide
+# 🌿 Vireo v3.0.0 — Complete Tutorial
 
-**Version:** 2.0.1  
-**Last Updated:** 2026-01-15
+**Learn Vireo step by step**
 
 ---
 
 ## Table of Contents
 
-- [Part 1: Your First Agent](#part-1-your-first-agent)
-- [Part 2: Contracts](#part-2-contracts)
-- [Part 3: Multi-Agent Negotiation](#part-3-multi-agent-negotiation)
-- [Part 4: Run the System](#part-4-run-the-system)
-- [Part 5: Full Example — Multi-Agent Medical Image Analysis](#part-5-full-example--multi-agent-medical-image-analysis)
-- [Next Steps](#next-steps)
+1. [Part 1: Your First Agent](#part-1-your-first-agent)
+2. [Part 2: Agents Communicating](#part-2-agents-communicating)
+3. [Part 3: Contracts & Negotiation](#part-3-contracts--negotiation)
+4. [Part 4: Formal Verification](#part-4-formal-verification)
+5. [Part 5: DIDs & Trust](#part-5-dids--trust)
+6. [Part 6: WASM Runtime](#part-6-wasm-runtime)
+7. [Part 7: Rust SDK](#part-7-rust-sdk)
+8. [Part 8: MCP Integration](#part-8-mcp-integration)
+9. [Part 9: Advanced Lifecycle](#part-9-advanced-lifecycle)
+10. [Part 10: Production Deployment](#part-10-production-deployment)
 
 ---
 
 ## Part 1: Your First Agent
 
-### 1.1 What is an Agent?
+### Step 1.1: Start the Server
 
-An agent in Vireo is an autonomous entity that can:
-- **Discover** capabilities of other agents
-- **Negotiate** contracts
-- **Execute** tasks
-- **Verify** results
-
-### 1.2 Creating a Simple Agent
-
-Create a file `first_agent.py`:
-
-```python
-from core.agent.base import BaseAgent, AgentRole
-from core.agent.registry import AgentRegistry
-
-class CalculatorAgent(BaseAgent):
-    """A simple calculator agent"""
-    
-    def __init__(self):
-        super().__init__(
-            name="calculator",
-            role=AgentRole.WORKER,
-            capabilities=["add", "subtract", "multiply", "divide"],
-            description="Basic arithmetic operations"
-        )
-        
-        # Register capabilities
-        self.register_capability("add", self.add)
-        self.register_capability("subtract", self.subtract)
-        self.register_capability("multiply", self.multiply)
-        self.register_capability("divide", self.divide)
-    
-    def add(self, a: float, b: float) -> float:
-        return a + b
-    
-    def subtract(self, a: float, b: float) -> float:
-        return a - b
-    
-    def multiply(self, a: float, b: float) -> float:
-        return a * b
-    
-    def divide(self, a: float, b: float) -> float:
-        if b == 0:
-            raise ValueError("Division by zero")
-        return a / b
-    
-    def start(self):
-        print(f"✅ {self.name} agent started")
-        print(f"   ID: {self.agent_id}")
-        print(f"   Capabilities: {', '.join(self.capabilities)}")
-    
-    def stop(self):
-        print(f"🛑 {self.name} agent stopped")
-1.3 Using the Agent
-python
-# Create agent
-agent = CalculatorAgent()
-agent.start()
-
-# Register with registry
-registry = AgentRegistry()
-registry.register(agent)
-
-# Execute capabilities
-result = agent.execute("add", {"a": 5, "b": 3})
-print(f"5 + 3 = {result['result']}")
-
-result = agent.execute("multiply", {"a": 4, "b": 7})
-print(f"4 * 7 = {result['result']}")
-
-# Stop agent
-agent.stop()
-1.4 Output
-text
-✅ calculator agent started
-   ID: agent-a1b2c3d4
-   Capabilities: add, subtract, multiply, divide
-5 + 3 = 8
-4 * 7 = 28
-🛑 calculator agent stopped
-Part 2: Contracts
-2.1 What is a Contract?
-A contract is an agreement between agents specifying:
-
-Parties: Who is involved
-
-Terms: Constraints and limits
-
-Obligations: What each party must do
-
-Conditions: When the contract is valid
-
-On Failure: What happens if something goes wrong
-
-2.2 Creating a Contract
-Create contract_example.py:
-
-python
-from core.contract.contract import Contract, Terms, Obligation
-from core.contract.validator import ContractValidator
-from core.agent.base import BaseAgent, AgentRole
-from core.agent.registry import AgentRegistry
-
-# Create agents
-class DataProviderAgent(BaseAgent):
-    def __init__(self):
-        super().__init__("data_provider", AgentRole.WORKER, ["provide_data"])
-        self.register_capability("provide_data", self.provide_data)
-        self._data = {"temperature": 25.5, "humidity": 60, "pressure": 1013}
-    
-    def provide_data(self, dataset: str = "weather") -> dict:
-        print(f"📊 Providing data from {dataset}")
-        return self._data
-    
-    def start(self):
-        print(f"✅ {self.name} started")
-    
-    def stop(self):
-        print(f"🛑 {self.name} stopped")
-
-class DataAnalyzerAgent(BaseAgent):
-    def __init__(self):
-        super().__init__("data_analyzer", AgentRole.ANALYST, ["analyze_data"])
-        self.register_capability("analyze_data", self.analyze_data)
-    
-    def analyze_data(self, data: dict) -> dict:
-        print(f"🔍 Analyzing data: {data}")
-        return {
-            "summary": f"Temperature: {data['temperature']}°C, Humidity: {data['humidity']}%",
-            "status": "normal" if data["temperature"] < 30 else "warning"
-        }
-    
-    def start(self):
-        print(f"✅ {self.name} started")
-    
-    def stop(self):
-        print(f"🛑 {self.name} stopped")
-
-# Create contract
-contract = Contract(
-    contract_id="data_analysis_001",
-    parties=["data_provider", "data_analyzer"],
-    terms=Terms(
-        max_tokens=500,
-        timeout_sec=30,
-        max_cost_usd=1.0,
-        max_rounds=3
-    ),
-    obligations={
-        "data_provider": Obligation(
-            action="provide_data",
-            input={"dataset": "weather"},
-            output={"data": "weather_data"}
-        ),
-        "data_analyzer": Obligation(
-            action="analyze_data",
-            input={"data": "$ref.data_provider.data"},
-            output={"summary": "analysis_result"}
-        )
-    },
-    condition="data_analyzer.status == 'normal'",
-    on_failure="escalate"
-)
-
-# Validate contract
-validator = ContractValidator()
-errors = validator.validate(contract)
-if errors:
-    print("❌ Contract validation failed:")
-    for error in errors:
-        print(f"  - {error}")
-else:
-    print("✅ Contract is valid")
-2.3 Executing a Contract
-python
-from core.execution.runner import ExecutionRunner
-
-# Initialize agents
-provider = DataProviderAgent()
-analyzer = DataAnalyzerAgent()
-
-provider.start()
-analyzer.start()
-
-# Register agents
-registry = AgentRegistry()
-registry.register(provider)
-registry.register(analyzer)
-
-# Execute contract
-runner = ExecutionRunner()
-
-# Register executors
-runner.register_executor("provide_data", provider.provide_data)
-runner.register_executor("analyze_data", analyzer.analyze_data)
-
-# Execute
-result = runner.execute_contract(contract)
-
-if result.status.value == "completed":
-    print("\n✅ Contract executed successfully!")
-    print(f"Results: {result.result}")
-else:
-    print(f"\n❌ Execution failed: {result.error}")
-
-provider.stop()
-analyzer.stop()
-2.4 Output
-text
-✅ data_provider started
-✅ data_analyzer started
-📊 Providing data from weather
-🔍 Analyzing data: {'temperature': 25.5, 'humidity': 60, 'pressure': 1013}
-
-✅ Contract executed successfully!
-Results: {'data_provider': {'success': True, 'result': {'temperature': 25.5, 'humidity': 60, 'pressure': 1013}}, 'data_analyzer': {'success': True, 'result': {'summary': 'Temperature: 25.5°C, Humidity: 60%', 'status': 'normal'}}}
-🛑 data_provider stopped
-🛑 data_analyzer stopped
-Part 3: Multi-Agent Negotiation
-3.1 Setting Up Negotiation
-Create negotiation.py:
-
-python
-import asyncio
-from core.agent.base import BaseAgent, AgentRole
-from core.agent.registry import AgentRegistry
-from core.protocol.state import StateMachine, ProtocolState, ProtocolEvent
-from core.contract.contract import Contract, Terms, Obligation
-from core.execution.runner import ExecutionRunner
-from core.verification.verifier import Verifier
-
-class BuyerAgent(BaseAgent):
-    """Agent that negotiates to buy items"""
-    
-    def __init__(self, max_budget: float = 100.0):
-        super().__init__("buyer", AgentRole.WORKER, 
-                        ["propose_price", "accept_counter", "final_decision"])
-        self.max_budget = max_budget
-        self.current_proposal = None
-        self.counter_offers = []
-        
-        self.register_capability("propose_price", self.propose_price)
-        self.register_capability("accept_counter", self.accept_counter)
-        self.register_capability("final_decision", self.final_decision)
-    
-    def propose_price(self, item: str = "item") -> dict:
-        """Propose an initial price"""
-        price = self.max_budget * 0.6  # Start at 60% of max
-        self.current_proposal = {"item": item, "price": price}
-        print(f"🛒 Buyer proposes {price:.2f} for {item}")
-        return {"item": item, "price": price}
-    
-    def accept_counter(self, counter_price: float) -> dict:
-        """Accept or reject a counter offer"""
-        self.counter_offers.append(counter_price)
-        accepted = counter_price <= self.max_budget
-        
-        if accepted:
-            print(f"✅ Buyer accepts {counter_price:.2f}")
-        else:
-            print(f"❌ Buyer rejects {counter_price:.2f} (max: {self.max_budget:.2f})")
-        
-        return {"accepted": accepted, "counter": counter_price}
-    
-    def final_decision(self, final_price: float) -> dict:
-        """Make final decision"""
-        accepted = final_price <= self.max_budget
-        print(f"📝 Final decision: {'Accepted' if accepted else 'Rejected'} at {final_price:.2f}")
-        return {"accepted": accepted, "final_price": final_price}
-    
-    def start(self):
-        print(f"✅ Buyer ready (budget: ${self.max_budget:.2f})")
-    
-    def stop(self):
-        print("🛑 Buyer stopped")
-
-class SellerAgent(BaseAgent):
-    """Agent that negotiates to sell items"""
-    
-    def __init__(self, min_price: float = 50.0):
-        super().__init__("seller", AgentRole.WORKER,
-                        ["respond_offer", "counter_offer", "final_confirm"])
-        self.min_price = min_price
-        self.current_offer = None
-        
-        self.register_capability("respond_offer", self.respond_offer)
-        self.register_capability("counter_offer", self.counter_offer)
-        self.register_capability("final_confirm", self.final_confirm)
-    
-    def respond_offer(self, price: float, item: str = "item") -> dict:
-        """Respond to a buyer's offer"""
-        self.current_offer = {"price": price, "item": item}
-        accepted = price >= self.min_price
-        
-        if accepted:
-            print(f"✅ Seller accepts {price:.2f}")
-        else:
-            print(f"❌ Seller rejects {price:.2f} (min: {self.min_price:.2f})")
-        
-        return {"accepted": accepted, "price": price}
-    
-    def counter_offer(self, buyer_price: float) -> dict:
-        """Make a counter offer"""
-        counter = max(self.min_price, buyer_price * 1.2)
-        counter = min(counter, self.min_price * 1.5)
-        print(f"🔄 Seller counters with {counter:.2f}")
-        return {"counter_price": counter}
-    
-    def final_confirm(self, final_price: float) -> dict:
-        """Confirm final price"""
-        accepted = final_price >= self.min_price
-        print(f"📝 Final confirm: {'Accepted' if accepted else 'Rejected'} at {final_price:.2f}")
-        return {"accepted": accepted, "final_price": final_price}
-    
-    def start(self):
-        print(f"✅ Seller ready (min price: ${self.min_price:.2f})")
-    
-    def stop(self):
-        print("🛑 Seller stopped")
-3.2 Running Negotiation
-python
-async def run_negotiation():
-    # Create agents
-    buyer = BuyerAgent(max_budget=120.0)
-    seller = SellerAgent(min_price=80.0)
-    
-    buyer.start()
-    seller.start()
-    
-    # Register
-    registry = AgentRegistry()
-    registry.register(buyer)
-    registry.register(seller)
-    
-    # Create negotiation contract
-    contract = Contract(
-        contract_id="negotiation_001",
-        parties=["buyer", "seller"],
-        terms=Terms(
-            max_rounds=10,
-            timeout_sec=120,
-            max_tokens=1000
-        ),
-        obligations={
-            "buyer": Obligation(
-                action="propose_price",
-                input={"item": "laptop"}
-            ),
-            "seller": Obligation(
-                action="respond_offer",
-                input={"price": "$ref.buyer.proposal.price"}
-            )
-        },
-        on_failure="escalate"
-    )
-    
-    # State machine
-    state_machine = StateMachine(ProtocolState.PROPOSE)
-    
-    # Run negotiation rounds
-    print("\n🔄 Starting negotiation...\n")
-    
-    for round_num in range(10):
-        print(f"--- Round {round_num + 1} ---")
-        
-        # Buyer proposes
-        buyer_result = buyer.execute("propose_price", {"item": "laptop"})
-        proposal = buyer_result["result"]
-        price = proposal["price"]
-        
-        # Check if we should counter
-        if price < seller.min_price:
-            seller_result = seller.execute("counter_offer", {"buyer_price": price})
-            counter = seller_result["result"]["counter_price"]
-            
-            buyer_result = buyer.execute("accept_counter", {"counter_price": counter})
-            
-            if buyer_result["result"]["accepted"]:
-                price = counter
-                print(f"🎉 Agreement reached at {price:.2f}")
-                state_machine.transition(ProtocolEvent.ACCEPT)
-                break
-        else:
-            # Seller accepts
-            seller_result = seller.execute("respond_offer", {"price": price})
-            if seller_result["result"]["accepted"]:
-                print(f"🎉 Agreement reached at {price:.2f}")
-                state_machine.transition(ProtocolEvent.ACCEPT)
-                break
-        
-        # Final decision
-        final_decision = buyer.execute("final_decision", {"final_price": price})
-        if final_decision["result"]["accepted"]:
-            seller.execute("final_confirm", {"final_price": price})
-            print(f"🎉 Final agreement at {price:.2f}")
-            break
-        
-        print("❌ No agreement this round\n")
-    
-    # Final state
-    print(f"\n📊 Negotiation complete. State: {state_machine.state.value}")
-    
-    buyer.stop()
-    seller.stop()
-
-# Run
-asyncio.run(run_negotiation())
-3.3 Output
-text
-✅ Buyer ready (budget: $120.00)
-✅ Seller ready (min price: $80.00)
-
-🔄 Starting negotiation...
-
---- Round 1 ---
-🛒 Buyer proposes 72.00 for laptop
-❌ Seller rejects 72.00 (min: 80.00)
-🔄 Seller counters with 86.40
-✅ Buyer accepts 86.40
-🎉 Agreement reached at 86.40
-
-📊 Negotiation complete. State: accept
-🛑 Buyer stopped
-🛑 Seller stopped
-Part 4: Run the System
-4.1 Start the API Server
-bash
-# Start Redis (required for multi-agent)
-redis-server
-
-# Start Vireo API server
+```bash
 python api/server.py
-4.2 API Endpoints
-Endpoint	Method	Description
-/api/agents	GET	List all agents
-/api/agents	POST	Create agent
-/api/agents/{id}	GET	Get agent details
-/api/agents/{id}/execute	POST	Execute capability
-/api/contracts	POST	Create contract
-/api/contracts/{id}	GET	Get contract details
-/api/contracts/{id}/execute	POST	Execute contract
-/api/contracts/{id}/verify	POST	Verify contract
-/api/state	GET	Get system state
-4.3 API Usage Examples
-bash
-# Create an agent
-curl -X POST http://localhost:8000/api/agents \
-  -H "Content-Type: application/json" \
-  -d '{"name": "test_agent", "role": "worker", "capabilities": ["analyze"]}'
+You should see:
 
-# Execute capability
-curl -X POST http://localhost:8000/api/agents/agent-123/execute \
-  -H "Content-Type: application/json" \
-  -d '{"action": "analyze", "inputs": {"data": "test"}}'
-
-# Create contract
-curl -X POST http://localhost:8000/api/contracts \
-  -H "Content-Type: application/json" \
-  -d '{"parties": ["agent-123", "agent-456"], "terms": {"timeout_sec": 60}}'
-4.4 Web Interface
-Open in browser: http://localhost:8000/api/docs
-
-You'll see an interactive Swagger UI for testing all API endpoints.
-
-Part 5: Full Example — Multi-Agent Medical Image Analysis
-5.1 Overview
-This example demonstrates a complete multi-agent system for medical image analysis:
-
-Radiologist Agent — Analyzes medical images
-
-Diagnosis Agent — Generates diagnosis from analysis
-
-Report Agent — Creates a report
-
-Guardian Agent — Verifies and validates results
-
-5.2 Implementation
-Create medical_analysis.py:
-
-python
-import asyncio
-import json
-from typing import Dict, Any
-from datetime import datetime
-
-from core.agent.base import BaseAgent, AgentRole
-from core.agent.registry import AgentRegistry
-from core.contract.contract import Contract, Terms, Obligation
-from core.contract.validator import ContractValidator
-from core.execution.runner import ExecutionRunner
-from core.verification.verifier import Verifier
-from core.protocol.state import StateMachine, ProtocolState, ProtocolEvent
-
-
-class RadiologistAgent(BaseAgent):
-    """Agent that analyzes medical images"""
-    
-    def __init__(self):
-        super().__init__(
-            "radiologist", 
-            AgentRole.WORKER,
-            ["analyze_image", "detect_anomalies"],
-            "Medical image analysis specialist"
-        )
-        self.register_capability("analyze_image", self.analyze_image)
-        self.register_capability("detect_anomalies", self.detect_anomalies)
-    
-    def analyze_image(self, image_url: str, model: str = "resnet50") -> dict:
-        """Analyze a medical image"""
-        print(f"🩻 Analyzing image: {image_url} using {model}")
-        
-        # Simulate analysis
-        import random
-        confidence = random.uniform(0.85, 0.98)
-        findings = random.choice([
-            "Normal", "Benign lesion", "Malignant tumor", 
-            "Inflammation", "Infection"
-        ])
-        
-        return {
-            "image_url": image_url,
-            "model": model,
-            "findings": findings,
-            "confidence": confidence,
-            "timestamp": datetime.utcnow().isoformat()
-        }
-    
-    def detect_anomalies(self, image_url: str) -> dict:
-        """Detect anomalies in image"""
-        print(f"🔍 Detecting anomalies in: {image_url}")
-        
-        import random
-        anomalies = []
-        if random.random() > 0.7:
-            anomalies.append({
-                "type": "suspicious_region",
-                "location": "upper_lobe",
-                "size": random.randint(5, 20)
-            })
-        
-        return {
-            "image_url": image_url,
-            "anomalies": anomalies,
-            "total_anomalies": len(anomalies)
-        }
-    
-    def start(self):
-        print(f"✅ Radiologist agent ready")
-    
-    def stop(self):
-        print(f"🛑 Radiologist agent stopped")
-
-
-class DiagnosisAgent(BaseAgent):
-    """Agent that generates diagnosis from analysis"""
-    
-    def __init__(self):
-        super().__init__(
-            "diagnostician",
-            AgentRole.ANALYST,
-            ["generate_diagnosis", "assess_risk"],
-            "Medical diagnosis specialist"
-        )
-        self.register_capability("generate_diagnosis", self.generate_diagnosis)
-        self.register_capability("assess_risk", self.assess_risk)
-    
-    def generate_diagnosis(self, analysis: dict) -> dict:
-        """Generate diagnosis from analysis"""
-        print(f"📋 Generating diagnosis from: {analysis['findings']}")
-        
-        findings = analysis["findings"]
-        confidence = analysis["confidence"]
-        
-        diagnosis = {
-            "primary_diagnosis": findings,
-            "confidence_score": confidence,
-            "severity": "high" if "malignant" in findings.lower() else "medium",
-            "recommendations": []
-        }
-        
-        if findings == "Normal":
-            diagnosis["recommendations"].append("No immediate action required")
-            diagnosis["severity"] = "low"
-        elif "tumor" in findings.lower():
-            diagnosis["recommendations"].extend([
-                "Schedule follow-up scan",
-                "Consider biopsy",
-                "Consult with specialist"
-            ])
-            diagnosis["severity"] = "high"
-        else:
-            diagnosis["recommendations"].append("Monitor and follow-up")
-        
-        return diagnosis
-    
-    def assess_risk(self, diagnosis: dict) -> dict:
-        """Assess risk level"""
-        severity_map = {"low": 1, "medium": 2, "high": 3}
-        risk_level = severity_map.get(diagnosis["severity"], 2)
-        
-        return {
-            "risk_level": diagnosis["severity"],
-            "risk_score": risk_level,
-            "requires_immediate_action": risk_level >= 3,
-            "priority": "high" if risk_level >= 3 else "normal"
-        }
-    
-    def start(self):
-        print(f"✅ Diagnosis agent ready")
-    
-    def stop(self):
-        print(f"🛑 Diagnosis agent stopped")
-
-
-class ReportAgent(BaseAgent):
-    """Agent that generates medical reports"""
-    
-    def __init__(self):
-        super().__init__(
-            "reporter",
-            AgentRole.WORKER,
-            ["generate_report", "format_report"],
-            "Medical report generator"
-        )
-        self.register_capability("generate_report", self.generate_report)
-        self.register_capability("format_report", self.format_report)
-    
-    def generate_report(self, diagnosis: dict, patient_id: str) -> dict:
-        """Generate a medical report"""
-        print(f"📄 Generating report for patient: {patient_id}")
-        
-        report = {
-            "patient_id": patient_id,
-            "diagnosis": diagnosis["primary_diagnosis"],
-            "confidence": diagnosis["confidence_score"],
-            "severity": diagnosis["severity"],
-            "recommendations": diagnosis["recommendations"],
-            "generated_at": datetime.utcnow().isoformat(),
-            "report_id": f"RPT-{datetime.utcnow().strftime('%Y%m%d')}-{patient_id}"
-        }
-        
-        return report
-    
-    def format_report(self, report: dict, format: str = "json") -> dict:
-        """Format report in specified format"""
-        print(f"📝 Formatting report as {format}")
-        
-        if format == "json":
-            return {"format": "json", "content": report}
-        elif format == "html":
-            html = f"""
-            <html>
-            <head><title>Medical Report</title></head>
-            <body>
-                <h1>Medical Report</h1>
-                <p><strong>Patient ID:</strong> {report['patient_id']}</p>
-                <p><strong>Diagnosis:</strong> {report['diagnosis']}</p>
-                <p><strong>Confidence:</strong> {report['confidence']:.2%}</p>
-                <p><strong>Severity:</strong> {report['severity']}</p>
-                <h2>Recommendations</h2>
-                <ul>
-                    {''.join(f'<li>{rec}</li>' for rec in report['recommendations'])}
-                </ul>
-            </body>
-            </html>
-            """
-            return {"format": "html", "content": html}
-        else:
-            return {"format": format, "content": report}
-    
-    def start(self):
-        print(f"✅ Report agent ready")
-    
-    def stop(self):
-        print(f"🛑 Report agent stopped")
-
-
-class GuardianAgent(BaseAgent):
-    """Agent that verifies and validates results"""
-    
-    def __init__(self):
-        super().__init__(
-            "guardian",
-            AgentRole.GUARDIAN,
-            ["verify_analysis", "validate_report", "check_compliance"],
-            "Verification and compliance specialist"
-        )
-        self.register_capability("verify_analysis", self.verify_analysis)
-        self.register_capability("validate_report", self.validate_report)
-        self.register_capability("check_compliance", self.check_compliance)
-    
-    def verify_analysis(self, analysis: dict) -> dict:
-        """Verify analysis results"""
-        print(f"🔒 Verifying analysis")
-        
-        issues = []
-        
-        if analysis["confidence"] < 0.80:
-            issues.append("Low confidence detected")
-        
-        if analysis["findings"] == "Normal" and analysis["confidence"] > 0.99:
-            issues.append("Suspiciously high confidence for normal finding")
-        
-        return {
-            "verified": len(issues) == 0,
-            "issues": issues,
-            "trust_score": 1.0 - (len(issues) * 0.1)
-        }
-    
-    def validate_report(self, report: dict) -> dict:
-        """Validate report completeness"""
-        print(f"🔒 Validating report")
-        
-        required_fields = ["patient_id", "diagnosis", "confidence", "severity"]
-        missing = [f for f in required_fields if f not in report]
-        
-        return {
-            "valid": len(missing) == 0,
-            "missing_fields": missing,
-            "completeness": 1.0 - (len(missing) / len(required_fields))
-        }
-    
-    def check_compliance(self, report: dict) -> dict:
-        """Check regulatory compliance"""
-        print(f"🔒 Checking compliance")
-        
-        compliance_issues = []
-        
-        if "diagnosis" not in report:
-            compliance_issues.append("Missing diagnosis")
-        
-        if report.get("severity") == "high":
-            compliance_issues.append("High severity requires specialist review")
-        
-        return {
-            "compliant": len(compliance_issues) == 0,
-            "issues": compliance_issues,
-            "requires_review": len(compliance_issues) > 0
-        }
-    
-    def start(self):
-        print(f"✅ Guardian agent ready")
-    
-    def stop(self):
-        print(f"🛑 Guardian agent stopped")
-5.3 Running the Full Example
-python
-async def run_medical_analysis():
-    print("🏥 Starting Medical Image Analysis System\n" + "="*50)
-    
-    # Create agents
-    radiologist = RadiologistAgent()
-    diagnostician = DiagnosisAgent()
-    reporter = ReportAgent()
-    guardian = GuardianAgent()
-    
-    radiologist.start()
-    diagnostician.start()
-    reporter.start()
-    guardian.start()
-    
-    # Register agents
-    registry = AgentRegistry()
-    for agent in [radiologist, diagnostician, reporter, guardian]:
-        registry.register(agent)
-    
-    # Create contract
-    contract = Contract(
-        contract_id="medical_analysis_001",
-        parties=["radiologist", "diagnostician", "reporter", "guardian"],
-        terms=Terms(
-            max_tokens=5000,
-            timeout_sec=300,
-            max_cost_usd=25.0,
-            max_rounds=5
-        ),
-        obligations={
-            "radiologist": Obligation(
-                action="analyze_image",
-                input={"image_url": "s3://medical/scan_20260115.dcm"},
-                output={"analysis": "analysis_result"}
-            ),
-            "diagnostician": Obligation(
-                action="generate_diagnosis",
-                input={"analysis": "$ref.radiologist.analysis"},
-                output={"diagnosis": "diagnosis_result"}
-            ),
-            "reporter": Obligation(
-                action="generate_report",
-                input={
-                    "diagnosis": "$ref.diagnostician.diagnosis",
-                    "patient_id": "P-12345"
-                },
-                output={"report": "report_result"}
-            ),
-            "guardian": Obligation(
-                action="verify_analysis",
-                input={"analysis": "$ref.radiologist.analysis"},
-                output={"verification": "verification_result"}
-            )
-        },
-        condition="diagnostician.diagnosis.confidence_score > 0.85",
-        on_failure="escalate"
-    )
-    
-    # Validate contract
-    validator = ContractValidator()
-    errors = validator.validate(contract)
-    if errors:
-        print("❌ Contract validation failed:")
-        for error in errors:
-            print(f"  - {error}")
-        return
-    
-    # Setup execution
-    runner = ExecutionRunner()
-    runner.register_executor("analyze_image", radiologist.analyze_image)
-    runner.register_executor("generate_diagnosis", diagnostician.generate_diagnosis)
-    runner.register_executor("generate_report", reporter.generate_report)
-    runner.register_executor("verify_analysis", guardian.verify_analysis)
-    
-    # Execute contract
-    print("\n🚀 Executing medical analysis contract...\n")
-    result = runner.execute_contract(contract)
-    
-    if result.status.value == "completed":
-        print("✅ Analysis complete!")
-        print("\n📊 Results:")
-        
-        # Extract results
-        rad_result = result.result.get("radiologist", {})
-        diag_result = result.result.get("diagnostician", {})
-        rep_result = result.result.get("reporter", {})
-        guard_result = result.result.get("guardian", {})
-        
-        if rad_result.get("success"):
-            analysis = rad_result["result"]
-            print(f"\n🩻 Image Analysis:")
-            print(f"  Findings: {analysis['findings']}")
-            print(f"  Confidence: {analysis['confidence']:.2%}")
-        
-        if diag_result.get("success"):
-            diagnosis = diag_result["result"]
-            print(f"\n📋 Diagnosis:")
-            print(f"  Primary: {diagnosis['primary_diagnosis']}")
-            print(f"  Severity: {diagnosis['severity']}")
-            print(f"  Recommendations: {', '.join(diagnosis['recommendations'])}")
-        
-        if rep_result.get("success"):
-            report = rep_result["result"]
-            print(f"\n📄 Report:")
-            print(f"  Report ID: {report['report_id']}")
-            print(f"  Generated: {report['generated_at']}")
-        
-        if guard_result.get("success"):
-            verification = guard_result["result"]
-            print(f"\n🔒 Verification:")
-            print(f"  Verified: {verification['verified']}")
-            print(f"  Trust Score: {verification['trust_score']:.2%}")
-            if verification['issues']:
-                print(f"  Issues: {', '.join(verification['issues'])}")
-        
-        # Generate final report
-        print("\n" + "="*50)
-        print("📋 FINAL REPORT SUMMARY")
-        print("="*50)
-        
-        if guard_result.get("success") and verification['verified']:
-            print("✅ ALL VERIFICATIONS PASSED")
-            print("🏥 Report is ready for clinical use")
-        else:
-            print("⚠️ VERIFICATION ISSUES FOUND")
-            print("🔴 Report requires human review")
-    else:
-        print(f"❌ Execution failed: {result.error}")
-    
-    # Stop agents
-    for agent in [radiologist, diagnostician, reporter, guardian]:
-        agent.stop()
-
-# Run the example
-if __name__ == "__main__":
-    asyncio.run(run_medical_analysis())
-5.4 Output
 text
-🏥 Starting Medical Image Analysis System
-==================================================
-✅ Radiologist agent ready
-✅ Diagnosis agent ready
-✅ Report agent ready
-✅ Guardian agent ready
+🌿 VIREO API SERVER v3.0.0
+📍 Server: http://localhost:5000
+Step 1.2: Create an Agent
+python
+import requests
 
-🚀 Executing medical analysis contract...
+BASE = "http://localhost:5000"
 
-🩻 Analyzing image: s3://medical/scan_20260115.dcm using resnet50
-📋 Generating diagnosis from: Malignant tumor
-📄 Generating report for patient: P-12345
-🔒 Verifying analysis
+agent = requests.post(f"{BASE}/api/v3/agent/register", json={
+    "id": "alice",
+    "name": "Alice Agent",
+    "model": "qwen2.5-coder:latest"
+}).json()
 
-✅ Analysis complete!
+print(f"✅ Agent Alice created: {agent['id']}")
+Step 1.3: Add Capabilities
+python
+requests.post(f"{BASE}/api/v3/agent/alice/capability", json={
+    "name": "process_text",
+    "description": "Process natural language text"
+})
 
-📊 Results:
+requests.post(f"{BASE}/api/v3/agent/alice/capability", json={
+    "name": "analyze_sentiment",
+    "description": "Analyze sentiment of text"
+})
+Step 1.4: Check Agent Status
+bash
+curl http://localhost:5000/api/v3/agents | jq
+Part 2: Agents Communicating
+Step 2.1: Create Two Agents
+python
+# Alice
+requests.post(f"{BASE}/api/v3/agent/register", json={
+    "id": "alice", "name": "Alice", "model": "qwen2.5-coder:latest"
+})
 
-🩻 Image Analysis:
-  Findings: Malignant tumor
-  Confidence: 92.50%
+# Bob
+requests.post(f"{BASE}/api/v3/agent/register", json={
+    "id": "bob", "name": "Bob", "model": "qwen2.5-coder:latest"
+})
+Step 2.2: Discover
+python
+# Alice discovers agents with "process_text" capability
+result = requests.post(f"{BASE}/api/v3/discover", json={
+    "capabilities": ["process_text"]
+}).json()
 
-📋 Diagnosis:
-  Primary: Malignant tumor
-  Severity: high
-  Recommendations: Schedule follow-up scan, Consider biopsy, Consult with specialist
+print(f"Found: {result['agents']}")
+Step 2.3: Send Message
+python
+message = requests.post(f"{BASE}/api/v3/message", json={
+    "type": "PROPOSE",
+    "sender": "alice",
+    "recipient": "bob",
+    "payload": {
+        "task": "Process this text: 'Hello Vireo!'",
+        "format": "text"
+    }
+}).json()
 
-📄 Report:
-  Report ID: RPT-20260115-P-12345
-  Generated: 2026-01-15T10:30:00Z
+print(f"✅ Message sent: {message['message_id']}")
+Step 2.4: WebSocket Real-time
+javascript
+const socket = io('http://localhost:5000');
 
-🔒 Verification:
-  Verified: True
-  Trust Score: 100.00%
+socket.on('connect', () => {
+    console.log('✅ Connected!');
+    socket.emit('message', {
+        type: 'PROPOSE',
+        sender: 'alice',
+        recipient: 'bob',
+        payload: { task: 'Hello!' }
+    });
+});
 
-==================================================
-📋 FINAL REPORT SUMMARY
-==================================================
-✅ ALL VERIFICATIONS PASSED
-🏥 Report is ready for clinical use
-🛑 Radiologist agent stopped
-🛑 Diagnosis agent stopped
-🛑 Report agent stopped
-🛑 Guardian agent stopped
-Next Steps
-What You've Learned
-✅ How to create and run Vireo agents
+socket.on('message_ack', (data) => {
+    console.log('📨 ACK:', data);
+});
+Part 3: Contracts & Negotiation
+Step 3.1: Create Contract
+python
+contract = requests.post(f"{BASE}/api/v3/propose", json={
+    "contract_id": "contract-001",
+    "parties": ["alice", "bob"],
+    "terms": {
+        "max_tokens": 5000,
+        "timeout_sec": 120,
+        "max_rounds": 10
+    },
+    "obligations": {
+        "alice": {
+            "action": "process_text",
+            "input": {"text": "AI is the future"}
+        },
+        "bob": {
+            "action": "analyze_sentiment",
+            "input": {"text": "$ref.alice.result"}
+        }
+    },
+    "condition": "sentiment_score > 0.5",
+    "on_failure": "escalate"
+}).json()
 
-✅ How to define and execute contracts
+contract_id = contract['contract']['id']
+print(f"✅ Contract: {contract_id}")
+Step 3.2: Negotiate Terms
+python
+negotiation = requests.post(f"{BASE}/api/v3/negotiate", json={
+    "contract_id": contract_id,
+    "proposal": {
+        "max_tokens": 3000,  # Counter-offer
+        "timeout_sec": 90
+    }
+}).json()
 
-✅ How to run multi-agent negotiations
+print(f"🤝 Negotiation: {negotiation['status']}")
+Step 3.3: Commit & Sign
+python
+commit = requests.post(f"{BASE}/api/v3/commit", json={
+    "contract_id": contract_id,
+    "signatures": ["alice_sig_123", "bob_sig_456"]
+}).json()
 
-✅ How to use the API and web interface
+print(f"📜 Committed: {commit['contract']['status']}")
+Step 3.4: Execute
+python
+execution = requests.post(f"{BASE}/api/v3/execute", json={
+    "contract_id": contract_id,
+    "executor": "alice"
+}).json()
 
-✅ How to build a complete multi-agent system
+execution_id = execution['execution_id']
+print(f"⚡ Executed: {execution_id}")
+Step 3.5: Verify
+python
+verification = requests.post(f"{BASE}/api/v3/verify", json={
+    "contract_id": contract_id,
+    "execution_id": execution_id
+}).json()
 
-Recommended Next Steps
-Explore the specification: Read specification/ for formal details
+print(f"✅ Verified: {verification['verified']}")
+Step 3.6: Complete
+python
+done = requests.post(f"{BASE}/api/v3/done", json={
+    "contract_id": contract_id
+}).json()
 
-Check out examples: Browse examples/ for more use cases
+print(f"🏁 Done: {done['status']}")
+Part 4: Formal Verification
+Step 4.1: Verify Contract Correctness
+python
+verification = requests.post(f"{BASE}/api/v3/formal/verify", json={
+    "contract": {
+        "id": "contract-001",
+        "parties": ["alice", "bob"],
+        "terms": {"max_tokens": 5000},
+        "obligations": {
+            "alice": {"action": "process_text"},
+            "bob": {"action": "analyze_sentiment"}
+        }
+    },
+    "properties": ["safety", "liveness", "fairness"]
+}).json()
 
-Write your own agents: Create agents for your specific needs
+if verification['verified']:
+    print("✅ Contract is mathematically correct!")
+else:
+    print("❌ Contract has issues:", verification['details'])
+Step 4.2: Check Invariants
+python
+invariants = requests.post(f"{BASE}/api/v3/formal/check", json={
+    "contract": contract['contract'],
+    "invariants": [
+        "max_tokens >= 0",
+        "timeout_sec > 0",
+        "parties != []"
+    ]
+}).json()
 
-Contribute: Submit PRs and RFCs to the project
+print(f"🧠 Invariants: {invariants['all_valid']}")
+Step 4.3: Python Formal Verification
+python
+from core.protocol.formal_verifier import FormalVerifier
 
-Join the community: Connect with other Vireo developers
+verifier = FormalVerifier()
 
-Additional Resources
-QUICKSTART.md — Quick start guide
+contract = {
+    "id": "contract-001",
+    "parties": ["alice", "bob"],
+    "terms": {"max_tokens": 5000}
+}
 
-API Documentation — API reference
+verified = verifier.verify_contract(contract)
+print(f"✅ Formal verification: {verified}")
 
-Roadmap — Project roadmap
+# Get detailed proof
+proof = verifier.get_proof()
+print(f"📝 Proof: {proof[:200]}...")
+Part 5: DIDs & Trust
+Step 5.1: Create DIDs
+python
+# Alice's DID
+alice_did = requests.post(f"{BASE}/api/v3/did/create", json={
+    "name": "alice"
+}).json()
 
-Contributing Guide — How to contribute
+# Bob's DID
+bob_did = requests.post(f"{BASE}/api/v3/did/create", json={
+    "name": "bob"
+}).json()
 
+print(f"Alice DID: {alice_did['did']}")
+print(f"Bob DID: {bob_did['did']}")
+Step 5.2: Establish Trust
+python
+trust = requests.post(f"{BASE}/api/v3/trust/establish", json={
+    "agent_a": alice_did['did'],
+    "agent_b": bob_did['did']
+}).json()
+
+print(f"🔐 Trust: {trust['success']}")
+Step 5.3: Check Reputation
+python
+reputation = requests.get(
+    f"{BASE}/api/v3/trust/reputation/{alice_did['did']}"
+).json()
+
+print(f"⭐ Alice reputation: {reputation['reputation']}")
+Step 5.4: Issue Verifiable Credential
+python
+vc = requests.post(f"{BASE}/api/v3/vc/issue", json={
+    "issuer": "did:vireo:trust-authority",
+    "subject": alice_did['did'],
+    "claims": {
+        "capability": "process_text",
+        "level": "expert",
+        "expires": "2027-12-31"
+    }
+}).json()
+
+print(f"📜 VC issued: {vc['vc_id']}")
+Step 5.5: Verify VC
+python
+verified_vc = requests.post(f"{BASE}/api/v3/vc/verify", json={
+    "vc_id": vc['vc_id']
+}).json()
+
+print(f"✅ VC verified: {verified_vc['verified']}")
+Part 6: WASM Runtime
+Step 6.1: Build WASM
+bash
+# Install wasm-pack if not installed
+cargo install wasm-pack
+
+# Build WASM
+./scripts/build_wasm.sh
+Step 6.2: Compile Vireo to WASM
+python
+code = """
+agent vision {
+    capability analyze_images {
+        input: image: bytes
+        output: result: string
+        action: "Analyzing: {image}"
+    }
+}
+"""
+
+wasm = requests.post(f"{BASE}/api/v3/wasm/compile", json={
+    "code": code
+}).json()
+
+print(f"⚡ WASM size: {wasm['wasm_size']} bytes")
+Step 6.3: Execute WASM
+python
+execution = requests.post(f"{BASE}/api/v3/wasm/execute", json={
+    "wasm_module": wasm['wasm_module'],
+    "params": {"image": "base64_encoded_image"}
+}).json()
+
+print(f"📤 Result: {execution['result']}")
+Step 6.4: Browser Integration
+html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vireo WASM Demo</title>
+</head>
+<body>
+    <div id="app">
+        <h1>🌿 Vireo WASM</h1>
+        <button id="run">Run Agent</button>
+        <pre id="output"></pre>
+    </div>
+    
+    <script type="module">
+        import init, { VireoAgent } from './web/wasm/vireo.js';
+        
+        const runBtn = document.getElementById('run');
+        const output = document.getElementById('output');
+        
+        runBtn.addEventListener('click', async () => {
+            try {
+                await init();
+                const agent = new VireoAgent('wasm-agent');
+                const result = await agent.propose({
+                    contract_id: 'wasm-test',
+                    task: 'Analyze image'
+                });
+                output.textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                output.textContent = '❌ Error: ' + error.message;
+            }
+        });
+    </script>
+</body>
+</html>
+Part 7: Rust SDK
+Step 7.1: Setup Rust Project
+bash
+# Create new Rust project
+cargo new vireo-agent
+cd vireo-agent
+
+# Add dependency
+echo 'vireo = { path = "../sdk/rust" }' >> Cargo.toml
+Step 7.2: Create Agent
+rust
+// src/main.rs
+use vireo::{Agent, Protocol, WireFormat};
+use serde_json::json;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Create agent
+    let agent = Agent::new("rust-agent-1")
+        .with_did("did:vireo:rust-agent-1")
+        .register()
+        .await?;
+    
+    println!("✅ Rust agent: {}", agent.id());
+    
+    // Create proposal
+    let proposal = agent.propose(
+        "agent-2",
+        json!({
+            "contract_id": "rust-contract",
+            "terms": {"max_tokens": 5000}
+        })
+    ).await?;
+    
+    println!("📝 Proposal: {:?}", proposal);
+    
+    // Negotiate
+    let contract = agent.negotiate(&proposal).await?;
+    println!("📜 Contract: {:?}", contract);
+    
+    // Commit
+    let committed = agent.commit(&contract).await?;
+    println!("✅ Committed");
+    
+    // Execute
+    let result = agent.execute(&committed).await?;
+    println!("⚡ Result: {:?}", result);
+    
+    // Verify
+    let verified = agent.verify(&committed).await?;
+    println!("✅ Verified: {}", verified);
+    
+    Ok(())
+}
+Step 7.3: Run
+bash
+cargo run --release
+Step 7.4: Performance Comparison
+bash
+# Run benchmarks
+cargo bench
+
+# Compare with Python
+python scripts/benchmark_models.py
+Part 8: MCP Integration
+Step 8.1: List MCP Tools
+bash
+curl http://localhost:5000/api/v3/mcp/tools
+Step 8.2: Invoke Tool
+python
+result = requests.post(f"{BASE}/api/v3/mcp/invoke", json={
+    "tool": "analyze_data",
+    "params": {
+        "data": [1, 2, 3, 4, 5],
+        "method": "statistical"
+    }
+}).json()
+
+print(f"📊 Analysis: {result['result']}")
+Step 8.3: Get MCP Context
+python
+context = requests.post(f"{BASE}/api/v3/mcp/context", json={
+    "agent_id": "alice"
+}).json()
+
+print(f"📋 Context: {context['context']}")
+Step 8.4: Custom MCP Tool
+python
+# Register custom tool
+requests.post(f"{BASE}/api/v3/mcp/register", json={
+    "name": "custom_analyzer",
+    "description": "Custom data analyzer",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "data": {"type": "array"},
+            "threshold": {"type": "number"}
+        }
+    }
+})
+Part 9: Advanced Lifecycle
+Full Lifecycle with Error Handling
+python
+def run_full_lifecycle():
+    try:
+        # 1. DISCOVER
+        agents = discover_agents(["analyze"])
+        if not agents:
+            raise Exception("No agents found")
+        
+        # 2. PROPOSE
+        proposal = propose_contract(agents[0])
+        
+        # 3. NEGOTIATE
+        negotiated = negotiate_contract(proposal['id'])
+        if negotiated['status'] == 'rejected':
+            raise Exception("Negotiation rejected")
+        
+        # 4. COMMIT
+        committed = commit_contract(proposal['id'])
+        
+        # 5. EXECUTE
+        executed = execute_contract(proposal['id'])
+        if executed['status'] == 'failed':
+            # 6. ESCALATE
+            escalate_contract(proposal['id'], "Execution failed")
+            return
+        
+        # 7. VERIFY
+        verified = verify_execution(proposal['id'], executed['id'])
+        if not verified['verified']:
+            escalate_contract(proposal['id'], "Verification failed")
+            return
+        
+        # 8. DONE
+        done = complete_contract(proposal['id'])
+        print(f"✅ Lifecycle complete: {done['status']}")
+        
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        # Escalate
+        escalate_contract(proposal['id'], str(e))
+State Machine
+python
+from core.protocol.state import ProtocolState, State
+
+# Create state machine
+machine = ProtocolState()
+
+# Add states
+machine.add_state(State.DISCOVER)
+machine.add_state(State.PROPOSE)
+machine.add_state(State.NEGOTIATE)
+machine.add_state(State.COMMIT)
+machine.add_state(State.EXECUTE)
+machine.add_state(State.VERIFY)
+machine.add_state(State.ESCALATE)
+machine.add_state(State.DONE)
+
+# Add transitions
+machine.add_transition(State.DISCOVER, State.PROPOSE)
+machine.add_transition(State.PROPOSE, State.NEGOTIATE)
+machine.add_transition(State.NEGOTIATE, State.COMMIT)
+machine.add_transition(State.COMMIT, State.EXECUTE)
+machine.add_transition(State.EXECUTE, State.VERIFY)
+machine.add_transition(State.VERIFY, State.DONE)
+machine.add_transition(State.VERIFY, State.ESCALATE, condition="failed")
+
+# Use
+machine.transition(State.PROPOSE)  # Move to propose
+Part 10: Production Deployment
+Step 10.1: Docker Deployment
+dockerfile
+# Dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+COPY . .
+
+EXPOSE 5000
+
+CMD ["python", "api/server.py", "--production"]
+bash
+# Build and run
+docker build -t vireo:v3 .
+docker run -p 5000:5000 vireo:v3
+Step 10.2: Docker Compose
+yaml
+# docker-compose.yml
+version: '3.8'
+
+services:
+  vireo-api:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+    volumes:
+      - ./keys:/app/keys
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+Step 10.3: Environment Variables
+bash
+# .env
+PORT=5000
+DEBUG=False
+SECRET_KEY=your-secret-key-here
+REDIS_URL=redis://localhost:6379
+ALLOWED_ORIGINS=*
+MISTRAL_API_KEY=your-key
+OPENAI_API_KEY=your-key
+Step 10.4: Monitoring
+bash
+# Health check endpoint
+curl http://localhost:5000/api/health
+
+# Metrics
+curl http://localhost:5000/api/v3/metrics
+
+# Logs
+docker logs -f vireo-api
+Step 10.5: Performance Tuning
+python
+# config.yaml
+server:
+  workers: 4
+  max_connections: 1000
+  timeout: 30
+
+redis:
+  pool_size: 10
+  max_retries: 3
+
+wasm:
+  cache_size: 100
+  max_memory: 256MB
+
+rust:
+  enabled: true
+  threads: 4
+🎯 Summary
+You've learned:
+
+✅ Creating agents
+
+✅ Agent communication
+
+✅ Contracts & negotiation
+
+✅ Formal verification
+
+✅ DIDs & federated trust
+
+✅ WASM runtime
+
+✅ Rust SDK
+
+✅ MCP integration
+
+✅ Advanced lifecycle
+
+✅ Production deployment
+
+📚 Next Steps
+Read API Reference
+
+Explore Wire Format
+
+Join GitHub Discussions
+
+Contribute to the project
+
+🌿 Vireo v3.0.0 — The World's First AI-to-AI Communication Language

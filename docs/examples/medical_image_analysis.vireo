@@ -1,0 +1,695 @@
+// ============================================================
+// medical_image_analysis.vireo
+// Medical image analysis agent for healthcare applications
+// ============================================================
+
+import ml
+import vision
+import tensor
+
+agent MedicalImageAnalyzer {
+    name: "MedicalImageAnalyzer"
+    version: "1.0.0"
+    description: "AI agent for medical image analysis"
+    
+    capabilities: ["medical_imaging", "diagnosis", "reporting"]
+    
+    // ============================================================
+    // Configuration
+    // ============================================================
+    config {
+        // Model configuration
+        model_type: "resnet50"
+        input_size: 224
+        num_classes: 14  // CheXpert classes
+        
+        // Data processing
+        normalization_mean: [0.485, 0.456, 0.406]
+        normalization_std: [0.229, 0.224, 0.225]
+        
+        // Security
+        hipaa_compliant: true
+        audit_trail: true
+        data_anonymization: true
+        
+        // Reporting
+        confidence_threshold: 0.5
+        generate_pdf_report: true
+    }
+    
+    // ============================================================
+    // State
+    // ============================================================
+    state {
+        // Models
+        detection_model: null
+        classification_model: null
+        segmentation_model: null
+        
+        // Data
+        current_image: null
+        current_patient_id: ""
+        current_study_id: ""
+        
+        // Analysis history
+        analysis_history: []
+        diagnosis_history: []
+        
+        // Status
+        trained: false
+        loading: false
+        processing: false
+    }
+    
+    // ============================================================
+    // Medical Domain - Hipaa Validation
+    // ============================================================
+    on message "validate_patient" {
+        let patient_id = message.payload.patient_id
+        
+        // Validate HIPAA compliance
+        let validation = validate_hipaa(patient_id)
+        
+        if not validation.valid {
+            respond({
+                type: "validation_failed",
+                payload: {
+                    reason: validation.reason,
+                    patient_id: patient_id,
+                    timestamp: now()
+                }
+            })
+            return
+        }
+        
+        // Load patient data securely
+        let patient_data = load_secure_data(patient_id)
+        
+        respond({
+            type: "patient_validated",
+            payload: {
+                patient_id: patient_id,
+                status: "valid",
+                data_available: patient_data.available,
+                encrypted_session: patient_data.session_key
+            }
+        })
+    }
+    
+    // ============================================================
+    // Image Loading
+    // ============================================================
+    on message "load_image" {
+        let image_source = message.payload.source
+        let patient_id = message.payload.patient_id
+        let modality = message.payload.modality  // X-ray, MRI, CT, etc.
+        
+        state.current_patient_id = patient_id
+        state.loading = true
+        
+        // Validate image source
+        let validation = validate_image_source(image_source, patient_id)
+        if not validation.valid {
+            state.loading = false
+            respond({
+                type: "load_failed",
+                payload: {
+                    reason: validation.reason,
+                    suggestions: validation.suggestions
+                }
+            })
+            return
+        }
+        
+        // Load image securely
+        let image_data = load_secure_image(image_source, patient_id)
+        
+        // Anonymize data
+        if config.data_anonymization {
+            image_data = anonymize_image(image_data)
+        }
+        
+        // Preprocess image
+        let processed = preprocess_image(
+            image_data,
+            target_size: config.input_size,
+            normalize: true
+        )
+        
+        state.current_image = processed
+        state.current_study_id = generate_study_id()
+        state.loading = false
+        
+        respond({
+            type: "image_loaded",
+            payload: {
+                study_id: state.current_study_id,
+                patient_id: patient_id,
+                modality: modality,
+                image_shape: processed.shape,
+                processing_time: get_processing_time()
+            }
+        })
+    }
+    
+    // ============================================================
+    // Image Analysis
+    // ============================================================
+    on message "analyze" {
+        if state.current_image == null {
+            respond({
+                type: "error",
+                payload: {
+                    error: "No image loaded",
+                    action: "Load image first"
+                }
+            })
+            return
+        }
+        
+        if not state.trained {
+            respond({
+                type: "error",
+                payload: {
+                    error: "Model not trained",
+                    action: "Initialize or load model"
+                }
+            })
+            return
+        }
+        
+        state.processing = true
+        
+        // ============================================================
+        // Detection
+        // ============================================================
+        let detections = state.detection_model.forward(state.current_image)
+        
+        // Post-process detections
+        let processed_detections = post_process_detections(
+            detections,
+            confidence_threshold: config.confidence_threshold
+        )
+        
+        // ============================================================
+        // Classification
+        // ============================================================
+        let classifications = state.classification_model.forward(state.current_image)
+        
+        let diseases = classify_diseases(
+            classifications,
+            threshold: config.confidence_threshold
+        )
+        
+        // ============================================================
+        // Segmentation
+        // ============================================================
+        let segmentation = if state.segmentation_model != null {
+            state.segmentation_model.forward(state.current_image)
+        } else {
+            null
+        }
+        
+        // ============================================================
+        // Generate Report
+        // ============================================================
+        let report = generate_medical_report(
+            patient_id: state.current_patient_id,
+            study_id: state.current_study_id,
+            detections: processed_detections,
+            diseases: diseases,
+            segmentation: segmentation,
+            image: state.current_image
+        )
+        
+        // Save to history
+        state.analysis_history.push({
+            study_id: state.current_study_id,
+            timestamp: now(),
+            report: report
+        })
+        
+        state.processing = false
+        
+        respond({
+            type: "analysis_complete",
+            payload: {
+                study_id: state.current_study_id,
+                patient_id: state.current_patient_id,
+                detections: processed_detections,
+                diseases: diseases,
+                segmentation: segmentation,
+                report: report,
+                confidence_scores: report.confidence_scores,
+                urgent_findings: report.urgent_findings,
+                report_pdf: if config.generate_pdf_report {
+                    generate_pdf(report)
+                } else {
+                    null
+                }
+            }
+        })
+    }
+    
+    // ============================================================
+    // Report Generation
+    // ============================================================
+    fn generate_medical_report(
+        patient_id: string,
+        study_id: string,
+        detections: dict,
+        diseases: dict,
+        segmentation: tensor,
+        image: tensor
+    ) -> dict {
+        let findings = []
+        let urgent = []
+        let recommendations = []
+        
+        // Process findings
+        for detection in detections.positive {
+            let finding = {
+                type: detection.type,
+                location: detection.location,
+                severity: detection.severity,
+                confidence: detection.confidence,
+                bounding_box: detection.bbox
+            }
+            findings.push(finding)
+            
+            if detection.urgent {
+                urgent.push(finding)
+            }
+            if detection.recommendation {
+                recommendations.push(detection.recommendation)
+            }
+        }
+        
+        // Process diseases
+        for disease in diseases.predicted {
+            let diagnosis = {
+                disease: disease.name,
+                probability: disease.probability,
+                severity: disease.severity,
+                icd_code: disease.icd_code
+            }
+            findings.push(diagnosis)
+            
+            if disease.urgent {
+                urgent.push(diagnosis)
+            }
+            if disease.recommendation {
+                recommendations.push(disease.recommendation)
+            }
+        }
+        
+        // Generate summary
+        let summary = generate_summary(findings, urgent)
+        
+        return {
+            report_id: generate_report_id(),
+            study_id: study_id,
+            patient_id: patient_id,
+            generated_at: now(),
+            
+            // Clinical data
+            findings: findings,
+            urgent_findings: urgent,
+            recommendations: recommendations,
+            summary: summary,
+            
+            // Scores
+            confidence_scores: {
+                overall: calculate_overall_confidence(findings),
+                per_detection: get_confidence_scores(detections),
+                per_disease: get_probabilities(diseases)
+            },
+            
+            // Quality metrics
+            quality: {
+                image_quality: assess_image_quality(image),
+                motion_artifacts: detect_motion_artifacts(image),
+                noise_level: measure_noise(image)
+            },
+            
+            // Metadata
+            metadata: {
+                model_version: "v1.0.0",
+                algorithm: config.model_type,
+                processing_time: get_processing_time(),
+                confidence_threshold: config.confidence_threshold
+            }
+        }
+    }
+    
+    // ============================================================
+    // Multi-Modal Analysis
+    // ============================================================
+    on message "analyze_series" {
+        let series = message.payload.image_series
+        let patient_id = message.payload.patient_id
+        
+        if len(series) == 0 {
+            respond({
+                type: "error",
+                payload: {
+                    error: "Empty image series",
+                    patient_id: patient_id
+                }
+            })
+            return
+        }
+        
+        state.processing = true
+        
+        // Analyze each image
+        let results = []
+        for image in series {
+            state.current_image = preprocess_image(image)
+            let result = analyze_single_image()
+            results.push(result)
+        }
+        
+        // Combine results from multi-modal analysis
+        let combined = combine_results(results)
+        
+        // Temporal analysis (change over time)
+        let temporal = analyze_temporal_changes(results)
+        
+        state.processing = false
+        
+        respond({
+            type: "series_analysis_complete",
+            payload: {
+                patient_id: patient_id,
+                study_id: generate_study_id(),
+                num_images: len(series),
+                combined_results: combined,
+                temporal_analysis: temporal,
+                confidence: combined.confidence,
+                urgent_findings: combined.urgent_findings
+            }
+        })
+    }
+    
+    // ============================================================
+    // Medical Utility Functions
+    // ============================================================
+    
+    fn validate_hipaa(patient_id: string) -> {valid: bool, reason: string} {
+        if not config.hipaa_compliant {
+            return {valid: false, reason: "HIPAA compliance disabled"}
+        }
+        
+        if not is_patient_authorized(patient_id) {
+            return {valid: false, reason: "Patient not authorized"}
+        }
+        
+        if not check_data_consent(patient_id) {
+            return {valid: false, reason: "Data consent not provided"}
+        }
+        
+        return {valid: true, reason: ""}
+    }
+    
+    fn validate_image_source(source: string, patient_id: string) -> {valid: bool, reason: string, suggestions: [string]} {
+        if source == "" {
+            return {
+                valid: false,
+                reason: "Empty image source",
+                suggestions: ["Provide valid image path or DICOM UID"]
+            }
+        }
+        
+        if not image_exists(source) {
+            return {
+                valid: false,
+                reason: "Image not found",
+                suggestions: ["Verify image path", "Check storage access"]
+            }
+        }
+        
+        if not is_image_authorized(patient_id, source) {
+            return {
+                valid: false,
+                reason: "Image not authorized for this patient",
+                suggestions: ["Verify patient ID", "Check image permissions"]
+            }
+        }
+        
+        return {valid: true, reason: "", suggestions: []}
+    }
+    
+    fn anonymize_image(image: tensor) -> tensor {
+        // Remove PII from image
+        // Apply anonymization filters
+        return remove_metadata(image)
+    }
+    
+    fn load_secure_data(patient_id: string) -> dict {
+        // Load patient data from secure storage
+        return get_encrypted_patient_data(patient_id)
+    }
+    
+    fn load_secure_image(source: string, patient_id: string) -> tensor {
+        // Load image from secure DICOM/PACS storage
+        let dicom = dicom_load(source)
+        let pixel_data = dicom.pixel_array
+        
+        // Validate DICOM headers
+        if config.hipaa_compliant {
+            validate_dicom_headers(dicom, patient_id)
+        }
+        
+        return pixel_data
+    }
+    
+    fn preprocess_image(image: tensor, target_size: int, normalize: bool) -> tensor {
+        // Resize
+        let resized = resize_image(image, target_size, target_size)
+        
+        // Convert to RGB if needed
+        let rgb = if len(resized.shape) == 2 {
+            tensor.stack([resized, resized, resized], dim: 2)
+        } else {
+            resized
+        }
+        
+        // Normalize
+        let normalized = if normalize {
+            rgb / 255.0
+        } else {
+            rgb
+        }
+        
+        return normalized
+    }
+    
+    fn post_process_detections(detections: tensor, confidence_threshold: float) -> dict {
+        let positive = []
+        let negative = []
+        
+        for detection in detections {
+            let confidence = detection.confidence
+            if confidence >= confidence_threshold {
+                positive.push(detection)
+            } else {
+                negative.push(detection)
+            }
+        }
+        
+        return {
+            positive: positive,
+            negative: negative,
+            total: len(positive) + len(negative)
+        }
+    }
+    
+    fn classify_diseases(classifications: tensor, threshold: float) -> dict {
+        let disease_list = [
+            "Atelectasis", "Cardiomegaly", "Consolidation", "Edema",
+            "Effusion", "Emphysema", "Fibrosis", "Hernia",
+            "Infiltration", "Mass", "Nodule", "Pleural_Thickening",
+            "Pneumonia", "Pneumothorax"
+        ]
+        
+        let predicted = []
+        
+        for i in 0..len(disease_list) {
+            let probability = classifications[i]
+            if probability >= threshold {
+                predicted.push({
+                    name: disease_list[i],
+                    probability: probability,
+                    severity: calculate_severity(probability),
+                    icd_code: get_icd_code(disease_list[i]),
+                    urgent: is_urgent(disease_list[i]),
+                    recommendation: get_recommendation(disease_list[i])
+                })
+            }
+        }
+        
+        return {
+            predicted: predicted,
+            all: classifications
+        }
+    }
+    
+    fn assess_image_quality(image: tensor) -> float {
+        // Calculate image quality metrics
+        let sharpness = calculate_sharpness(image)
+        let contrast = calculate_contrast(image)
+        let brightness = calculate_brightness(image)
+        
+        return (sharpness + contrast + brightness) / 3.0
+    }
+    
+    fn detect_motion_artifacts(image: tensor) -> float {
+        // Detect motion artifacts using edge detection
+        let edges = sobel_filter(image)
+        let motion_score = analyze_edge_patterns(edges)
+        return motion_score
+    }
+    
+    fn measure_noise(image: tensor) -> float {
+        // Measure noise level
+        let noise = calculate_noise_std(image)
+        return noise
+    }
+    
+    fn combine_results(results: [dict]) -> dict {
+        let combined = {
+            findings: [],
+            confidence: 0.0,
+            urgent_findings: []
+        }
+        
+        for result in results {
+            combined.findings.extend(result.findings)
+            combined.confidence = max(combined.confidence, result.confidence)
+            if result.urgent_findings {
+                combined.urgent_findings.extend(result.urgent_findings)
+            }
+        }
+        
+        // Deduplicate findings
+        combined.findings = deduplicate(combined.findings)
+        
+        return combined
+    }
+    
+    fn analyze_temporal_changes(results: [dict]) -> dict {
+        let changes = {
+            improved: [],
+            worsened: [],
+            unchanged: [],
+            new_findings: []
+        }
+        
+        // Compare sequential images
+        for i in 0..len(results) - 1 {
+            let prev = results[i]
+            let curr = results[i + 1]
+            
+            let comparison = compare_findings(prev, curr)
+            changes = merge_changes(changes, comparison)
+        }
+        
+        return changes
+    }
+    
+    fn generate_summary(findings: [dict], urgent: [dict]) -> string {
+        if len(urgent) > 0 {
+            let urgent_desc = []
+            for finding in urgent {
+                urgent_desc.push("${finding.type} (${finding.location})")
+            }
+            return "URGENT: ${urgent_desc.join(', ')}. Immediate clinical evaluation recommended."
+        }
+        
+        if len(findings) > 0 {
+            let desc = []
+            for finding in findings {
+                desc.push("${finding.type} (${finding.location})")
+            }
+            return "Findings: ${desc.join(', ')}. No urgent abnormalities detected."
+        }
+        
+        return "No significant findings. Normal study."
+    }
+    
+    fn calculate_overall_confidence(findings: [dict]) -> float {
+        if len(findings) == 0 {
+            return 1.0
+        }
+        
+        let total = 0.0
+        for finding in findings {
+            total = total + finding.confidence
+        }
+        return total / len(findings)
+    }
+    
+    fn generate_study_id() -> string {
+        return "ST_${timestamp()}_${random_string(6)}"
+    }
+    
+    fn generate_report_id() -> string {
+        return "RPT_${timestamp()}_${random_string(8)}"
+    }
+    
+    fn random_string(length: int) -> string {
+        let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        let result = ""
+        for i in 0..length {
+            result = result + chars[random_int(0, len(chars) - 1)]
+        }
+        return result
+    }
+}
+
+// ============================================================
+// Usage Example
+// ============================================================
+/*
+// Validate patient
+{
+    "type": "validate_patient",
+    "payload": {
+        "patient_id": "P123456"
+    }
+}
+
+// Load image
+{
+    "type": "load_image",
+    "payload": {
+        "source": "dicom://study/123456/series/1/image.dcm",
+        "patient_id": "P123456",
+        "modality": "X-ray"
+    }
+}
+
+// Analyze
+{
+    "type": "analyze",
+    "payload": {}
+}
+
+// Analyze series
+{
+    "type": "analyze_series",
+    "payload": {
+        "image_series": [image1, image2, image3],
+        "patient_id": "P123456"
+    }
+}
+
+// Response includes:
+// - Detections with bounding boxes
+// - Disease classifications with probabilities
+// - Segmentation masks
+// - Clinical report
+// - Urgent findings alert
+// - PDF report (optional)
+*/

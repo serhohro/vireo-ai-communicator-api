@@ -1,0 +1,438 @@
+// ============================================================
+// negotiate_contract.vireo
+// Agent-to-agent contract negotiation example
+// ============================================================
+
+import protocol
+import crypto
+
+agent NegotiatorAgent {
+    name: "NegotiatorAgent"
+    version: "1.0.0"
+    description: "AI agent for contract negotiation"
+    
+    capabilities: ["negotiation", "contract", "escrow"]
+    
+    // ============================================================
+    // Configuration
+    // ============================================================
+    config {
+        max_rounds: 5
+        min_price: 50
+        max_price: 1000
+        default_deadline: 30  // days
+        escrow_required: true
+        arbitration_enabled: true
+    }
+    
+    // ============================================================
+    // State
+    // ============================================================
+    state {
+        // Current negotiation
+        negotiation_id: ""
+        counterparty: ""
+        round: 0
+        offers: []
+        counter_offers: []
+        
+        // Contract details
+        current_offer: null
+        accepted_terms: null
+        
+        // Status
+        status: "idle"  // idle, negotiating, accepted, rejected, completed
+        started_at: null
+        completed_at: null
+    }
+    
+    // ============================================================
+    // Core Handlers
+    // ============================================================
+    
+    // Initiate negotiation
+    on message "propose_contract" {
+        if state.status != "idle" {
+            respond({
+                type: "error",
+                payload: {
+                    error: "Agent is already negotiating",
+                    status: state.status
+                }
+            })
+            return
+        }
+        
+        let proposal = message.payload
+        let counterparty = message.sender
+        
+        // Validate proposal
+        let validation = validate_proposal(proposal)
+        if not validation.valid {
+            respond({
+                type: "proposal_rejected",
+                payload: {
+                    reason: validation.reason,
+                    suggestions: validation.suggestions
+                }
+            })
+            return
+        }
+        
+        // Start negotiation
+        state.negotiation_id = generate_negotiation_id()
+        state.counterparty = counterparty
+        state.round = 1
+        state.status = "negotiating"
+        state.started_at = now()
+        state.current_offer = proposal
+        
+        // Evaluate and respond
+        let evaluation = evaluate_offer(proposal)
+        
+        if evaluation.accepted {
+            // Accept immediately
+            let contract = create_contract(proposal, counterparty)
+            state.accepted_terms = proposal
+            state.status = "accepted"
+            
+            respond({
+                type: "contract_accepted",
+                payload: {
+                    contract: contract,
+                    negotiation_id: state.negotiation_id,
+                    terms: proposal,
+                    accepted_at: now()
+                }
+            })
+        } else {
+            // Make counter-offer
+            let counter = evaluation.counter_offer
+            
+            respond({
+                type: "counter_offer",
+                payload: {
+                    negotiation_id: state.negotiation_id,
+                    round: state.round,
+                    terms: counter,
+                    reason: evaluation.reason,
+                    max_rounds: config.max_rounds
+                }
+            })
+        }
+    }
+    
+    // Handle counter-offer
+    on message "counter_offer" {
+        if state.status != "negotiating" {
+            respond({
+                type: "error",
+                payload: {
+                    error: "Not in negotiation state",
+                    status: state.status
+                }
+            })
+            return
+        }
+        
+        let counter = message.payload
+        state.round = state.round + 1
+        state.counter_offers.push(counter)
+        
+        // Check max rounds
+        if state.round > config.max_rounds {
+            state.status = "rejected"
+            
+            respond({
+                type: "negotiation_failed",
+                payload: {
+                    reason: "Max rounds exceeded",
+                    rounds: state.round,
+                    last_offer: state.current_offer
+                }
+            })
+            return
+        }
+        
+        // Evaluate counter-offer
+        let evaluation = evaluate_offer(counter)
+        
+        if evaluation.accepted {
+            // Accept
+            let contract = create_contract(counter, state.counterparty)
+            state.accepted_terms = counter
+            state.status = "accepted"
+            state.completed_at = now()
+            
+            respond({
+                type: "contract_accepted",
+                payload: {
+                    contract: contract,
+                    negotiation_id: state.negotiation_id,
+                    terms: counter,
+                    round: state.round,
+                    accepted_at: now()
+                }
+            })
+        } else {
+            // Continue negotiation
+            let next_counter = evaluation.counter_offer
+            
+            respond({
+                type: "counter_offer",
+                payload: {
+                    negotiation_id: state.negotiation_id,
+                    round: state.round,
+                    terms: next_counter,
+                    reason: evaluation.reason,
+                    max_rounds: config.max_rounds
+                }
+            })
+        }
+    }
+    
+    // Handle contract signing
+    on message "sign_contract" {
+        if state.status != "accepted" {
+            respond({
+                type: "error",
+                payload: {
+                    error: "No accepted contract to sign",
+                    status: state.status
+                }
+            })
+            return
+        }
+        
+        let signature = message.payload.signature
+        
+        // Verify signature
+        let verified = verify_signature(
+            data: state.accepted_terms,
+            signature: signature,
+            public_key: get_public_key(state.counterparty)
+        )
+        
+        if not verified {
+            respond({
+                type: "signature_invalid",
+                payload: {
+                    reason: "Invalid signature",
+                    negotiation_id: state.negotiation_id
+                }
+            })
+            return
+        }
+        
+        // Sign contract
+        let our_signature = sign_contract(state.accepted_terms)
+        state.status = "completed"
+        state.completed_at = now()
+        
+        respond({
+            type: "contract_signed",
+            payload: {
+                negotiation_id: state.negotiation_id,
+                signatures: {
+                    counterparty: signature,
+                    agent: our_signature
+                },
+                contract: state.accepted_terms,
+                completed_at: state.completed_at
+            }
+        })
+    }
+    
+    // ============================================================
+    // Utility Functions
+    // ============================================================
+    
+    fn validate_proposal(proposal: dict) -> {valid: bool, reason: string, suggestions: [string]} {
+        // Check required fields
+        let required_fields = ["price", "deadline", "scope", "deliverables"]
+        for field in required_fields {
+            if field not in proposal {
+                return {
+                    valid: false,
+                    reason: "Missing required field: ${field}",
+                    suggestions: ["Include ${field} in proposal"]
+                }
+            }
+        }
+        
+        // Validate price
+        let price = proposal.price
+        if price < config.min_price {
+            return {
+                valid: false,
+                reason: "Price below minimum (${config.min_price})",
+                suggestions: ["Increase price to at least ${config.min_price}"]
+            }
+        }
+        if price > config.max_price {
+            return {
+                valid: false,
+                reason: "Price above maximum (${config.max_price})",
+                suggestions: ["Decrease price to at most ${config.max_price}"]
+            }
+        }
+        
+        // Validate deadline
+        let deadline = proposal.deadline
+        if deadline < 1 {
+            return {
+                valid: false,
+                reason: "Deadline must be at least 1 day",
+                suggestions: ["Increase deadline to at least 1 day"]
+            }
+        }
+        
+        return {valid: true, reason: "", suggestions: []}
+    }
+    
+    fn evaluate_offer(offer: dict) -> {accepted: bool, counter_offer: dict, reason: string} {
+        let price = offer.price
+        let deadline = offer.deadline
+        let quality = offer.get("quality", "standard")
+        
+        // Tier-based evaluation
+        if price >= 500 and deadline <= 14 and quality == "premium" {
+            return {
+                accepted: true,
+                counter_offer: null,
+                reason: "Excellent terms"
+            }
+        }
+        
+        if price >= 300 and deadline <= 21 {
+            return {
+                accepted: true,
+                counter_offer: null,
+                reason: "Acceptable terms"
+            }
+        }
+        
+        // Generate counter-offer
+        let counter_price = min(price * 1.2, config.max_price)
+        let counter_deadline = max(deadline - 5, 7)
+        
+        // Determine reason
+        let reasons = []
+        if price < 300 {
+            reasons.push("Price too low")
+        }
+        if deadline > 21 {
+            reasons.push("Deadline too long")
+        }
+        if quality != "premium" and price > 300 {
+            reasons.push("Quality level not justified by price")
+        }
+        
+        return {
+            accepted: false,
+            counter_offer: {
+                price: counter_price,
+                deadline: counter_deadline,
+                scope: offer.scope,
+                deliverables: offer.deliverables,
+                quality: quality
+            },
+            reason: reasons.join("; ")
+        }
+    }
+    
+    fn create_contract(terms: dict, counterparty: string) -> dict {
+        return {
+            contract_id: generate_contract_id(),
+            parties: [get_agent_id(), counterparty],
+            terms: terms,
+            created_at: now(),
+            expires_at: now() + (terms.deadline * 86400),
+            status: "pending",
+            escrow: config.escrow_required,
+            arbitration: config.arbitration_enabled,
+            jurisdiction: "EU-International"
+        }
+    }
+    
+    fn generate_negotiation_id() -> string {
+        return "neg_" + random_string(12)
+    }
+    
+    fn generate_contract_id() -> string {
+        return "ctr_" + random_string(12)
+    }
+    
+    fn random_string(length: int) -> string {
+        let chars = "abcdefghijklmnopqrstuvwxyz0123456789"
+        let result = ""
+        for i in 0..length {
+            result = result + chars[random_int(0, len(chars) - 1)]
+        }
+        return result
+    }
+    
+    fn get_public_key(agent_id: string) -> bytes {
+        return resolve_public_key(agent_id)
+    }
+    
+    fn sign_contract(terms: dict) -> bytes {
+        return crypto.sign(
+            data: serialize(terms),
+            private_key: get_private_key()
+        )
+    }
+    
+    fn verify_signature(data: dict, signature: bytes, public_key: bytes) -> bool {
+        return crypto.verify(
+            data: serialize(data),
+            signature: signature,
+            public_key: public_key
+        )
+    }
+}
+
+// ============================================================
+// Usage Example
+// ============================================================
+/*
+// Agent A sends proposal
+{
+    "type": "propose_contract",
+    "payload": {
+        "price": 250,
+        "deadline": 14,
+        "scope": "Develop AI model for image classification",
+        "deliverables": [
+            "Trained model",
+            "Training code",
+            "Documentation"
+        ],
+        "quality": "standard"
+    }
+}
+
+// Agent B responds with counter-offer
+{
+    "type": "counter_offer",
+    "payload": {
+        "price": 300,
+        "deadline": 10,
+        "scope": "Develop AI model for image classification",
+        "deliverables": [
+            "Trained model",
+            "Training code",
+            "Documentation"
+        ],
+        "quality": "standard"
+    }
+}
+
+// Agent A accepts
+{
+    "type": "sign_contract",
+    "payload": {
+        "signature": "abc123def456..."
+    }
+}
+*/

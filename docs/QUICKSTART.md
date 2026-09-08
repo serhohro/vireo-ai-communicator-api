@@ -1,108 +1,145 @@
-markdown
-# 🚀 Vireo Quickstart — 5 Minutes
+# 🌿 Vireo v3.0.0 — Quick Start Guide
 
-## What is Vireo?
-
-Vireo is a **programming language + protocol** for autonomous AI-to-AI communication. It allows AI agents to discover capabilities, negotiate tasks, sign cryptographic contracts, execute tasks, and verify results.
-
-**Protocols tell agents HOW to talk. Vireo gives them WHAT to say.**
+**5 minutes to your first AI-to-AI communication**
 
 ---
 
-## 1. Install Vireo
+## 🚀 Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/serhohro/vireo-ai-communicator-api.git
-cd vireo-ai-communicator-api
+git clone https://github.com/serhohro/vireo-ai-communicator-4.git
+cd vireo-ai-communicator-4
 
-# Install dependencies
-pip install -r requirements.txt
+# Install Python dependencies
+pip install -e ".[all]"
 
-# Run the server
-python api_server.py
-2. Write Your First Agent
-Create a file hello.v:
+# Start the server
+python api/server.py
+🤖 Your First Agent
+1. Create an Agent
+python
+import requests
 
-vireo
-// ============================================================
-// Hello Vireo — Your First Agent
-// ============================================================
+BASE_URL = "http://localhost:5000"
 
-agent Hello {
-    capability greet
-    role assistant
-}
-
-contract Greeting {
-    max_tokens: Int = 100
-    verify { result.words > 0 }
-}
-
-negotiate Hello -> Hello {
-    propose "Say hello to the world"
-    commit "I will say hello"
-    execute "print('Hello, Vireo!')"
-    inform "Done"
-}
-3. Run It
-Via Web Interface
-Open http://localhost:5000/web
-
-Go to "Execute" tab
-
-Paste the code above
-
-Click "Execute"
-
-Via API
+# Create agent
+response = requests.post(f"{BASE_URL}/api/v3/agent/register", json={
+    "id": "my-first-agent",
+    "name": "Explorer Agent",
+    "model": "qwen2.5-coder:latest"
+})
+print(response.json())
+2. Add a Capability
+python
+# Add capability
+requests.post(f"{BASE_URL}/api/v3/agent/my-first-agent/capability", json={
+    "name": "analyze",
+    "description": "Analyze any data"
+})
+3. Discover Other Agents
+python
+# Discover agents with specific capabilities
+agents = requests.post(f"{BASE_URL}/api/v3/discover", json={
+    "capabilities": ["analyze"]
+})
+print(f"Found {len(agents.json()['agents'])} agents")
+📜 Your First Contract
+1. Create a Contract
+python
+contract = requests.post(f"{BASE_URL}/api/v3/propose", json={
+    "contract_id": "contract-001",
+    "parties": ["my-first-agent", "another-agent"],
+    "terms": {
+        "max_tokens": 1000,
+        "timeout_sec": 60
+    },
+    "obligations": {
+        "my-first-agent": {
+            "action": "analyze",
+            "input": {"data": "sample_data"}
+        }
+    }
+})
+print(f"✅ Contract created: {contract.json()['contract']['id']}")
+2. Formal Verification
+python
+# Verify contract mathematically
+verified = requests.post(f"{BASE_URL}/api/v3/formal/verify", json={
+    "contract": contract.json()['contract']
+})
+print(f"✅ Contract verified: {verified.json()['verified']}")
+3. Execute
+python
+# Execute contract
+execution = requests.post(f"{BASE_URL}/api/v3/execute", json={
+    "contract_id": "contract-001",
+    "executor": "my-first-agent"
+})
+print(f"✅ Executed: {execution.json()['execution_id']}")
+🔐 Create a DID
+python
+# Create decentralized identity
+did = requests.post(f"{BASE_URL}/api/v3/did/create", json={
+    "name": "my-first-agent"
+})
+print(f"✅ DID: {did.json()['did']}")
+⚡ WASM in Browser
+1. Build WASM
 bash
-curl -X POST http://localhost:5000/api/interpreter \
-  -H "Content-Type: application/json" \
-  -d '{"code": "agent Hello { capability greet role assistant }"}'
-4. Write a Neural Network
-vireo
-model MNIST {
-    layer Dense(784, 128)
-    activation ReLU
-    layer Dense(128, 10)
-    activation Softmax
+./scripts/build_wasm.sh
+2. Use in HTML
+html
+<!DOCTYPE html>
+<html>
+<body>
+    <h1>🌿 Vireo v3.0.0</h1>
+    <div id="status"></div>
+    
+    <script type="module">
+        import init from './web/wasm/vireo.js';
+        
+        const { VireoAgent } = await init();
+        const agent = new VireoAgent('web-agent');
+        document.getElementById('status').textContent = '✅ Agent ready!';
+    </script>
+</body>
+</html>
+🦀 Rust Agent
+1. Install Rust SDK
+bash
+cd sdk/rust
+cargo build --release
+2. Create Agent
+rust
+use vireo::Agent;
+
+#[tokio::main]
+async fn main() {
+    let agent = Agent::new("rust-agent")
+        .register()
+        .await
+        .unwrap();
+    
+    println!("✅ Rust agent: {}", agent.id());
 }
+📊 Check Status
+bash
+# Health check
+curl http://localhost:5000/api/health
 
-train MNIST {
-    epochs: 10
-    batch_size: 32
-    learning_rate: 0.001
-}
+# List agents
+curl http://localhost:5000/api/v3/agents
 
-evaluate MNIST
-5. Autonomous Agent Negotiation
-vireo
-agent Vision {
-    capability image_analysis
-    role analyst
-}
+# Metrics
+curl http://localhost:5000/api/v3/metrics
+🎯 Next Steps
+Read the Tutorial — Complete step-by-step guide
 
-agent Training {
-    capability model_training
-    role executor
-}
+Explore API Reference — All endpoints
 
-negotiate Vision -> Training {
-    propose "Analyze 1000 images"
-    negotiate "Need more tokens"
-    commit "Training model on dataset"
-    execute "Process images"
-    verify "Check accuracy > 0.9"
-    inform "Accuracy: 94.5%"
-}
-6. What's Next?
-Full Tutorial — Complete step-by-step guide
+Learn Wire Format — Binary protocol
 
-Language Reference — Full language syntax
+Join the community — GitHub Discussions
 
-Protocol Reference — Agent communication protocol
-
-Examples — More code examples
-
-🌿 Vireo — The World's First AI-to-AI Communication Language. 🚀
+🌿 Vireo v3.0.0 — The World's First AI-to-AI Communication Language

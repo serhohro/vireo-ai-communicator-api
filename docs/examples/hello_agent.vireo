@@ -1,0 +1,207 @@
+// ============================================================
+// hello_agent.vireo
+// Basic "Hello World" agent demonstrating Vireo fundamentals
+// ============================================================
+
+agent HelloAgent {
+    name: "HelloAgent"
+    version: "1.0.0"
+    description: "A simple greeting agent"
+    
+    capabilities: ["greeting", "echo", "time"]
+    
+    // Agent state
+    state {
+        greeting_count: 0
+        last_greeting: null
+        session_id: ""
+    }
+    
+    // ============================================================
+    // Initialization
+    // ============================================================
+    on init {
+        state.greeting_count = 0
+        state.session_id = generate_uuid()
+        
+        println("${state.session_id}: HelloAgent started! 🚀")
+        
+        respond({
+            type: "init_complete",
+            payload: {
+                agent: name,
+                version: version,
+                session_id: state.session_id
+            }
+        })
+    }
+    
+    // ============================================================
+    // Message Handlers
+    // ============================================================
+    
+    // Greeting handler
+    on message "greeting" {
+        let name = message.payload.name
+        let language = message.payload.language
+        
+        state.greeting_count = state.greeting_count + 1
+        state.last_greeting = name
+        
+        // Multi-language support
+        let greeting = match language {
+            "en" => "Hello, ${name}! 👋"
+            "ua" => "Привіт, ${name}! 👋"
+            "de" => "Hallo, ${name}! 👋"
+            "fr" => "Bonjour, ${name}! 👋"
+            "es" => "¡Hola, ${name}! 👋"
+            "ja" => "こんにちは、${name}さん！👋"
+            _ => "Hello, ${name}! (language not supported)"
+        }
+        
+        respond({
+            type: "greeting_response",
+            payload: {
+                message: greeting,
+                count: state.greeting_count,
+                timestamp: now(),
+                session_id: state.session_id
+            }
+        })
+    }
+    
+    // Echo handler
+    on message "echo" {
+        let text = message.payload.text
+        
+        respond({
+            type: "echo_response",
+            payload: {
+                original: text,
+                echoed: "Echo: ${text}",
+                timestamp: now()
+            }
+        })
+    }
+    
+    // Time handler
+    on message "time" {
+        let format = message.payload.format
+        
+        let time_str = match format {
+            "iso" => now().to_iso_string()
+            "unix" => now().to_unix_timestamp()
+            "human" => now().to_human_string()
+            _ => now().to_iso_string()
+        }
+        
+        respond({
+            type: "time_response",
+            payload: {
+                time: time_str,
+                format: format,
+                timezone: get_timezone()
+            }
+        })
+    }
+    
+    // Status handler
+    on message "status" {
+        respond({
+            type: "status_response",
+            payload: {
+                agent: name,
+                version: version,
+                status: "running",
+                greeting_count: state.greeting_count,
+                last_greeting: state.last_greeting,
+                uptime: get_uptime(),
+                memory_used: get_memory_usage()
+            }
+        })
+    }
+    
+    // ============================================================
+    // Catch-all handler
+    // ============================================================
+    on message * {
+        respond({
+            type: "error",
+            payload: {
+                error: "Unknown message type: ${message.type}",
+                suggestion: "Supported types: greeting, echo, time, status"
+            }
+        })
+    }
+    
+    // ============================================================
+    // Helper Functions
+    // ============================================================
+    fn generate_uuid() -> string {
+        // Simple UUID generator
+        let parts = [
+            random_hex(8),
+            random_hex(4),
+            random_hex(4),
+            random_hex(4),
+            random_hex(12)
+        ]
+        return parts.join("-")
+    }
+    
+    fn random_hex(length: int) -> string {
+        let chars = "0123456789abcdef"
+        let result = ""
+        for i in 0..length {
+            let index = random_int(0, 15)
+            result = result + chars[index]
+        }
+        return result
+    }
+    
+    fn get_uptime() -> string {
+        return format_duration(system_uptime())
+    }
+    
+    fn format_duration(seconds: int) -> string {
+        let days = seconds / 86400
+        let hours = (seconds % 86400) / 3600
+        let minutes = (seconds % 3600) / 60
+        let secs = seconds % 60
+        
+        if days > 0 {
+            return "${days}d ${hours}h ${minutes}m ${secs}s"
+        } else if hours > 0 {
+            return "${hours}h ${minutes}m ${secs}s"
+        } else if minutes > 0 {
+            return "${minutes}m ${secs}s"
+        } else {
+            return "${secs}s"
+        }
+    }
+}
+
+// ============================================================
+// Usage Example
+// ============================================================
+/*
+Send message:
+{
+    "type": "greeting",
+    "payload": {
+        "name": "World",
+        "language": "en"
+    }
+}
+
+Response:
+{
+    "type": "greeting_response",
+    "payload": {
+        "message": "Hello, World! 👋",
+        "count": 1,
+        "timestamp": "2024-01-01T00:00:00Z",
+        "session_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+    }
+}
+*/

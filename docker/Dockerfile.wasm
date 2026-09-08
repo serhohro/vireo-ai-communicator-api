@@ -1,0 +1,38 @@
+# docker/Dockerfile.wasm
+# Vireo WASM Runtime Docker Image
+
+FROM node:20-slim as builder
+
+# Install wasm-pack
+RUN npm install -g wasm-pack
+
+# Set working directory
+WORKDIR /app
+
+# Copy source
+COPY . .
+
+# Build WASM
+RUN wasm-pack build --target web --release
+
+# Runtime stage
+FROM nginx:alpine
+
+# Copy WASM files
+COPY --from=builder /app/pkg /usr/share/nginx/html/wasm
+
+# Copy web interface
+COPY web/ /usr/share/nginx/html/
+
+# Copy nginx config
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expose port
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3000/ || exit 1
+
+# Run
+CMD ["nginx", "-g", "daemon off;"]

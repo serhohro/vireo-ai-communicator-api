@@ -1,0 +1,583 @@
+// ============================================================
+// train_mnist.vireo
+// Machine learning agent training on MNIST dataset
+// ============================================================
+
+import ml
+import tensor
+import io
+
+agent MNISTTrainer {
+    name: "MNISTTrainer"
+    version: "1.0.0"
+    description: "AI agent for training MNIST digit classifier"
+    
+    capabilities: ["ml_training", "inference", "vision"]
+    
+    // ============================================================
+    // Configuration
+    // ============================================================
+    config {
+        input_dim: 784
+        hidden_dim: 256
+        output_dim: 10
+        epochs: 10
+        batch_size: 64
+        learning_rate: 0.001
+        dropout_rate: 0.2
+        validation_split: 0.1
+        early_stopping: true
+        patience: 3
+    }
+    
+    // ============================================================
+    // State
+    // ============================================================
+    state {
+        model: null
+        trained: false
+        training_history: []
+        best_accuracy: 0.0
+        best_loss: 0.0
+        is_training: false
+        current_epoch: 0
+        
+        // Data
+        x_train: null
+        y_train: null
+        x_val: null
+        y_val: null
+        x_test: null
+        y_test: null
+    }
+    
+    // ============================================================
+    // Initialization
+    // ============================================================
+    on init {
+        println("MNIST Trainer initialized")
+        println("Input dim: ${config.input_dim}")
+        println("Hidden dim: ${config.hidden_dim}")
+        println("Output dim: ${config.output_dim}")
+        
+        respond({
+            type: "ready",
+            payload: {
+                status: "initialized",
+                config: config
+            }
+        })
+    }
+    
+    // ============================================================
+    // Data Loading
+    // ============================================================
+    on message "load_data" {
+        let data_source = message.payload.source
+        
+        // Load MNIST data
+        let data = load_mnist(data_source)
+        
+        // Normalize and preprocess
+        let processed = preprocess_data(data)
+        
+        // Split into train/val/test
+        let split = split_data(
+            processed,
+            validation_split: config.validation_split,
+            test_split: 0.1
+        )
+        
+        state.x_train = split.x_train
+        state.y_train = split.y_train
+        state.x_val = split.x_val
+        state.y_val = split.y_val
+        state.x_test = split.x_test
+        state.y_test = split.y_test
+        
+        respond({
+            type: "data_loaded",
+            payload: {
+                train_samples: len(state.x_train),
+                val_samples: len(state.x_val),
+                test_samples: len(state.x_test),
+                input_shape: state.x_train.shape,
+                output_shape: state.y_train.shape
+            }
+        })
+    }
+    
+    // ============================================================
+    // Model Building
+    // ============================================================
+    on message "build_model" {
+        // Build neural network
+        let model = ml.nn.Sequential(
+            // Input layer
+            ml.nn.Linear(config.input_dim, config.hidden_dim),
+            ml.nn.BatchNorm(config.hidden_dim),
+            ml.nn.ReLU(),
+            ml.nn.Dropout(config.dropout_rate),
+            
+            // Hidden layer 1
+            ml.nn.Linear(config.hidden_dim, config.hidden_dim / 2),
+            ml.nn.BatchNorm(config.hidden_dim / 2),
+            ml.nn.ReLU(),
+            ml.nn.Dropout(config.dropout_rate),
+            
+            // Hidden layer 2
+            ml.nn.Linear(config.hidden_dim / 2, config.hidden_dim / 4),
+            ml.nn.ReLU(),
+            
+            // Output layer
+            ml.nn.Linear(config.hidden_dim / 4, config.output_dim),
+            ml.nn.LogSoftmax(dim: 1)
+        )
+        
+        // Compile model
+        model.compile(
+            optimizer: ml.optim.Adam(config.learning_rate),
+            loss: ml.nn.NLLLoss(),
+            metrics: ["accuracy"]
+        )
+        
+        state.model = model
+        
+        respond({
+            type: "model_built",
+            payload: {
+                layers: model.get_layers(),
+                parameter_count: model.count_parameters(),
+                summary: model.summary()
+            }
+        })
+    }
+    
+    // ============================================================
+    // Training
+    // ============================================================
+    on message "train_model" {
+        if state.is_training {
+            respond({
+                type: "error",
+                payload: {
+                    error: "Training already in progress"
+                }
+            })
+            return
+        }
+        
+        if state.model == null {
+            respond({
+                type: "error",
+                payload: {
+                    error: "No model built. Use 'build_model' first."
+                }
+            })
+            return
+        }
+        
+        if state.x_train == null {
+            respond({
+                type: "error",
+                payload: {
+                    error: "No data loaded. Use 'load_data' first."
+                }
+            })
+            return
+        }
+        
+        state.is_training = true
+        state.current_epoch = 0
+        
+        // Get training parameters
+        let epochs = message.payload.get("epochs", config.epochs)
+        let batch_size = message.payload.get("batch_size", config.batch_size)
+        let learning_rate = message.payload.get("learning_rate", config.learning_rate)
+        
+        // Start training
+        let result = train_loop(
+            model: state.model,
+            x_train: state.x_train,
+            y_train: state.y_train,
+            x_val: state.x_val,
+            y_val: state.y_val,
+            epochs: epochs,
+            batch_size: batch_size,
+            learning_rate: learning_rate
+        )
+        
+        state.is_training = false
+        state.trained = true
+        state.training_history = result.history
+        state.best_accuracy = result.best_accuracy
+        state.best_loss = result.best_loss
+        
+        respond({
+            type: "training_complete",
+            payload: {
+                epochs: epochs,
+                best_accuracy: result.best_accuracy,
+                best_loss: result.best_loss,
+                history: result.history,
+                training_time: result.training_time,
+                final_accuracy: result.final_accuracy,
+                final_loss: result.final_loss
+            }
+        })
+    }
+    
+    // ============================================================
+    // Training Loop (Internal)
+    // ============================================================
+    fn train_loop(
+        model: ml.Model,
+        x_train: tensor,
+        y_train: tensor,
+        x_val: tensor,
+        y_val: tensor,
+        epochs: int,
+        batch_size: int,
+        learning_rate: float
+    ) -> dict {
+        let history = {
+            train_loss: [],
+            train_acc: [],
+            val_loss: [],
+            val_acc: []
+        }
+        
+        let best_val_acc = 0.0
+        let patience_counter = 0
+        let start_time = now()
+        
+        for epoch in 0..epochs {
+            state.current_epoch = epoch + 1
+            
+            // Shuffle training data
+            let shuffled = shuffle_data(x_train, y_train)
+            let x_shuffled = shuffled.x
+            let y_shuffled = shuffled.y
+            
+            // Training step
+            let epoch_loss = 0.0
+            let epoch_acc = 0.0
+            let num_batches = ceil(len(x_shuffled) / batch_size)
+            
+            for batch in 0..num_batches {
+                let start_idx = batch * batch_size
+                let end_idx = min((batch + 1) * batch_size, len(x_shuffled))
+                
+                let x_batch = x_shuffled[start_idx:end_idx]
+                let y_batch = y_shuffled[start_idx:end_idx]
+                
+                // Forward pass
+                let predictions = model.forward(x_batch)
+                let loss = model.loss(predictions, y_batch)
+                
+                // Backward pass
+                let gradients = model.backward(loss)
+                model.update_parameters(gradients, learning_rate)
+                
+                // Metrics
+                let batch_acc = calculate_accuracy(predictions, y_batch)
+                epoch_loss = epoch_loss + loss.item()
+                epoch_acc = epoch_acc + batch_acc
+            }
+            
+            epoch_loss = epoch_loss / num_batches
+            epoch_acc = epoch_acc / num_batches
+            
+            // Validation
+            let val_predictions = model.forward(x_val)
+            let val_loss = model.loss(val_predictions, y_val).item()
+            let val_acc = calculate_accuracy(val_predictions, y_val)
+            
+            // Record history
+            history.train_loss.push(epoch_loss)
+            history.train_acc.push(epoch_acc)
+            history.val_loss.push(val_loss)
+            history.val_acc.push(val_acc)
+            
+            // Print progress
+            println("Epoch ${epoch + 1}/${epochs}")
+            println("  Train Loss: ${epoch_loss:.4f}, Train Acc: ${epoch_acc:.2%}")
+            println("  Val Loss: ${val_loss:.4f}, Val Acc: ${val_acc:.2%}")
+            
+            // Check for improvement
+            if val_acc > best_val_acc {
+                best_val_acc = val_acc
+                patience_counter = 0
+                // Save best model
+                save_model(model, "best_model.pt")
+            } else {
+                patience_counter = patience_counter + 1
+                if patience_counter >= config.patience and config.early_stopping {
+                    println("Early stopping triggered at epoch ${epoch + 1}")
+                    break
+                }
+            }
+        }
+        
+        let training_time = now() - start_time
+        
+        return {
+            history: history,
+            best_accuracy: best_val_acc,
+            best_loss: min(history.val_loss),
+            final_accuracy: history.val_acc[-1],
+            final_loss: history.val_loss[-1],
+            training_time: training_time
+        }
+    }
+    
+    // ============================================================
+    // Inference
+    // ============================================================
+    on message "predict" {
+        if not state.trained {
+            respond({
+                type: "error",
+                payload: {
+                    error: "Model not trained. Train first."
+                }
+            })
+            return
+        }
+        
+        let input_data = message.payload.data
+        
+        // Convert input to tensor
+        let x = if type(input_data) == "tensor" {
+            input_data
+        } else {
+            tensor.from_numpy(input_data)
+        }
+        
+        // Ensure correct shape
+        let x_reshaped = if len(x.shape) == 1 {
+            x.reshape([1, -1])
+        } else {
+            x
+        }
+        
+        // Get predictions
+        let predictions = state.model.forward(x_reshaped)
+        let probabilities = tensor.softmax(predictions, dim: 1)
+        let predicted = probabilities.argmax(dim: 1)
+        let confidence = probabilities.max(dim: 1)
+        
+        respond({
+            type: "prediction_result",
+            payload: {
+                predictions: predictions.to_numpy(),
+                probabilities: probabilities.to_numpy(),
+                predicted_digits: predicted.to_numpy(),
+                confidence: confidence.to_numpy(),
+                top_k: get_top_k(probabilities, k: 5)
+            }
+        })
+    }
+    
+    // ============================================================
+    // Evaluation
+    // ============================================================
+    on message "evaluate" {
+        if not state.trained {
+            respond({
+                type: "error",
+                payload: {
+                    error: "Model not trained. Train first."
+                }
+            })
+            return
+        }
+        
+        if state.x_test == null {
+            respond({
+                type: "error",
+                payload: {
+                    error: "No test data available"
+                }
+            })
+            return
+        }
+        
+        let predictions = state.model.forward(state.x_test)
+        let accuracy = calculate_accuracy(predictions, state.y_test)
+        
+        // Confusion matrix
+        let confusion = calculate_confusion_matrix(
+            predictions: predictions,
+            labels: state.y_test,
+            num_classes: config.output_dim
+        )
+        
+        respond({
+            type: "evaluation_result",
+            payload: {
+                accuracy: accuracy,
+                confusion_matrix: confusion,
+                test_samples: len(state.x_test),
+                per_class_accuracy: confusion.per_class_accuracy
+            }
+        })
+    }
+    
+    // ============================================================
+    // Utility Functions
+    // ============================================================
+    
+    fn load_mnist(source: string) -> dict {
+        let data = io.load_dataset("mnist", source: source)
+        return data
+    }
+    
+    fn preprocess_data(data: dict) -> dict {
+        // Normalize images to [0, 1]
+        let normalized = data.images / 255.0
+        
+        // Flatten images
+        let flattened = normalized.reshape([-1, 784])
+        
+        // One-hot encode labels
+        let one_hot = one_hot_encode(data.labels, num_classes: 10)
+        
+        return {
+            images: flattened,
+            labels: one_hot,
+            raw_labels: data.labels
+        }
+    }
+    
+    fn split_data(data: dict, validation_split: float, test_split: float) -> dict {
+        let total = len(data.images)
+        let test_size = int(total * test_split)
+        let val_size = int(total * validation_split)
+        let train_size = total - test_size - val_size
+        
+        // Shuffle indices
+        let indices = random_permutation(total)
+        
+        let train_indices = indices[0:train_size]
+        let val_indices = indices[train_size:train_size + val_size]
+        let test_indices = indices[train_size + val_size:total]
+        
+        return {
+            x_train: data.images[train_indices],
+            y_train: data.labels[train_indices],
+            x_val: data.images[val_indices],
+            y_val: data.labels[val_indices],
+            x_test: data.images[test_indices],
+            y_test: data.labels[test_indices]
+        }
+    }
+    
+    fn calculate_accuracy(predictions: tensor, labels: tensor) -> float {
+        let predicted = predictions.argmax(dim: 1)
+        let correct = (predicted == labels.argmax(dim: 1)).sum()
+        return correct.item() / labels.shape[0]
+    }
+    
+    fn calculate_confusion_matrix(predictions: tensor, labels: tensor, num_classes: int) -> dict {
+        let predicted = predictions.argmax(dim: 1)
+        let actual = labels.argmax(dim: 1)
+        
+        let matrix = tensor.zeros([num_classes, num_classes])
+        let per_class = []
+        
+        for i in 0..len(predicted) {
+            let pred = predicted[i]
+            let act = actual[i]
+            matrix[act, pred] = matrix[act, pred] + 1
+        }
+        
+        for c in 0..num_classes {
+            let total = matrix[c, :].sum()
+            let correct = matrix[c, c]
+            per_class.push(correct / total)
+        }
+        
+        return {
+            matrix: matrix.to_numpy(),
+            per_class_accuracy: per_class
+        }
+    }
+    
+    fn shuffle_data(x: tensor, y: tensor) -> dict {
+        let indices = random_permutation(len(x))
+        return {
+            x: x[indices],
+            y: y[indices]
+        }
+    }
+    
+    fn one_hot_encode(labels: tensor, num_classes: int) -> tensor {
+        let encoded = tensor.zeros([len(labels), num_classes])
+        for i in 0..len(labels) {
+            encoded[i, labels[i]] = 1
+        }
+        return encoded
+    }
+    
+    fn get_top_k(probabilities: tensor, k: int) -> dict {
+        let values, indices = probabilities.topk(k, dim: 1)
+        return {
+            values: values.to_numpy(),
+            indices: indices.to_numpy()
+        }
+    }
+    
+    fn random_permutation(n: int) -> [int] {
+        let indices = range(0, n)
+        let shuffled = []
+        while len(shuffled) < n {
+            let idx = random_int(0, len(indices) - 1)
+            shuffled.push(indices[idx])
+            indices.remove(idx)
+        }
+        return shuffled
+    }
+}
+
+// ============================================================
+// Usage Example
+// ============================================================
+/*
+// Load data
+{
+    "type": "load_data",
+    "payload": {
+        "source": "torchvision"
+    }
+}
+
+// Build model
+{
+    "type": "build_model",
+    "payload": {}
+}
+
+// Train model
+{
+    "type": "train_model",
+    "payload": {
+        "epochs": 10,
+        "batch_size": 64
+    }
+}
+
+// Make prediction
+{
+    "type": "predict",
+    "payload": {
+        "data": [0.0, 0.1, ...]  // 784-dim vector
+    }
+}
+
+// Evaluate
+{
+    "type": "evaluate",
+    "payload": {}
+}
+*/

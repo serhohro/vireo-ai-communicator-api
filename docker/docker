@@ -1,0 +1,196 @@
+# docker/docker-compose.yml
+# Vireo Full Stack Docker Compose
+
+version: '3.8'
+
+networks:
+  vireo-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+  postgres-data:
+  minio-data:
+  vireo-data:
+
+services:
+  # Vireo Python API Server
+  vireo-api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.python
+    image: vireo-api:latest
+    container_name: vireo-api
+    restart: unless-stopped
+    networks:
+      - vireo-network
+    ports:
+      - "8000:8000"
+    environment:
+      - VIREO_ENV=production
+      - VIREO_LOG_LEVEL=info
+      - REDIS_URL=redis://vireo-redis:6379/0
+      - DATABASE_URL=postgresql://vireo:vireo@vireo-postgres:5432/vireo
+      - MINIO_ENDPOINT=vireo-minio:9000
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-vireo}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-vireo123}
+      - SECRET_KEY=${SECRET_KEY:-supersecretkey}
+    volumes:
+      - vireo-data:/app/data
+    depends_on:
+      - vireo-redis
+      - vireo-postgres
+      - vireo-minio
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Vireo Rust Server
+  vireo-rust:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.rust
+    image: vireo-rust:latest
+    container_name: vireo-rust
+    restart: unless-stopped
+    networks:
+      - vireo-network
+    ports:
+      - "8080:8080"
+    environment:
+      - RUST_LOG=info
+      - REDIS_URL=redis://vireo-redis:6379/1
+    depends_on:
+      - vireo-redis
+
+  # Vireo WASM Web Interface
+  vireo-web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.wasm
+    image: vireo-web:latest
+    container_name: vireo-web
+    restart: unless-stopped
+    networks:
+      - vireo-network
+    ports:
+      - "3000:3000"
+    environment:
+      - VIREO_API_URL=http://vireo-api:8000
+      - VIREO_WS_URL=ws://vireo-api:8000/ws
+    depends_on:
+      - vireo-api
+
+  # Redis Message Bus
+  vireo-redis:
+    image: redis:7-alpine
+    container_name: vireo-redis
+    restart: unless-stopped
+    networks:
+      - vireo-network
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL Database
+  vireo-postgres:
+    image: postgres:15-alpine
+    container_name: vireo-postgres
+    restart: unless-stopped
+    networks:
+      - vireo-network
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=vireo
+      - POSTGRES_PASSWORD=vireo
+      - POSTGRES_DB=vireo
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vireo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MinIO Object Storage
+  vireo-minio:
+    image: minio/minio:latest
+    container_name: vireo-minio
+    restart: unless-stopped
+    networks:
+      - vireo-network
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ACCESS_KEY:-vireo}
+      - MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY:-vireo123}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 30s
+      timeout: 20s
+      retries: 5
+
+  # Prometheus Monitoring
+  vireo-prometheus:
+    image: prom/prometheus:latest
+    container_name: vireo-prometheus
+    restart: unless-stopped
+    networks:
+      - vireo-network
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+
+  # Grafana Dashboard
+  vireo-grafana:
+    image: grafana/grafana:latest
+    container_name: vireo-grafana
+    restart: unless-stopped
+    networks:
+      - vireo-network
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./monitoring/grafana:/etc/grafana/provisioning
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    depends_on:
+      - vireo-prometheus
+
+  # NGINX Reverse Proxy
+  vireo-nginx:
+    image: nginx:alpine
+    container_name: vireo-nginx
+    restart: unless-stopped
+    networks:
+      - vireo-network
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker/ssl:/etc/nginx/ssl
+    depends_on:
+      - vireo-api
+      - vireo-web

@@ -1,75 +1,101 @@
 # ============================================================
-# VIREO ONNX EXPORT
+# VIREO ONNX EXPORTER
+# Експорт моделей в ONNX
 # ============================================================
-"""
-ONNX model export for Vireo.
 
-Supports:
-- ONNX export
-- Optimization
-- Verification
-"""
-
+from dataclasses import dataclass, field
+from typing import Dict, Any, Optional, List
 import logging
-from typing import Dict, Any, Optional
-from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
 class ONNXConfig:
-    """ONNX export configuration."""
-    opset_version: int = 14
-    optimize: bool = True
-    verify: bool = True
+    """Конфігурація ONNX."""
+    opset_version: int = 13
+    enable_optimization: bool = True
+    input_names: List[str] = field(default_factory=list)
+    output_names: List[str] = field(default_factory=list)
+    dynamic_axes: Dict[str, Any] = field(default_factory=dict)
+    verbose: bool = False
 
 
-def export_to_onnx(model: Any, input_data: Any, 
-                   output_path: str,
-                   config: Optional[ONNXConfig] = None) -> bool:
+class ONNXExporter:
     """
-    Export model to ONNX format.
+    Експортер в ONNX.
     
-    Args:
-        model: PyTorch model
-        input_data: Example input
-        output_path: Output path
-        config: ONNX configuration
-    
-    Returns:
-        True if export successful
+    Експортує моделі в ONNX формат.
     """
-    if config is None:
-        config = ONNXConfig()
     
-    logger.info(f"📦 Exporting model to ONNX: {output_path}")
+    def __init__(self, config: Optional[ONNXConfig] = None):
+        self.config = config or ONNXConfig()
     
-    try:
-        import torch
-        import torch.onnx
+    def export(self, model, sample_input: Any, path: str) -> bool:
+        """
+        Експортує модель в ONNX.
         
-        torch.onnx.export(
-            model,
-            input_data,
-            output_path,
-            opset_version=config.opset_version,
-            export_params=True,
-            do_constant_folding=config.optimize
-        )
+        Args:
+            model: Модель
+            sample_input: Зразок входу
+            path: Шлях для збереження
+            
+        Returns:
+            bool: True якщо успішно        """
+        try:
+            import torch
+            
+            input_names = self.config.input_names or ["input"]
+            output_names = self.config.output_names or ["output"]
+            
+            torch.onnx.export(
+                model,
+                sample_input,
+                path,
+                opset_version=self.config.opset_version,
+                input_names=input_names,
+                output_names=output_names,
+                dynamic_axes=self.config.dynamic_axes,
+                verbose=self.config.verbose,
+            )
+            
+            logger.info(f"Model exported to ONNX: {path}")
+            return True
+        except Exception as e:
+            logger.error(f"ONNX export failed: {e}")
+            return False
+    
+    def load(self, path: str) -> Optional[Any]:
+        """
+        Завантажує ONNX модель.
         
-        if config.verify:
+        Args:
+            path: Шлях до ONNX файлу
+            
+        Returns:
+            Any: ONNX модель
+        """
+        try:
             import onnx
-            model_onnx = onnx.load(output_path)
-            onnx.checker.check_model(model_onnx)
-            logger.info("✅ ONNX model verified")
-        
-        logger.info(f"✅ ONNX export successful: {output_path}")
-        return True
-        
-    except ImportError:
-        logger.warning("⚠️ ONNX not available, skipping export")
-        return False
-    except Exception as e:
-        logger.error(f"❌ ONNX export failed: {e}")
-        return False
+            import onnxruntime as ort
+            
+            onnx_model = onnx.load(path)
+            onnx.checker.check_model(onnx_model)
+            
+            session = ort.InferenceSession(path)
+            return session
+        except Exception as e:
+            logger.error(f"ONNX load failed: {e}")
+            return None
+
+
+def export_to_onnx(model, sample_input: Any, path: str, config: Optional[ONNXConfig] = None) -> bool:
+    """Зручна функція для експорту в ONNX."""
+    exporter = ONNXExporter(config)
+    return exporter.export(model, sample_input, path)
+
+
+def load_onnx(path: str) -> Optional[Any]:
+    """Зручна функція для завантаження ONNX."""
+    exporter = ONNXExporter()
+    return exporter.load(path)
