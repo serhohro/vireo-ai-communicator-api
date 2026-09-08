@@ -1,30 +1,7 @@
-# ============================================================
-# VIREO PYTHON SDK
-# ============================================================
-"""
-Vireo Python SDK — client library for interacting with Vireo agents.
+# Vireo v3.0.0 — Python SDK
 
-Provides:
-- VireoClient: Main client for agent communication
-- Agent management
-- Contract creation and validation
-- Message handling
-"""
+from sdk.python.client import VireoClient
+from sdk.python.agent import AgentSDK
+from sdk.python.async_client import AsyncVireoClient
 
-from .client import (
-    VireoClient,
-    AgentInfo,
-    Message,
-    Contract,
-    create_contract,
-    DEFAULT_CONTRACT,
-)
-
-__all__ = [
-    'VireoClient',
-    'AgentInfo',
-    'Message',
-    'Contract',
-    'create_contract',
-    'DEFAULT_CONTRACT',
-]
+__version__ = "3.0.0"
