@@ -1,5 +1,27 @@
-# Transport module
-from .base import Transport, Handler
-from .in_memory import InMemoryEventBus
+"""
+Vireo Transport Package
 
-__all__ = ['Transport', 'Handler', 'InMemoryEventBus']
+Transport layer adapters for agent communication.
+
+Provides:
+- Redis transport (pub/sub, queue)
+- WebSocket transport (real-time, bidirectional)
+- gRPC transport (high-performance RPC)
+- HTTP transport (REST API)
+"""
+
+from .redis import RedisTransport, RedisConfig
+from .websocket import WebSocketTransport, WebSocketConfig
+from .grpc import GRPCTransport, GRPCConfig
+from .http import HTTPTransport, HTTPConfig
+
+__all__ = [
+    'RedisTransport',
+    'RedisConfig',
+    'WebSocketTransport',
+    'WebSocketConfig',
+    'GRPCTransport',
+    'GRPCConfig',
+    'HTTPTransport',
+    'HTTPConfig',
+]

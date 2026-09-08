@@ -1,128 +1,65 @@
-# ============================================================
-# VIREO PROTOCOL MODULE — AI-to-AI Communication Protocol
-# ============================================================
+"""
+Vireo Protocol Package
 
-from .config import LLMConfig
-from .llm_provider import (
-    LLMProvider,
-    create_llm_provider,
-    OllamaProvider,
-    GeminiProvider,
-    OpenAIProvider,
-    ClaudeProvider,
-    MistralProvider,
-    get_provider,
-    AVAILABLE_PROVIDERS,
-    AVAILABLE_MODELS,
-)
-from .llm_provider_eu import (
-    OllamaOptimizedProvider,
-    HuggingFaceProvider,
-    BLOOMProvider,
-    OpenChatProvider,
-    get_eu_provider,
-    EU_MODELS,
-)
-from .llm_agent import LLMAgent
-from .agent import Agent
-from .message import Message, make_message
-from .intent import Intent
-from .state import DialogueState, DialogueStateMachine, InvalidTransition
-from .capabilities import CapabilityRegistry, Capability
-from .trust import TrustBootstrap, TrustManager, verify, attach_signature
-from .contract import Contract, Proposal, create_default_contract
-from .conflict import ContextStore, ConflictStrategy, ConflictError
-from .runtime_bridge import RuntimeBridge, real_vireo_executor, create_runtime_bridge
+A2A (Agent-to-Agent) protocol implementation for secure AI communication.
+
+This package provides:
+- Agent base classes and implementations
+- Specialized agents (Guardian, Negotiator, Executor, Verifier)
+- Transport layer adapters (Redis, WebSocket, gRPC, HTTP)
+- Capability management and discovery
+"""
+
+from .agent import Agent, BaseAgent, AgentConfig
+from .llm_agent import LLMAgent, LLMConfig
+from .capabilities import Capability, CapabilityRegistry, CapabilityManager
+
 from .agents import (
-    RoleAgent,
-    AgentRole,
-    MasterAgent,
     GuardianAgent,
-    create_role_agent,
-    ROLES,
+    NegotiatorAgent,
+    ExecutorAgent,
+    VerifierAgent,
+    AgentFactory,
 )
 
-# Transport
-from .transport.base import Transport, Handler
-from .transport.in_memory import InMemoryEventBus
+from .transport import (
+    Transport,
+    TransportFactory,
+    RedisTransport,
+    WebSocketTransport,
+    GRPCTransport,
+    HTTPTransport,
+)
 
 __all__ = [
-    # Config
-    'LLMConfig',
-    
-    # LLM Providers
-    'LLMProvider',
-    'create_llm_provider',
-    'OllamaProvider',
-    'GeminiProvider',
-    'OpenAIProvider',
-    'ClaudeProvider',
-    'MistralProvider',
-    'get_provider',
-    'AVAILABLE_PROVIDERS',
-    'AVAILABLE_MODELS',
-    
-    # 🆕 EU LLM Providers
-    'OllamaOptimizedProvider',
-    'HuggingFaceProvider',
-    'BLOOMProvider',
-    'OpenChatProvider',
-    'get_eu_provider',
-    'EU_MODELS',
+    # Agent base
+    'Agent',
+    'BaseAgent',
+    'AgentConfig',
     
     # LLM Agent
     'LLMAgent',
-    
-    # Agent
-    'Agent',
-    
-    # Message
-    'Message',
-    'make_message',
-    
-    # Intent
-    'Intent',
-    
-    # State
-    'DialogueState',
-    'DialogueStateMachine',
-    'InvalidTransition',
+    'LLMConfig',
     
     # Capabilities
-    'CapabilityRegistry',
     'Capability',
+    'CapabilityRegistry',
+    'CapabilityManager',
     
-    # Trust
-    'TrustBootstrap',
-    'TrustManager',
-    'verify',
-    'attach_signature',
-    
-    # Contract
-    'Contract',
-    'Proposal',
-    'create_default_contract',
-    
-    # Conflict
-    'ContextStore',
-    'ConflictStrategy',
-    'ConflictError',
-    
-    # Runtime
-    'RuntimeBridge',
-    'real_vireo_executor',
-    'create_runtime_bridge',
-    
-    # Agents
-    'RoleAgent',
-    'AgentRole',
-    'MasterAgent',
+    # Specialized agents
     'GuardianAgent',
-    'create_role_agent',
-    'ROLES',
+    'NegotiatorAgent',
+    'ExecutorAgent',
+    'VerifierAgent',
+    'AgentFactory',
     
     # Transport
     'Transport',
-    'Handler',
-    'InMemoryEventBus',
+    'TransportFactory',
+    'RedisTransport',
+    'WebSocketTransport',
+    'GRPCTransport',
+    'HTTPTransport',
 ]
+
+__version__ = '3.0.0'

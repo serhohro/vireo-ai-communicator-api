@@ -48,11 +48,17 @@ class NodeType(Enum):
     AGENT_IDENTITY = "agent_identity"
     AGENT_CAPABILITY = "agent_capability"
     AGENT_ROLE = "agent_role"
+    AGENT_TRUST = "agent_trust"
+    AGENT_REPUTATION = "agent_reputation"
     
     # Контракти
     CONTRACT_DEF = "contract_def"
     CONTRACT_FIELD = "contract_field"
     CONTRACT_CONDITION = "contract_condition"
+    CONTRACT_VERIFY = "contract_verify"
+    CONTRACT_INVARIANT = "contract_invariant"
+    CONTRACT_ALLOWED_ACTIONS = "contract_allowed_actions"
+    CONTRACT_REQUIRED_APPROVALS = "contract_required_approvals"
     
     # Переговори
     NEGOTIATION_DEF = "negotiation_def"
@@ -60,15 +66,37 @@ class NodeType(Enum):
     NEGOTIATION_TIMEOUT = "negotiation_timeout"
     NEGOTIATION_MAX_ROUNDS = "negotiation_max_rounds"
     NEGOTIATION_ON_OFFER = "negotiation_on_offer"
+    NEGOTIATION_ON_COMMIT = "negotiation_on_commit"
+    NEGOTIATION_ON_VERIFY = "negotiation_on_verify"
+    NEGOTIATION_ON_ESCALATE = "negotiation_on_escalate"
+    NEGOTIATION_VERIFY_TIMEOUT = "negotiation_verify_timeout"
+    
+    # Протокол
     PROPOSE = "propose"
     COMMIT = "commit"
     REJECT = "reject"
     EXECUTE = "execute"
     INFORM = "inform"
+    VERIFY = "verify"
+    ESCALATE = "escalate"
+    DONE = "done"
     
     # Тензори
     TENSOR = "tensor"
     TENSOR_OP = "tensor_op"
+    TENSOR_ADD = "tensor_add"
+    TENSOR_MATMUL = "tensor_matmul"
+    TENSOR_TRANSPOSE = "tensor_transpose"
+    TENSOR_RESHAPE = "tensor_reshape"
+    
+    # Безпека
+    SECURITY_POLICY = "security_policy"
+    ENCRYPTION = "encryption"
+    SIGNATURE = "signature"
+    VERIFICATION = "verification"
+    
+    # Типи
+    TYPE_ANNOTATION = "type_annotation"
     
     # Блоки
     BLOCK = "block"
@@ -85,7 +113,6 @@ class NodeType(Enum):
 
 @dataclass
 class ASTNode:
-    """Вузол AST."""
     type: NodeType
     data: Dict[str, Any] = field(default_factory=dict)
     children: List['ASTNode'] = field(default_factory=list)
@@ -93,11 +120,9 @@ class ASTNode:
     column: int = 0
     
     def add_child(self, child: 'ASTNode'):
-        """Додає дочірній вузол."""
         self.children.append(child)
     
     def to_dict(self) -> Dict[str, Any]:
-        """Конвертує вузол у словник."""
         return {
             'type': self.type.value,
             'data': self.data,
@@ -114,30 +139,23 @@ class AST:
     """Abstract Syntax Tree для Vireo."""
     
     def __init__(self):
-        self.root = ASTNode(
-            type=NodeType.PROGRAM,
-            data={'version': '1.4.3'}
-        )
+        self.root = ASTNode(type=NodeType.PROGRAM, data={'version': '3.0.0'})
         self.nodes: List[ASTNode] = []
     
     def add_node(self, node: ASTNode):
-        """Додає вузол до AST."""
         self.nodes.append(node)
         self.root.add_child(node)
     
     def get_nodes_by_type(self, node_type: NodeType) -> List[ASTNode]:
-        """Повертає всі вузли заданого типу."""
         return [n for n in self.nodes if n.type == node_type]
     
     def to_dict(self) -> Dict[str, Any]:
-        """Конвертує AST у словник."""
         return {
-            'version': '1.4.3',
+            'version': '3.0.0',
             'nodes': [n.to_dict() for n in self.nodes]
         }
     
     def to_json(self) -> str:
-        """Конвертує AST у JSON."""
         import json
         return json.dumps(self.to_dict(), indent=2)
     

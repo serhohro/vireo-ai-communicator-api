@@ -1,5 +1,5 @@
 """
-Vireo Standard Library
+Vireo Standard Library v3.0.0
 
 Модулі стандартної бібліотеки Vireo:
 - math.v — Математичні функції
@@ -8,6 +8,10 @@ Vireo Standard Library
 - contract.v — Контракти та ресурси
 - crypto.v — Криптографія (Ed25519)
 - network.v — Мережеві операції
+- io.v — Введення/Виведення (Нове)
+- protocol.v — Протокольні операції (Нове)
+- neural.v — Нейронні мережі (Нове)
+- security.v — Безпека (Нове)
 
 Використання:
     import math
@@ -16,14 +20,22 @@ Vireo Standard Library
     import contract
     import crypto
     import network
+    import io
+    import protocol
+    import neural
+    import security
 """
 
-__version__ = "1.4.3"
+__version__ = "3.0.0"
 __all__ = [
     'math',
     'tensor',
     'agent',
     'contract',
     'crypto',
-    'network'
+    'network',
+    'io',
+    'protocol',
+    'neural',
+    'security'
 ]
