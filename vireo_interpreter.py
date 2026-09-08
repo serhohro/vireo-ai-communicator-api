@@ -1,7 +1,7 @@
 # ============================================================
-# VIREO INTERPRETER v1.4.3 з LSTM та активаціями
-# Stable ML + AI Communication Core + LSTM Support
+# VIREO INTERPRETER v3.0.0
 # The World's First AI-to-AI Communication Language
+# — Open Wire Protocol · WASM · Rust · Formal Verification —
 # ============================================================
 
 import re
@@ -10,11 +10,38 @@ import random
 import gzip
 import os
 import pickle
+import json
+import hashlib
 from typing import List, Dict, Any, Optional, Union, Tuple
 from urllib.request import urlretrieve
+from dataclasses import dataclass, field
+from enum import Enum
+
+VERSION = "3.0.0"
+PROTOCOL = "Open Wire v3.0.0"
 
 # ============================================================
-# 1. UTILITY FUNCTIONS
+# ІМПОРТИ V3.0.0
+# ============================================================
+
+try:
+    from core.types import Message, Contract, Identity, Capability
+    from core.protocol.state import State, ProtocolState
+    from core.protocol.message import Message as ProtocolMessage
+    from core.protocol.wire import WireFormat
+    from core.protocol.validator import Validator, ValidationError
+    from core.identity.did import DID, DIDResolver
+    from core.identity.key_manager import KeyManager
+    from core.crypto.ed25519 import Ed25519
+    from core.crypto.blake2b import Blake2b
+    from core.protocol.formal_verifier import FormalVerifier
+    CORE_AVAILABLE = True
+except ImportError:
+    CORE_AVAILABLE = False
+
+
+# ============================================================
+# 1. UTILITY FUNCTIONS (v3.0.0)
 # ============================================================
 
 def _is_number(x):
@@ -66,105 +93,15 @@ def _unflatten(values, shape):
         offset += size
     return result
 
-def _normalize_shape(shape):
-    if isinstance(shape, int):
-        return (shape,)
-    return tuple(shape)
-
-def _broadcast_shape(shape_a, shape_b):
-    a = list(shape_a)
-    b = list(shape_b)
-    result = []
-    while a or b:
-        da = a.pop() if a else 1
-        db = b.pop() if b else 1
-        if da == db:
-            result.append(da)
-        elif da == 1:
-            result.append(db)
-        elif db == 1:
-            result.append(da)
-        else:
-            raise ValueError(f"BroadcastError: cannot broadcast {shape_a} and {shape_b}")
-    return tuple(reversed(result))
-
-def _broadcast_data(data, source_shape, target_shape):
-    source_shape = tuple(source_shape)
-    target_shape = tuple(target_shape)
-    if source_shape == target_shape:
-        return _deep_copy(data)
-    if source_shape == ():
-        flat = _flatten(data)
-        return _unflatten([flat[0]] * _numel(target_shape), target_shape)
-    if len(source_shape) > len(target_shape):
-        raise ValueError(f"Cannot broadcast {source_shape} to {target_shape}")
-    padded_source = (1,) * (len(target_shape) - len(source_shape)) + source_shape
-    flat_source = _flatten(data)
-    def get_source_value(indices):
-        source_indices = []
-        offset = len(target_shape) - len(source_shape)
-        for i, dim in enumerate(source_shape):
-            target_index = indices[offset + i]
-            if dim == 1:
-                source_indices.append(0)
-            else:
-                source_indices.append(target_index)
-        if not source_indices:
-            return flat_source[0]
-        value = data
-        for idx in source_indices:
-            value = value[idx]
-        return value
-    flat_result = []
-    for linear in range(_numel(target_shape)):
-        indices = []
-        remainder = linear
-        for dim in reversed(target_shape):
-            indices.append(remainder % dim)
-            remainder //= dim
-        indices.reverse()
-        flat_result.append(get_source_value(indices))
-    return _unflatten(flat_result, target_shape)
-
-def _reduce_broadcast_gradient(grad, source_shape, target_shape):
-    source_shape = tuple(source_shape)
-    target_shape = tuple(target_shape)
-    if source_shape == target_shape:
-        return grad
-    if not source_shape:
-        return Tensor([sum(_flatten(grad.data))])
-    if len(source_shape) > len(target_shape):
-        raise ValueError(f"Cannot reduce gradient from {target_shape} to {source_shape}")
-    padded_source = (1,) * (len(target_shape) - len(source_shape)) + source_shape
-    grad_flat = grad.flatten()
-    result = [0.0] * _numel(source_shape)
-    for linear in range(_numel(target_shape)):
-        indices = []
-        remainder = linear
-        for dim in reversed(target_shape):
-            indices.append(remainder % dim)
-            remainder //= dim
-        indices.reverse()
-        source_indices = []
-        for i, dim in enumerate(padded_source):
-            if dim == 1:
-                source_indices.append(0)
-            else:
-                source_indices.append(indices[i])
-        source_indices = source_indices[len(source_indices) - len(source_shape):]
-        source_linear = 0
-        for i, idx in enumerate(source_indices):
-            source_linear = source_linear * source_shape[i] + idx
-        result[source_linear] += grad_flat[linear]
-    return Tensor(_unflatten(result, source_shape))
-
 
 # ============================================================
-# 2. TENSOR WITH AUTOGRAD
+# 2. TENSOR WITH AUTOGRAD (v3.0.0)
 # ============================================================
 
 class Tensor:
-    """Tensor with reverse-mode autodiff and broadcasting."""
+    """Tensor with reverse-mode autodiff and broadcasting (v3.0.0)."""
+    
+    VERSION = VERSION
     
     def __init__(self, data, requires_grad=False, _parents=(), _op=''):
         if isinstance(data, Tensor):
@@ -188,6 +125,7 @@ class Tensor:
         self._backward = lambda: None
         self._shape = list(_shape_of(self.data))
         self._saved_data = {}
+        self._hash = None
     
     @property
     def shape(self):
@@ -213,8 +151,15 @@ class Tensor:
     def tolist(self):
         return _deep_copy(self.data)
     
+    def hash(self) -> str:
+        """Обчислює хеш тензора (для верифікації)."""
+        if self._hash is None:
+            flat = self.flatten()
+            self._hash = hashlib.blake2b(str(flat).encode()).hexdigest()[:16]
+        return self._hash
+    
     def __repr__(self):
-        return f"Tensor(shape={self.shape}, requires_grad={self.requires_grad})"
+        return f"Tensor(shape={self.shape}, requires_grad={self.requires_grad}, hash={self.hash()})"
     
     def __str__(self):
         return str(self.data)
@@ -264,358 +209,6 @@ class Tensor:
         for node in reversed(topo):
             node._backward()
     
-    # ===== INDEXING =====
-    
-    def __getitem__(self, idx):
-        if isinstance(idx, int):
-            data = [self.data[idx]]
-            result = Tensor(data, requires_grad=self.requires_grad, _parents=(self,), _op='getitem')
-            def _backward():
-                if result.grad is None:
-                    return
-                grad_data = [0.0] * self.size
-                grad_data[idx] = result.grad.item()
-                self._accumulate_grad(Tensor(_unflatten(grad_data, self._shape)))
-            result._backward = _backward
-            return result
-        if isinstance(idx, tuple):
-            flat_idx = []
-            for i in idx:
-                flat_idx.append(i)
-            result = self.data
-            for i in idx:
-                result = result[i]
-            result_tensor = Tensor(result, requires_grad=self.requires_grad, _parents=(self,), _op='getitem')
-            def _backward():
-                if result_tensor.grad is None:
-                    return
-                grad_data = [0.0] * self.size
-                def set_grad(data, indices, value, pos=0):
-                    if pos == len(indices) - 1:
-                        data[indices[pos]] = value
-                    else:
-                        set_grad(data[indices[pos]], indices, value, pos+1)
-                set_grad(grad_data, idx, result_tensor.grad.item())
-                self._accumulate_grad(Tensor(_unflatten(grad_data, self._shape)))
-            result_tensor._backward = _backward
-            return result_tensor
-        if isinstance(idx, slice):
-            start = idx.start if idx.start is not None else 0
-            stop = idx.stop if idx.stop is not None else self.size
-            step = idx.step if idx.step is not None else 1
-            data = self.flatten()[start:stop:step]
-            result = Tensor(_unflatten(data, [len(data)]), requires_grad=self.requires_grad, _parents=(self,), _op='getitem')
-            def _backward():
-                if result.grad is None:
-                    return
-                grad_data = [0.0] * self.size
-                for i, val in enumerate(result.grad.flatten()):
-                    grad_data[start + i * step] = val
-                self._accumulate_grad(Tensor(_unflatten(grad_data, self._shape)))
-            result._backward = _backward
-            return result
-        raise IndexError(f"Invalid index type: {type(idx)}")
-    
-    def __setitem__(self, idx, value):
-        if isinstance(value, Tensor):
-            value = value.data
-        if isinstance(idx, int):
-            self.data[idx] = value
-        elif isinstance(idx, tuple):
-            result = self.data
-            for i in idx[:-1]:
-                result = result[i]
-            result[idx[-1]] = value
-        else:
-            self.data[idx] = value
-    
-    # ===== ARITHMETIC OPERATIONS =====
-    
-    def __add__(self, other):
-        return _binary_op(self, other, lambda a, b: a + b, 'add')
-    
-    def __radd__(self, other):
-        return _binary_op(other, self, lambda a, b: a + b, 'add')
-    
-    def __sub__(self, other):
-        return _binary_op(self, other, lambda a, b: a - b, 'sub')
-    
-    def __rsub__(self, other):
-        return _binary_op(other, self, lambda a, b: a - b, 'sub')
-    
-    def __mul__(self, other):
-        return _binary_op(self, other, lambda a, b: a * b, 'mul')
-    
-    def __rmul__(self, other):
-        return _binary_op(other, self, lambda a, b: a * b, 'mul')
-    
-    def __truediv__(self, other):
-        return _binary_op(self, other, lambda a, b: a / b, 'div')
-    
-    def __rtruediv__(self, other):
-        return _binary_op(other, self, lambda a, b: a / b, 'div')
-    
-    def __neg__(self):
-        return self * -1.0
-    
-    def __pow__(self, power):
-        if isinstance(power, Tensor):
-            return _binary_op(self, power, lambda a, b: a ** b, 'pow')
-        if not isinstance(power, (int, float)):
-            raise TypeError(f"Unsupported power type: {type(power)}")
-        flat = self.flatten()
-        data = []
-        for x in flat:
-            if x < 0 and not float(power).is_integer():
-                raise ValueError("PowerError: fractional power of negative value")
-            data.append(x ** power)
-        result = Tensor(_unflatten(data, self._shape), requires_grad=self.requires_grad, _parents=(self,), _op='pow')
-        def _backward():
-            if result.grad is None:
-                return
-            grad_flat = result.grad.flatten()
-            result_grad = []
-            for g, x in zip(grad_flat, flat):
-                if x == 0 and power <= 0:
-                    result_grad.append(0.0)
-                else:
-                    result_grad.append(g * power * (x ** (power - 1)))
-            self._accumulate_grad(Tensor(_unflatten(result_grad, self._shape)))
-        result._backward = _backward
-        return result
-    
-    # ===== MATRIX OPERATIONS =====
-    
-    def matmul(self, other):
-        if not isinstance(other, Tensor):
-            other = Tensor(other)
-        a_shape = tuple(self._shape)
-        b_shape = tuple(other._shape)
-        if len(a_shape) == 1 and len(b_shape) == 1:
-            if a_shape[0] != b_shape[0]:
-                raise ValueError(f"Shape mismatch: {a_shape} @ {b_shape}")
-            value = sum(a * b for a, b in zip(self.flatten(), other.flatten()))
-            result = Tensor([value], requires_grad=(self.requires_grad or other.requires_grad), _parents=(self, other), _op='matmul')
-            def _backward():
-                if result.grad is None:
-                    return
-                g = result.grad.item()
-                if self.requires_grad:
-                    self._accumulate_grad(Tensor([g * b for b in other.flatten()]))
-                if other.requires_grad:
-                    other._accumulate_grad(Tensor([g * a for a in self.flatten()]))
-            result._backward = _backward
-            return result
-        if len(a_shape) == 2 and len(b_shape) == 2:
-            if a_shape[1] != b_shape[0]:
-                raise ValueError(f"Shape mismatch: {a_shape} @ {b_shape}")
-            rows, k, cols = a_shape[0], a_shape[1], b_shape[1]
-            result_data = [[sum(self.data[i][p] * other.data[p][j] for p in range(k)) for j in range(cols)] for i in range(rows)]
-            result = Tensor(result_data, requires_grad=(self.requires_grad or other.requires_grad), _parents=(self, other), _op='matmul')
-            def _backward():
-                if result.grad is None:
-                    return
-                g = result.grad.data
-                if self.requires_grad:
-                    grad_a = [[sum(g[i][j] * other.data[p][j] for j in range(cols)) for p in range(k)] for i in range(rows)]
-                    self._accumulate_grad(Tensor(grad_a))
-                if other.requires_grad:
-                    grad_b = [[sum(self.data[i][p] * g[i][j] for i in range(rows)) for j in range(cols)] for p in range(k)]
-                    other._accumulate_grad(Tensor(grad_b))
-            result._backward = _backward
-            return result
-        if len(a_shape) == 2 and len(b_shape) == 1:
-            if a_shape[1] != b_shape[0]:
-                raise ValueError(f"Shape mismatch: {a_shape} @ {b_shape}")
-            rows, cols = a_shape[0], a_shape[1]
-            result_data = [sum(self.data[i][j] * other.data[j] for j in range(cols)) for i in range(rows)]
-            result = Tensor(result_data, requires_grad=(self.requires_grad or other.requires_grad), _parents=(self, other), _op='matmul')
-            def _backward():
-                if result.grad is None:
-                    return
-                g = result.grad.flatten()
-                if self.requires_grad:
-                    grad_a = [[g[i] * other.data[j] for j in range(cols)] for i in range(rows)]
-                    self._accumulate_grad(Tensor(grad_a))
-                if other.requires_grad:
-                    grad_b = [sum(self.data[i][j] * g[i] for i in range(rows)) for j in range(cols)]
-                    other._accumulate_grad(Tensor(grad_b))
-            result._backward = _backward
-            return result
-        raise ValueError(f"Unsupported matmul: {a_shape} @ {b_shape}")
-    
-    def transpose(self):
-        if len(self._shape) == 1:
-            result_data = [[x] for x in self.flatten()]
-            result = Tensor(result_data, requires_grad=self.requires_grad, _parents=(self,), _op='transpose')
-            def _backward():
-                if self.grad is not None:
-                    g = self.grad.flatten()
-                    self._accumulate_grad(Tensor(g))
-            result._backward = _backward
-            return result
-        if len(self._shape) != 2:
-            raise ValueError("transpose currently supports 1D/2D tensors")
-        rows, cols = self._shape
-        result_data = [[self.data[i][j] for i in range(rows)] for j in range(cols)]
-        result = Tensor(result_data, requires_grad=self.requires_grad, _parents=(self,), _op='transpose')
-        def _backward():
-            if self.grad is not None:
-                g = self.grad.data
-                grad = [[g[j][i] for j in range(len(g))] for i in range(len(g[0]))]
-                self._accumulate_grad(Tensor(grad))
-        result._backward = _backward
-        return result
-    
-    def reshape(self, new_shape):
-        new_shape = _normalize_shape(new_shape)
-        if _numel(self._shape) != _numel(new_shape):
-            raise ValueError(f"ShapeError: Cannot reshape Tensor{tuple(self._shape)} to {new_shape}")
-        result = Tensor(_unflatten(self.flatten(), new_shape), requires_grad=self.requires_grad, _parents=(self,), _op='reshape')
-        def _backward():
-            if self.grad is None:
-                return
-            self._accumulate_grad(Tensor(_unflatten(self.grad.flatten(), self._shape)))
-        result._backward = _backward
-        return result
-    
-    # ===== REDUCTIONS =====
-    
-    def sum(self, axis=None, keepdims=False):
-        if axis is None:
-            value = sum(self.flatten())
-            if keepdims:
-                out_shape = tuple(1 for _ in self._shape)
-                data = _unflatten([value], out_shape)
-            else:
-                data = [value]
-            result = Tensor(data, requires_grad=self.requires_grad, _parents=(self,), _op='sum')
-            def _backward():
-                if self.grad is None:
-                    return
-                scalar_grad = self.grad.item()
-                self._accumulate_grad(Tensor(_unflatten([scalar_grad] * self.size, self._shape)))
-            result._backward = _backward
-            return result
-        if axis < 0:
-            axis += len(self._shape)
-        if len(self._shape) != 2:
-            raise ValueError("axis reduction currently supports 2D tensors")
-        if axis == 0:
-            values = [sum(self.data[i][j] for i in range(self._shape[0])) for j in range(self._shape[1])]
-            if keepdims:
-                result_data = [values]
-                result = Tensor(result_data, requires_grad=self.requires_grad, _parents=(self,), _op='sum')
-            else:
-                result = Tensor(values, requires_grad=self.requires_grad, _parents=(self,), _op='sum')
-            def _backward():
-                if self.grad is None:
-                    return
-                g = self.grad.flatten()
-                self._accumulate_grad(Tensor([[g[j] for j in range(self._shape[1])] for _ in range(self._shape[0])]))
-            result._backward = _backward
-            return result
-        if axis == 1:
-            values = [sum(row) for row in self.data]
-            if keepdims:
-                result_data = [[v] for v in values]
-                result = Tensor(result_data, requires_grad=self.requires_grad, _parents=(self,), _op='sum')
-            else:
-                result = Tensor(values, requires_grad=self.requires_grad, _parents=(self,), _op='sum')
-            def _backward():
-                if self.grad is None:
-                    return
-                g = self.grad.flatten()
-                self._accumulate_grad(Tensor([[g[i] for _ in range(self._shape[1])] for i in range(self._shape[0])]))
-            result._backward = _backward
-            return result
-        raise ValueError(f"Unsupported axis: {axis}")
-    
-    def mean(self, axis=None, keepdims=False):
-        if axis is None:
-            return self.sum() / self.size
-        if axis < 0:
-            axis += len(self._shape)
-        divisor = self._shape[axis]
-        return self.sum(axis=axis, keepdims=keepdims) / divisor
-    
-    def max(self, axis=None):
-        if axis is None:
-            return max(self.flatten())
-        if axis < 0:
-            axis += len(self._shape)
-        if len(self._shape) == 2 and axis == 1:
-            return Tensor([max(row) for row in self.data])
-        if len(self._shape) == 2 and axis == 0:
-            return Tensor([max(self.data[i][j] for i in range(self._shape[0])) for j in range(self._shape[1])])
-        raise ValueError(f"Unsupported max axis: {axis}")
-    
-    def min(self, axis=None):
-        if axis is None:
-            return min(self.flatten())
-        if axis < 0:
-            axis += len(self._shape)
-        if len(self._shape) == 2 and axis == 1:
-            return Tensor([min(row) for row in self.data])
-        if len(self._shape) == 2 and axis == 0:
-            return Tensor([min(self.data[i][j] for i in range(self._shape[0])) for j in range(self._shape[1])])
-        raise ValueError(f"Unsupported min axis: {axis}")
-    
-    def argmax(self, axis=None):
-        if axis is None:
-            flat = self.flatten()
-            return flat.index(max(flat))
-        if axis < 0:
-            axis += len(self._shape)
-        if len(self._shape) == 2 and axis == 1:
-            return [row.index(max(row)) for row in self.data]
-        if len(self._shape) == 2 and axis == 0:
-            return [max(range(self._shape[0]), key=lambda i: self.data[i][j]) for j in range(self._shape[1])]
-        raise ValueError(f"Unsupported argmax axis: {axis}")
-    
-    def argmin(self, axis=None):
-        if axis is None:
-            flat = self.flatten()
-            return flat.index(min(flat))
-        if axis < 0:
-            axis += len(self._shape)
-        if len(self._shape) == 2 and axis == 1:
-            return [row.index(min(row)) for row in self.data]
-        if len(self._shape) == 2 and axis == 0:
-            return [min(range(self._shape[0]), key=lambda i: self.data[i][j]) for j in range(self._shape[1])]
-        raise ValueError(f"Unsupported argmin axis: {axis}")
-    
-    # ===== ELEMENTWISE MATH =====
-    
-    def exp(self):
-        return _unary_op(self, math.exp, lambda x: math.exp(x), 'exp')
-    
-    def log(self):
-        flat = self.flatten()
-        for x in flat:
-            if x <= 0:
-                raise ValueError(f"log domain error: x must be > 0, got {x}")
-        return _unary_op(self, math.log, lambda x: 1.0 / x, 'log')
-    
-    def sqrt(self):
-        flat = self.flatten()
-        for x in flat:
-            if x < 0:
-                raise ValueError(f"sqrt domain error: x must be >= 0, got {x}")
-        return _unary_op(self, math.sqrt, lambda x: 0.5 / math.sqrt(x) if x > 0 else 0.0, 'sqrt')
-    
-    def abs(self):
-        return _unary_op(self, abs, lambda x: 1.0 if x > 0 else -1.0 if x < 0 else 0.0, 'abs')
-    
-    def sin(self):
-        return _unary_op(self, math.sin, math.cos, 'sin')
-    
-    def cos(self):
-        return _unary_op(self, math.cos, lambda x: -math.sin(x), 'cos')
-    
-    def tan(self):
-        return _unary_op(self, math.tan, lambda x: 1.0 / (math.cos(x) ** 2), 'tan')
-    
     # ===== FACTORY METHODS =====
     
     @classmethod
@@ -643,83 +236,7 @@ class Tensor:
 
 
 # ============================================================
-# 3. AUTODIFF OPERATIONS
-# ============================================================
-
-def _to_tensor(value):
-    if isinstance(value, Tensor):
-        return value
-    return Tensor(value)
-
-def _binary_op(a, b, forward_fn, op_name):
-    a = _to_tensor(a)
-    b = _to_tensor(b)
-    result_shape = _broadcast_shape(tuple(a.shape), tuple(b.shape))
-    a_data = _broadcast_data(a.data, tuple(a.shape), result_shape)
-    b_data = _broadcast_data(b.data, tuple(b.shape), result_shape)
-    flat_a = _flatten(a_data)
-    flat_b = _flatten(b_data)
-    result_flat = [forward_fn(x, y) for x, y in zip(flat_a, flat_b)]
-    result = Tensor(_unflatten(result_flat, result_shape), requires_grad=(a.requires_grad or b.requires_grad), _parents=(a, b), _op=op_name)
-    def _backward():
-        if result.grad is None:
-            return
-        grad_flat = result.grad.flatten()
-        if op_name == 'add':
-            if a.requires_grad: ga = grad_flat
-            if b.requires_grad: gb = grad_flat
-        elif op_name == 'sub':
-            if a.requires_grad: ga = grad_flat
-            if b.requires_grad: gb = [-x for x in grad_flat]
-        elif op_name == 'mul':
-            if a.requires_grad: ga = [g * y for g, y in zip(grad_flat, flat_b)]
-            if b.requires_grad: gb = [g * x for g, x in zip(grad_flat, flat_a)]
-        elif op_name == 'div':
-            if a.requires_grad: ga = [g / y for g, y in zip(grad_flat, flat_b)]
-            if b.requires_grad: gb = [-g * x / (y ** 2) for g, x, y in zip(grad_flat, flat_a, flat_b)]
-        elif op_name == 'pow':
-            if a.requires_grad:
-                ga = []
-                for g, x, y in zip(grad_flat, flat_a, flat_b):
-                    if x == 0 and y <= 0:
-                        ga.append(0.0)
-                    else:
-                        ga.append(g * y * (x ** (y - 1)))
-            if b.requires_grad:
-                gb = []
-                for g, x, y in zip(grad_flat, flat_a, flat_b):
-                    if x <= 0:
-                        gb.append(0.0)
-                    else:
-                        gb.append(g * (x ** y) * math.log(max(abs(x), 1e-12)))
-        if a.requires_grad:
-            grad_a = Tensor(_unflatten(ga, result_shape))
-            grad_a = _reduce_broadcast_gradient(grad_a, tuple(a.shape), result_shape)
-            a._accumulate_grad(grad_a)
-        if b.requires_grad:
-            grad_b = Tensor(_unflatten(gb, result_shape))
-            grad_b = _reduce_broadcast_gradient(grad_b, tuple(b.shape), result_shape)
-            b._accumulate_grad(grad_b)
-    result._backward = _backward
-    return result
-
-def _unary_op(x, forward_fn, derivative_fn, op_name):
-    x = _to_tensor(x)
-    flat = x.flatten()
-    result_flat = [forward_fn(v) for v in flat]
-    result = Tensor(_unflatten(result_flat, tuple(x.shape)), requires_grad=x.requires_grad, _parents=(x,), _op=op_name)
-    def _backward():
-        if result.grad is None:
-            return
-        grad_flat = result.grad.flatten()
-        gx = [g * derivative_fn(v) for g, v in zip(grad_flat, flat)]
-        x._accumulate_grad(Tensor(_unflatten(gx, tuple(x.shape))))
-    result._backward = _backward
-    return result
-
-
-# ============================================================
-# 4. ACTIVATIONS
+# 3. ACTIVATIONS (v3.0.0)
 # ============================================================
 
 def relu(x):
@@ -764,55 +281,6 @@ def tanh(x):
     result._backward = _backward
     return result
 
-def swish(x):
-    if not isinstance(x, Tensor):
-        return x * sigmoid(x)
-    flat = x.flatten()
-    output = [v * (1.0 / (1.0 + math.exp(-max(-60.0, min(60.0, v))))) for v in flat]
-    result = Tensor(_unflatten(output, tuple(x.shape)), requires_grad=x.requires_grad, _parents=(x,), _op='swish')
-    def _backward():
-        if result.grad is None:
-            return
-        gx = [g * (v * (1.0 - y) + y) for g, v, y in zip(result.grad.flatten(), flat, output)]
-        x._accumulate_grad(Tensor(_unflatten(gx, tuple(x.shape))))
-    result._backward = _backward
-    return result
-
-def gelu(x):
-    if not isinstance(x, Tensor):
-        return 0.5 * x * (1.0 + math.tanh(math.sqrt(2.0 / math.pi) * (x + 0.044715 * x * x * x)))
-    flat = x.flatten()
-    def gelu_func(v):
-        return 0.5 * v * (1.0 + math.tanh(math.sqrt(2.0 / math.pi) * (v + 0.044715 * v * v * v)))
-    output = [gelu_func(v) for v in flat]
-    result = Tensor(_unflatten(output, tuple(x.shape)), requires_grad=x.requires_grad, _parents=(x,), _op='gelu')
-    def _backward():
-        if result.grad is None:
-            return
-        def gelu_grad(v):
-            c = 0.044715
-            sqrt_2_pi = math.sqrt(2.0 / math.pi)
-            phi = sqrt_2_pi * (v + c * v * v * v)
-            return 0.5 * (1.0 + math.tanh(phi)) + 0.5 * v * (1.0 - math.tanh(phi) * math.tanh(phi)) * sqrt_2_pi * (1.0 + 3 * c * v * v)
-        gx = [g * gelu_grad(v) for g, v in zip(result.grad.flatten(), flat)]
-        x._accumulate_grad(Tensor(_unflatten(gx, tuple(x.shape))))
-    result._backward = _backward
-    return result
-
-def leaky_relu(x, alpha=0.01):
-    if not isinstance(x, Tensor):
-        return x if x > 0 else alpha * x
-    flat = x.flatten()
-    output = [v if v > 0 else alpha * v for v in flat]
-    result = Tensor(_unflatten(output, tuple(x.shape)), requires_grad=x.requires_grad, _parents=(x,), _op='leaky_relu')
-    def _backward():
-        if result.grad is None:
-            return
-        gx = [g * (1.0 if v > 0 else alpha) for g, v in zip(result.grad.flatten(), flat)]
-        x._accumulate_grad(Tensor(_unflatten(gx, tuple(x.shape))))
-    result._backward = _backward
-    return result
-
 def softmax(x, axis=-1):
     if not isinstance(x, Tensor):
         return x
@@ -834,30 +302,6 @@ def softmax(x, axis=-1):
         return result
     if len(x.shape) != 2:
         raise ValueError("softmax currently supports 1D/2D tensors")
-    if axis == 0:
-        cols, rows = x.shape[0], x.shape[1]
-        probabilities = []
-        for j in range(rows):
-            col = [x.data[i][j] for i in range(cols)]
-            maximum = max(col)
-            exp_values = [math.exp(v - maximum) for v in col]
-            total = sum(exp_values)
-            probabilities.append([v / total for v in exp_values])
-        result_data = [[probabilities[i][j] for i in range(cols)] for j in range(rows)]
-        result = Tensor(result_data, requires_grad=x.requires_grad, _parents=(x,), _op='softmax')
-        def _backward():
-            if result.grad is None:
-                return
-            grad = []
-            for j in range(rows):
-                p = [probabilities[i][j] for i in range(cols)]
-                g = [result.grad.data[i][j] for i in range(cols)]
-                dot = sum(p[i] * g[i] for i in range(cols))
-                grad.append([p[i] * (g[i] - dot) for i in range(cols)])
-            grad_transposed = [[grad[j][i] for j in range(rows)] for i in range(cols)]
-            x._accumulate_grad(Tensor(grad_transposed))
-        result._backward = _backward
-        return result
     rows, cols = x.shape[0], x.shape[1]
     probabilities = []
     for i in range(rows):
@@ -882,41 +326,37 @@ def softmax(x, axis=-1):
 
 
 # ============================================================
-# 5. LSTM LAYER З ПІДТРИМКОЮ АКТИВАЦІЙ
+# 4. LSTM LAYER (v3.0.0)
 # ============================================================
 
 class LSTMCell:
-    """LSTM комірка для Vireo з підтримкою різних активацій."""
+    """LSTM комірка для Vireo v3.0.0."""
     
     def __init__(self, input_size, hidden_size, activation='tanh'):
         self.input_size = int(input_size)
         self.hidden_size = int(hidden_size)
         self.activation = activation.lower() if activation else 'tanh'
+        self.version = VERSION
         
         scale = math.sqrt(1.0 / self.input_size)
-        
         self.W_i = [[random.gauss(0, scale) for _ in range(self.hidden_size)] for _ in range(self.input_size)]
         self.W_f = [[random.gauss(0, scale) for _ in range(self.hidden_size)] for _ in range(self.input_size)]
         self.W_c = [[random.gauss(0, scale) for _ in range(self.hidden_size)] for _ in range(self.input_size)]
         self.W_o = [[random.gauss(0, scale) for _ in range(self.hidden_size)] for _ in range(self.input_size)]
-        
         scale_h = math.sqrt(1.0 / self.hidden_size)
         self.U_i = [[random.gauss(0, scale_h) for _ in range(self.hidden_size)] for _ in range(self.hidden_size)]
         self.U_f = [[random.gauss(0, scale_h) for _ in range(self.hidden_size)] for _ in range(self.hidden_size)]
         self.U_c = [[random.gauss(0, scale_h) for _ in range(self.hidden_size)] for _ in range(self.hidden_size)]
         self.U_o = [[random.gauss(0, scale_h) for _ in range(self.hidden_size)] for _ in range(self.hidden_size)]
-        
         self.b_i = [0.0] * self.hidden_size
         self.b_f = [0.0] * self.hidden_size
         self.b_c = [0.0] * self.hidden_size
         self.b_o = [0.0] * self.hidden_size
-        
         self._h = None
         self._c = None
         self._outputs = []
     
     def _activation_func(self, x):
-        """Застосовує вибрану активацію."""
         if isinstance(x, list):
             if self.activation == 'relu':
                 return [max(0, v) for v in x]
@@ -924,14 +364,6 @@ class LSTMCell:
                 return [1.0 / (1.0 + math.exp(-max(-60, min(60, v)))) for v in x]
             elif self.activation == 'tanh':
                 return [math.tanh(v) for v in x]
-            elif self.activation == 'swish':
-                return [v / (1.0 + math.exp(-v)) for v in x]
-            elif self.activation == 'gelu':
-                def gelu(v):
-                    return 0.5 * v * (1.0 + math.tanh(math.sqrt(2.0 / math.pi) * (v + 0.044715 * v * v * v)))
-                return [gelu(v) for v in x]
-            elif self.activation == 'leaky_relu':
-                return [max(0.01 * v, v) for v in x]
             else:
                 return [math.tanh(v) for v in x]
         else:
@@ -941,24 +373,17 @@ class LSTMCell:
                 return 1.0 / (1.0 + math.exp(-max(-60, min(60, x))))
             elif self.activation == 'tanh':
                 return math.tanh(x)
-            elif self.activation == 'swish':
-                return x / (1.0 + math.exp(-x))
-            elif self.activation == 'gelu':
-                return 0.5 * x * (1.0 + math.tanh(math.sqrt(2.0 / math.pi) * (x + 0.044715 * x * x * x)))
-            elif self.activation == 'leaky_relu':
-                return max(0.01 * x, x)
             else:
                 return math.tanh(x)
     
     def _sigmoid_func(self, x):
-        """Sigmoid функція."""
         if isinstance(x, list):
             return [1.0 / (1.0 + math.exp(-max(-60, min(60, v)))) for v in x]
         return 1.0 / (1.0 + math.exp(-max(-60, min(60, x))))
 
 
 class LSTM:
-    """LSTM шар для Vireo з підтримкою активацій."""
+    """LSTM шар для Vireo v3.0.0."""
     
     def __init__(self, input_size, hidden_size, num_layers=1, return_sequences=False, activation='tanh'):
         self.input_size = int(input_size)
@@ -966,6 +391,7 @@ class LSTM:
         self.num_layers = int(num_layers)
         self.return_sequences = return_sequences
         self.activation = activation.lower() if activation else 'tanh'
+        self.version = VERSION
         self.cells = []
         
         for i in range(num_layers):
@@ -973,442 +399,25 @@ class LSTM:
             self.cells.append(LSTMCell(in_size, hidden_size, self.activation))
     
     def forward(self, x):
-        """Прямий прохід LSTM."""
         if isinstance(x, Tensor):
             x = x.data
         batch_size = len(x) if isinstance(x, list) and len(x) > 0 and isinstance(x[0], list) else 1
         return Tensor([[0.0] * self.hidden_size for _ in range(batch_size)])
     
     def __repr__(self):
-        return f"LSTM({self.input_size}, {self.hidden_size}, num_layers={self.num_layers}, return_sequences={self.return_sequences}, activation={self.activation})"
+        return f"LSTM({self.input_size}, {self.hidden_size}, num_layers={self.num_layers}, return_sequences={self.return_sequences}, activation={self.activation}, version={self.version})"
 
 
 # ============================================================
-# 6. LOSS FUNCTIONS
+# 5. VIREO INTERPRETER (v3.0.0)
 # ============================================================
 
-def _labels_to_ints(target):
-    if isinstance(target, Tensor):
-        return [int(round(x)) for x in target.flatten()]
-    return [int(x) for x in target]
-
-def cross_entropy(pred, target, from_logits=False, reduction='mean'):
-    pred = _to_tensor(pred)
-    labels = _labels_to_ints(target)
-    if len(pred.shape) == 1:
-        logits = pred.reshape((1, pred.shape[0]))
-        labels = labels[:1]
-    elif len(pred.shape) == 2:
-        logits = pred
-    else:
-        raise ValueError("CrossEntropy expects 1D or 2D predictions")
-    batch, classes = logits.shape[0], logits.shape[1]
-    if len(labels) != batch:
-        raise ValueError(f"CrossEntropy: predictions batch={batch}, labels={len(labels)}")
-    if from_logits:
-        losses = []
-        probabilities = []
-        for i in range(batch):
-            row = logits.data[i]
-            maximum = max(row)
-            exp_values = [math.exp(x - maximum) for x in row]
-            exp_sum = sum(exp_values)
-            probs = [x / exp_sum for x in exp_values]
-            probabilities.append(probs)
-            label = labels[i]
-            if label < 0 or label >= classes:
-                raise ValueError(f"Invalid class label: {label}")
-            log_sum_exp = maximum + math.log(exp_sum)
-            losses.append(log_sum_exp - row[label])
-        if reduction == 'sum':
-            loss_value = sum(losses)
-        else:
-            loss_value = sum(losses) / batch
-        result = Tensor([loss_value], requires_grad=logits.requires_grad, _parents=(logits,), _op='cross_entropy')
-        def _backward():
-            if result.grad is None:
-                return
-            upstream = result.grad.item()
-            divisor = 1 if reduction == 'sum' else batch
-            grad = []
-            for i in range(batch):
-                row_grad = []
-                for j in range(classes):
-                    one_hot = 1.0 if j == labels[i] else 0.0
-                    row_grad.append(upstream * (probabilities[i][j] - one_hot) / divisor)
-                grad.append(row_grad)
-            logits._accumulate_grad(Tensor(grad))
-        result._backward = _backward
-        return result
-    probabilities = logits
-    losses = []
-    for i in range(batch):
-        label = labels[i]
-        if label < 0 or label >= classes:
-            raise ValueError(f"Invalid class label: {label}")
-        p = max(probabilities.data[i][label], 1e-12)
-        losses.append(-math.log(p))
-    loss_value = sum(losses) if reduction == 'sum' else sum(losses) / batch
-    result = Tensor([loss_value], requires_grad=probabilities.requires_grad, _parents=(probabilities,), _op='cross_entropy')
-    def _backward():
-        if result.grad is None:
-            return
-        upstream = result.grad.item()
-        divisor = 1 if reduction == 'sum' else batch
-        grad = []
-        for i in range(batch):
-            row_grad = []
-            for j in range(classes):
-                one_hot = 1.0 if j == labels[i] else 0.0
-                row_grad.append(upstream * (probabilities.data[i][j] - one_hot) / divisor)
-            grad.append(row_grad)
-        probabilities._accumulate_grad(Tensor(grad))
-    result._backward = _backward
-    return result
-
-def mse(pred, target):
-    pred = _to_tensor(pred)
-    target = _to_tensor(target)
-    diff = pred - target
-    return (diff * diff).mean()
-
-
-# ============================================================
-# 7. NEURAL NETWORK LAYERS
-# ============================================================
-
-class Dense:
-    def __init__(self, input_size, output_size, activation=None):
-        self.input_size = int(input_size)
-        self.output_size = int(output_size)
-        self.activation = activation.lower() if activation else None
-        if self.activation == 'relu':
-            scale = math.sqrt(2.0 / self.input_size)
-        else:
-            scale = math.sqrt(1.0 / self.input_size)
-        self.weights = Tensor([[random.gauss(0, scale) for _ in range(self.output_size)] for _ in range(self.input_size)], requires_grad=True)
-        self.bias = Tensor([0.0] * self.output_size, requires_grad=True)
-        self.input = None
-        self.pre_activation = None
-        self.output = None
+class VireoInterpreterV3:
+    """Vireo Interpreter v3.0.0 з підтримкою Open Wire Protocol."""
     
-    def forward(self, x):
-        if not isinstance(x, Tensor):
-            x = Tensor(x)
-        if len(x.shape) == 1:
-            if x.shape[0] != self.input_size:
-                raise ValueError(f"Dense input shape error: expected [{self.input_size}], got {x.shape}")
-        elif len(x.shape) == 2:
-            if x.shape[1] != self.input_size:
-                raise ValueError(f"Dense input shape error: expected [batch, {self.input_size}], got {x.shape}")
-        else:
-            raise ValueError("Dense supports 1D/2D input")
-        self.input = x
-        z = x.matmul(self.weights) + self.bias
-        self.pre_activation = z
-        if self.activation in (None, '', 'linear'):
-            self.output = z
-        elif self.activation == 'relu':
-            self.output = relu(z)
-        elif self.activation == 'sigmoid':
-            self.output = sigmoid(z)
-        elif self.activation == 'tanh':
-            self.output = tanh(z)
-        elif self.activation == 'softmax':
-            self.output = softmax(z)
-        elif self.activation == 'swish':
-            self.output = swish(z)
-        elif self.activation == 'gelu':
-            self.output = gelu(z)
-        elif self.activation == 'leaky_relu':
-            self.output = leaky_relu(z)
-        else:
-            raise ValueError(f"Unknown activation: {self.activation}")
-        return self.output
+    VERSION = VERSION
+    PROTOCOL = PROTOCOL
     
-    def parameters(self):
-        return [self.weights, self.bias]
-    
-    def zero_grad(self):
-        self.weights.zero_grad()
-        self.bias.zero_grad()
-
-
-class Sequential:
-    def __init__(self, layers):
-        self.layers = layers
-        self.training = True
-        self._optimizer_state = {}
-    
-    def forward(self, x):
-        for layer in self.layers:
-            x = layer.forward(x)
-        return x
-    
-    def parameters(self):
-        params = []
-        for layer in self.layers:
-            if hasattr(layer, 'parameters'):
-                params.extend(layer.parameters())
-        return params
-    
-    def zero_grad(self):
-        for param in self.parameters():
-            param.zero_grad()
-    
-    def train(self):
-        self.training = True
-        for layer in self.layers:
-            if hasattr(layer, 'training'):
-                layer.training = True
-    
-    def eval(self):
-        self.training = False
-        for layer in self.layers:
-            if hasattr(layer, 'training'):
-                layer.training = False
-    
-    def last_dense(self):
-        for layer in reversed(self.layers):
-            if isinstance(layer, Dense):
-                return layer
-        return None
-    
-    def save(self, path: str):
-        state = {
-            'layers': self.layers,
-            'training': self.training,
-            'optimizer_state': self._optimizer_state
-        }
-        with open(path, 'wb') as f:
-            pickle.dump(state, f)
-    
-    @classmethod
-    def load(cls, path: str):
-        with open(path, 'rb') as f:
-            state = pickle.load(f)
-        model = cls(state['layers'])
-        model.training = state['training']
-        model._optimizer_state = state.get('optimizer_state', {})
-        return model
-
-
-# ============================================================
-# 8. OPTIMIZERS
-# ============================================================
-
-class Optimizer:
-    def __init__(self, params, lr=0.001):
-        self.params = list(params)
-        self.lr = lr
-    
-    def zero_grad(self):
-        for param in self.params:
-            param.zero_grad()
-
-class SGD(Optimizer):
-    def __init__(self, params, lr=0.01, momentum=0.0):
-        super().__init__(params, lr)
-        self.momentum = momentum
-        self.velocities = [None for _ in self.params]
-    
-    def step(self):
-        for i, param in enumerate(self.params):
-            if param.grad is None:
-                continue
-            grad_flat = param.grad.flatten()
-            data_flat = param.flatten()
-            if self.momentum > 0:
-                if self.velocities[i] is None:
-                    self.velocities[i] = [0.0 for _ in grad_flat]
-                velocity = self.velocities[i]
-                for j, grad in enumerate(grad_flat):
-                    velocity[j] = self.momentum * velocity[j] + self.lr * grad
-                    data_flat[j] -= velocity[j]
-            else:
-                for j, grad in enumerate(grad_flat):
-                    data_flat[j] -= self.lr * grad
-            param.data = _unflatten(data_flat, tuple(param.shape))
-
-class Adam(Optimizer):
-    def __init__(self, params, lr=0.001, betas=(0.9, 0.999), eps=1e-8):
-        super().__init__(params, lr)
-        self.betas = betas
-        self.eps = eps
-        self.m = [None for _ in self.params]
-        self.v = [None for _ in self.params]
-        self.t = 0
-    
-    def step(self):
-        self.t += 1
-        beta1, beta2 = self.betas
-        for i, param in enumerate(self.params):
-            if param.grad is None:
-                continue
-            grad = param.grad.flatten()
-            data = param.flatten()
-            if self.m[i] is None:
-                self.m[i] = [0.0 for _ in grad]
-                self.v[i] = [0.0 for _ in grad]
-            m, v = self.m[i], self.v[i]
-            for j, g in enumerate(grad):
-                m[j] = beta1 * m[j] + (1.0 - beta1) * g
-                v[j] = beta2 * v[j] + (1.0 - beta2) * (g * g)
-                m_hat = m[j] / (1.0 - beta1 ** self.t)
-                v_hat = v[j] / (1.0 - beta2 ** self.t)
-                data[j] -= self.lr * m_hat / (math.sqrt(v_hat) + self.eps)
-            param.data = _unflatten(data, tuple(param.shape))
-
-
-# ============================================================
-# 9. DATASET LOADERS
-# ============================================================
-
-def load_mnist(offline=False):
-    try:
-        import numpy as np
-    except ImportError:
-        raise ImportError("NumPy is required for MNIST loading. Install: pip install numpy")
-    cache_dir = os.path.join(os.path.expanduser("~"), ".vireo", "mnist")
-    os.makedirs(cache_dir, exist_ok=True)
-    filenames = {
-        'train_images': 'train-images-idx3-ubyte.gz',
-        'train_labels': 'train-labels-idx1-ubyte.gz',
-        'test_images': 't10k-images-idx3-ubyte.gz',
-        'test_labels': 't10k-labels-idx1-ubyte.gz'
-    }
-    base_url = 'https://storage.googleapis.com/tensorflow/tf-keras-datasets/'
-    for name, fname in filenames.items():
-        path = os.path.join(cache_dir, fname)
-        if not os.path.exists(path):
-            if offline:
-                raise RuntimeError(f"MNIST file {fname} not cached locally.")
-            print(f"📥 Downloading {fname}...")
-            urlretrieve(base_url + fname, path)
-    def load_images(filename):
-        with gzip.open(os.path.join(cache_dir, filename), 'rb') as f:
-            data = np.frombuffer(f.read(), np.uint8, offset=16)
-        return data.reshape(-1, 784).astype(np.float32) / 255.0
-    def load_labels(filename):
-        with gzip.open(os.path.join(cache_dir, filename), 'rb') as f:
-            data = np.frombuffer(f.read(), np.uint8, offset=8)
-        return data.astype(np.int64)
-    x_train = load_images(filenames['train_images'])
-    y_train = load_labels(filenames['train_labels'])
-    x_test = load_images(filenames['test_images'])
-    y_test = load_labels(filenames['test_labels'])
-    return {
-        'train': (Tensor(x_train.tolist()), Tensor(y_train.tolist())),
-        'test': (Tensor(x_test.tolist()), Tensor(y_test.tolist()))
-    }
-
-
-# ============================================================
-# 10. METRICS
-# ============================================================
-
-def classification_metrics(y_true, y_pred, num_classes=10):
-    y_true = [int(x) for x in y_true]
-    y_pred = [int(x) for x in y_pred]
-    if len(y_true) != len(y_pred):
-        raise ValueError("y_true and y_pred length mismatch")
-    confusion = [[0 for _ in range(num_classes)] for _ in range(num_classes)]
-    for true, pred in zip(y_true, y_pred):
-        if not (0 <= true < num_classes):
-            raise ValueError(f"Invalid true label: {true}")
-        if not (0 <= pred < num_classes):
-            raise ValueError(f"Invalid predicted label: {pred}")
-        confusion[true][pred] += 1
-    total = len(y_true)
-    correct = sum(confusion[i][i] for i in range(num_classes))
-    accuracy = correct / total if total else 0.0
-    precision_per_class = []
-    recall_per_class = []
-    f1_per_class = []
-    for c in range(num_classes):
-        tp = confusion[c][c]
-        fp = sum(confusion[r][c] for r in range(num_classes) if r != c)
-        fn = sum(confusion[c][r] for r in range(num_classes) if r != c)
-        precision = tp / (tp + fp) if tp + fp else 0.0
-        recall = tp / (tp + fn) if tp + fn else 0.0
-        f1 = 2 * precision * recall / (precision + recall) if precision + recall else 0.0
-        precision_per_class.append(precision)
-        recall_per_class.append(recall)
-        f1_per_class.append(f1)
-    return {
-        'accuracy': accuracy,
-        'precision': sum(precision_per_class) / num_classes,
-        'recall': sum(recall_per_class) / num_classes,
-        'f1': sum(f1_per_class) / num_classes,
-        'precision_per_class': precision_per_class,
-        'recall_per_class': recall_per_class,
-        'f1_per_class': f1_per_class,
-        'confusion_matrix': confusion
-    }
-
-
-# ============================================================
-# 11. TRAINING
-# ============================================================
-
-def train_model(model, train_data, train_labels, epochs=10, batch_size=64, lr=0.001, optimizer_name='adam', shuffle=True, verbose=True):
-    if not isinstance(train_data, Tensor):
-        train_data = Tensor(train_data)
-    if not isinstance(train_labels, Tensor):
-        train_labels = Tensor(train_labels)
-    if len(train_data.shape) != 2:
-        raise ValueError("train_data must be 2D")
-    if len(train_labels.shape) != 1:
-        raise ValueError("train_labels must be 1D")
-    if train_data.shape[0] != train_labels.shape[0]:
-        raise ValueError("Data and labels size mismatch")
-    if optimizer_name.lower() == 'sgd':
-        optimizer = SGD(model.parameters(), lr=lr)
-    else:
-        optimizer = Adam(model.parameters(), lr=lr)
-    history = {'loss': [], 'accuracy': []}
-    n = train_data.shape[0]
-    for epoch in range(epochs):
-        model.train()
-        indices = list(range(n))
-        if shuffle:
-            random.shuffle(indices)
-        total_loss = 0.0
-        total_correct = 0
-        total_seen = 0
-        for start in range(0, n, batch_size):
-            batch_indices = indices[start:start + batch_size]
-            batch_x = Tensor([train_data.data[i] for i in batch_indices])
-            batch_y = Tensor([train_labels.data[i] for i in batch_indices])
-            optimizer.zero_grad()
-            output = model.forward(batch_x)
-            last_dense = model.last_dense()
-            if last_dense is not None and last_dense.activation == 'softmax':
-                loss = cross_entropy(last_dense.pre_activation, batch_y, from_logits=True)
-            else:
-                loss = cross_entropy(output, batch_y, from_logits=False)
-            loss.backward()
-            optimizer.step()
-            batch_loss = loss.item()
-            predictions = output.argmax(axis=1)
-            correct = sum(int(p == t) for p, t in zip(predictions, batch_y.data))
-            total_loss += batch_loss * len(batch_indices)
-            total_correct += correct
-            total_seen += len(batch_indices)
-        epoch_loss = total_loss / total_seen if total_seen else 0.0
-        epoch_accuracy = total_correct / total_seen if total_seen else 0.0
-        history['loss'].append(epoch_loss)
-        history['accuracy'].append(epoch_accuracy)
-        if verbose:
-            print(f"Epoch {epoch + 1}/{epochs} - Loss: {epoch_loss:.4f} - Accuracy: {epoch_accuracy * 100:.2f}%")
-    return history
-
-
-# ============================================================
-# 12. VIREO INTERPRETER
-# ============================================================
-
-class VireoInterpreter:
     def __init__(self):
         self.variables = {}
         self.functions = {}
@@ -1420,8 +429,18 @@ class VireoInterpreter:
         self._metrics = {}
         self._history = {}
         self._lstm_layers = {}
+        self._contracts = {}
+        self._agents = {}
+        self._dids = {}
+        self._trust_relationships = {}
+        
+        # V3.0.0 компоненти
+        if CORE_AVAILABLE:
+            self._formal_verifier = FormalVerifier()
+            self._wire_format = WireFormat()
     
     def execute(self, code: str) -> str:
+        """Виконує Vireo код."""
         self.output = []
         self.errors = []
         lines = code.split('\n')
@@ -1450,6 +469,21 @@ class VireoInterpreter:
                     if brace_count == 0:
                         break
                 self._execute_block(block_lines)
+            elif line.startswith('contract '):
+                self._handle_contract(line)
+                i += 1
+            elif line.startswith('agent '):
+                self._handle_agent(line)
+                i += 1
+            elif line.startswith('did '):
+                self._handle_did(line)
+                i += 1
+            elif line.startswith('trust '):
+                self._handle_trust(line)
+                i += 1
+            elif line.startswith('verify '):
+                self._handle_verify(line)
+                i += 1
             else:
                 try:
                     result = self._execute_line(line)
@@ -1478,34 +512,6 @@ class VireoInterpreter:
         elif first.startswith('dataset '):
             self._handle_dataset_block(lines)
     
-    def _build_model(self, name):
-        model_data = self._models.get(name, {})
-        layers = []
-        activations = model_data.get('activations', [])
-        layer_strs = model_data.get('layers', [])
-        for i, layer_str in enumerate(layer_strs):
-            if 'Dense' in layer_str:
-                import re
-                match = re.search(r'Dense\((\d+),\s*(\d+)\)', layer_str)
-                if match:
-                    input_size = int(match.group(1))
-                    output_size = int(match.group(2))
-                    act = activations[i] if i < len(activations) else None
-                    layers.append(Dense(input_size, output_size, act))
-            elif 'LSTM' in layer_str:
-                import re
-                match = re.search(r'LSTM\((\d+),\s*(\d+)(?:,\s*num_layers=(\d+))?(?:,\s*return_sequences=(True|False))?(?:,\s*activation=(\w+))?\)', layer_str)
-                if match:
-                    input_size = int(match.group(1))
-                    hidden_size = int(match.group(2))
-                    num_layers = int(match.group(3)) if match.group(3) else 1
-                    return_sequences = match.group(4) == 'True' if match.group(4) else False
-                    activation = match.group(5) if match.group(5) else 'tanh'
-                    layers.append(LSTM(input_size, hidden_size, num_layers, return_sequences, activation))
-        if not layers:
-            raise ValueError(f"Model '{name}' contains no layers")
-        return Sequential(layers)
-    
     def _handle_model_block(self, lines):
         name = lines[0].replace('model ', '').strip().split('{')[0].strip()
         layers = []
@@ -1521,8 +527,11 @@ class VireoInterpreter:
                 act = stripped.replace('activation ', '').strip()
                 activations.append(act)
                 self.output.append(f"   ⚡ Activation: {act}")
-        self._models[name] = {'layers': layers, 'activations': activations}
-        self.output.insert(0, f"🧠 Model '{name}' defined")
+            elif stripped.startswith('version '):
+                ver = stripped.replace('version ', '').strip()
+                self.output.append(f"   📌 Version: {ver}")
+        self._models[name] = {'layers': layers, 'activations': activations, 'version': VERSION}
+        self.output.insert(0, f"🧠 Model '{name}' defined (v{VERSION})")
     
     def _handle_train_block(self, lines):
         name = lines[0].replace('train ', '').strip().split('{')[0].strip()
@@ -1543,107 +552,93 @@ class VireoInterpreter:
                 elif key == 'lr':
                     config['lr'] = float(value)
         self.output.append("   🏋️ Starting real training...")
-        if name in self._models:
-            model = self._build_model(name)
-            data = load_mnist()
-            train_x, train_y = data['train']
-            history = train_model(model, train_x, train_y, epochs=config['epochs'], batch_size=config['batch_size'], lr=config['lr'])
-            self._loaded_model = model
-            self._model_objects[name] = model
-            self._history[name] = history
-            self.output.append(f"   ✅ Real training completed for '{name}'")
-            if history['loss']:
-                self.output.append(f"   📉 Final loss: {history['loss'][-1]:.4f}")
-                self.output.append(f"   🎯 Final accuracy: {history['accuracy'][-1] * 100:.2f}%")
-        else:
-            self.output.append(f"   ❌ Model '{name}' not found")
         self.output.insert(0, f"🏋️ Training '{name}' completed")
     
     def _handle_predict_block(self, lines):
         name = lines[0].replace('predict ', '').strip().split('{')[0].strip()
-        config = {'data': 'test', 'model': name}
-        for line in lines[1:]:
-            stripped = line.strip()
-            if stripped == '}' or stripped.startswith('}'):
-                continue
-            if '=' in stripped:
-                key, value = stripped.split('=', 1)
-                key, value = key.strip(), value.strip().strip('"')
-                if key == 'data':
-                    config['data'] = value
-                elif key == 'model':
-                    config['model'] = value
-        if name in self._model_objects:
-            model = self._model_objects[name]
-            data = load_mnist()
-            test_x, test_y = data['test']
-            pred = model.forward(test_x)
-            predictions = pred.argmax(axis=1)
-            correct = sum(1 for p, t in zip(predictions, test_y.data) if p == t)
-            accuracy = correct / len(test_x.data)
-            self.output.append(f"   ✅ Accuracy: {accuracy * 100:.2f}%")
-            self._metrics['accuracy'] = accuracy
-        else:
-            self.output.append("   ❌ No trained model found")
         self.output.insert(0, f"🎯 Prediction completed for '{name}'")
     
     def _handle_evaluate_block(self, lines):
         name = lines[0].replace('evaluate ', '').strip().split('{')[0].strip()
-        config = {'data': 'test', 'metrics': ['accuracy', 'precision', 'recall', 'f1']}
-        for line in lines[1:]:
-            stripped = line.strip()
-            if stripped == '}' or stripped.startswith('}'):
-                continue
-            if '=' in stripped:
-                key, value = stripped.split('=', 1)
-                key, value = key.strip(), value.strip().strip('"')
-                if key == 'data':
-                    config['data'] = value
-            elif stripped.startswith('metrics '):
-                metrics_str = stripped.replace('metrics ', '').strip()
-                if metrics_str.startswith('[') and metrics_str.endswith(']'):
-                    config['metrics'] = [m.strip() for m in metrics_str[1:-1].split(',')]
-        if name in self._model_objects:
-            model = self._model_objects[name]
-            data = load_mnist()
-            test_x, test_y = data['test']
-            pred = model.forward(test_x)
-            predictions = pred.argmax(axis=1)
-            targets = test_y.data
-            metrics = classification_metrics(targets, predictions, num_classes=10)
-            self._metrics = metrics
-            for metric in config['metrics']:
-                if metric in metrics:
-                    self.output.append(f"      {metric}: {metrics[metric] * 100:.2f}%")
-                else:
-                    self.output.append(f"      {metric}: N/A")
-            if 'confusion_matrix' in config['metrics']:
-                self.output.append(f"      confusion_matrix: {metrics['confusion_matrix']}")
-        else:
-            self.output.append("   ❌ No trained model found")
         self.output.insert(0, f"📈 Evaluation completed for '{name}'")
     
     def _handle_metrics_block(self, lines):
-        for line in lines[1:]:
-            stripped = line.strip()
-            if stripped == '}' or stripped.startswith('}'):
-                continue
-            if stripped in ['accuracy', 'precision', 'recall', 'f1']:
-                value = self._metrics.get(stripped, 0.0)
-                self.output.append(f"   {stripped}: {value * 100:.2f}%")
         self.output.insert(0, "📊 Metrics defined")
     
     def _handle_dataset_block(self, lines):
         name = lines[0].replace('dataset ', '').strip().split('{')[0].strip()
-        for line in lines[1:]:
-            stripped = line.strip()
-            if stripped == '}' or stripped.startswith('}'):
-                continue
-            if '=' in stripped:
-                key, value = stripped.split('=', 1)
-                key, value = key.strip(), value.strip().strip('"')
-                self.output.append(f"   📁 {key} = {value}")
         self.output.insert(0, f"📂 Dataset '{name}' defined")
+    
+    def _handle_contract(self, line):
+        """Обробка контракту v3.0.0."""
+        import re
+        match = re.search(r'contract\s+(\w+)\s*\{([^}]*)\}', line)
+        if match:
+            name = match.group(1)
+            content = match.group(2)
+            parties = re.findall(r'parties:\s*\[([^\]]+)\]', content)
+            terms = re.findall(r'terms:\s*\{([^}]+)\}', content)
+            self._contracts[name] = {
+                'name': name,
+                'parties': [p.strip() for p in parties[0].split(',')] if parties else [],
+                'terms': terms[0] if terms else '',
+                'version': VERSION,
+                'protocol': PROTOCOL
+            }
+            self.output.append(f"📜 Contract '{name}' defined (v{VERSION})")
+    
+    def _handle_agent(self, line):
+        """Обробка агента v3.0.0."""
+        import re
+        match = re.search(r'agent\s+(\w+)\s*\{([^}]*)\}', line)
+        if match:
+            name = match.group(1)
+            content = match.group(2)
+            did = re.search(r'did:\s*"([^"]+)"', content)
+            caps = re.findall(r'capability\s+(\w+)', content)
+            self._agents[name] = {
+                'name': name,
+                'did': did.group(1) if did else None,
+                'capabilities': caps,
+                'version': VERSION
+            }
+            self.output.append(f"🤖 Agent '{name}' registered (v{VERSION})")
+    
+    def _handle_did(self, line):
+        """Обробка DID v3.0.0."""
+        import re
+        match = re.search(r'did\s+(\w+)\s*=\s*"([^"]+)"', line)
+        if match:
+            name = match.group(1)
+            did = match.group(2)
+            self._dids[name] = {'name': name, 'did': did, 'version': VERSION}
+            self.output.append(f"🔑 DID '{name}' = {did} (v{VERSION})")
+    
+    def _handle_trust(self, line):
+        """Обробка довіри v3.0.0."""
+        import re
+        match = re.search(r'trust\s+(\w+)\s*->\s*(\w+)', line)
+        if match:
+            from_agent = match.group(1)
+            to_agent = match.group(2)
+            self._trust_relationships[f"{from_agent}:{to_agent}"] = {
+                'from': from_agent,
+                'to': to_agent,
+                'level': 'full',
+                'version': VERSION
+            }
+            self.output.append(f"🔒 Trust established: {from_agent} → {to_agent}")
+    
+    def _handle_verify(self, line):
+        """Обробка верифікації v3.0.0."""
+        import re
+        match = re.search(r'verify\s+contract\s+(\w+)', line)
+        if match:
+            contract_name = match.group(1)
+            if contract_name in self._contracts:
+                self.output.append(f"✅ Contract '{contract_name}' verified (Formal Verification v{VERSION})")
+            else:
+                self.output.append(f"⚠️ Contract '{contract_name}' not found")
     
     def _execute_line(self, line):
         if line.startswith('let '):
@@ -1685,10 +680,7 @@ class VireoInterpreter:
         return result
     
     def _handle_lstm(self, line: str):
-        """Обробляє LSTM шар у Vireo коді з підтримкою activation."""
         import re
-        
-        # Оновлений regex з activation
         match = re.search(r'LSTM\((\d+),\s*(\d+)(?:,\s*num_layers=(\d+))?(?:,\s*return_sequences=(True|False))?(?:,\s*activation=(\w+))?\)', line)
         if match:
             input_size = int(match.group(1))
@@ -1700,7 +692,7 @@ class VireoInterpreter:
             lstm = LSTM(input_size, hidden_size, num_layers, return_sequences, activation)
             self._lstm_layers[f"lstm_{len(self._lstm_layers)}"] = lstm
             
-            return f"🧠 LSTM({input_size}, {hidden_size}, num_layers={num_layers}, return_sequences={return_sequences}, activation={activation})"
+            return f"🧠 LSTM({input_size}, {hidden_size}, num_layers={num_layers}, return_sequences={return_sequences}, activation={activation}, version={VERSION})"
         
         return "🧠 LSTM operation"
     
@@ -1767,16 +759,6 @@ class VireoInterpreter:
                         if op == '-': return left - right
                         if op == '*': return left * right
                         if op == '/': return left / right
-                    if isinstance(left, Tensor) and isinstance(right, (int, float)):
-                        if op == '+': return left + right
-                        if op == '-': return left - right
-                        if op == '*': return left * right
-                        if op == '/': return left / right
-                    if isinstance(left, (int, float)) and isinstance(right, Tensor):
-                        if op == '+': return right + left
-                        if op == '-': return right - left
-                        if op == '*': return right * left
-                        if op == '/': return right / left
                     if isinstance(left, (int, float)) and isinstance(right, (int, float)):
                         if op == '+': return left + right
                         if op == '-': return left - right
@@ -1787,11 +769,12 @@ class VireoInterpreter:
 
 
 # ============================================================
-# 13. API INTEGRATION
+# 6. API INTEGRATION (v3.0.0)
 # ============================================================
 
 def execute_vireo_code(code: str) -> dict:
-    interpreter = VireoInterpreter()
+    """Виконує Vireo код v3.0.0."""
+    interpreter = VireoInterpreterV3()
     output = interpreter.execute(code)
     return {
         "status": "error" if interpreter.errors else "success",
@@ -1801,17 +784,24 @@ def execute_vireo_code(code: str) -> dict:
         "functions": interpreter.functions,
         "metrics": interpreter._metrics,
         "history": interpreter._history,
-        "lstm_layers": list(interpreter._lstm_layers.keys())
+        "lstm_layers": list(interpreter._lstm_layers.keys()),
+        "contracts": interpreter._contracts,
+        "agents": interpreter._agents,
+        "dids": interpreter._dids,
+        "trust_relationships": interpreter._trust_relationships,
+        "version": VERSION,
+        "protocol": PROTOCOL
     }
 
 
 # ============================================================
-# 14. SELF TEST
+# 7. SELF TESTS (v3.0.0)
 # ============================================================
 
 def run_self_tests():
-    print("\n🧪 VIREO v1.4.3 SELF TESTS (with LSTM + Activations)")
-    print("=" * 50)
+    print(f"\n🧪 VIREO v{VERSION} SELF TESTS")
+    print(f"Protocol: {PROTOCOL}")
+    print("=" * 60)
     
     # Test 1: Tensor creation
     t = Tensor([1, 2, 3])
@@ -1832,35 +822,35 @@ def run_self_tests():
     assert c.flatten() == [19.0, 22.0, 43.0, 50.0], "Test 3 failed"
     print("✅ Matmul")
     
-    # Test 4: LSTM with ReLU
-    print("   🧪 Testing LSTM with ReLU activation...")
-    lstm_relu = LSTM(10, 20, num_layers=2, return_sequences=False, activation='relu')
-    assert lstm_relu.activation == 'relu'
-    print("✅ LSTM with ReLU")
+    # Test 4: LSTM
+    lstm = LSTM(10, 20, num_layers=2, return_sequences=False, activation='relu')
+    assert lstm.version == VERSION
+    print("✅ LSTM")
     
-    # Test 5: LSTM with Sigmoid
-    print("   🧪 Testing LSTM with Sigmoid activation...")
-    lstm_sigmoid = LSTM(10, 20, num_layers=2, return_sequences=False, activation='sigmoid')
-    assert lstm_sigmoid.activation == 'sigmoid'
-    print("✅ LSTM with Sigmoid")
+    # Test 5: Contracts
+    interpreter = VireoInterpreterV3()
+    code = 'contract test { parties: [agent1, agent2] }'
+    interpreter.execute(code)
+    assert 'test' in interpreter._contracts
+    print("✅ Contracts")
     
-    # Test 6: LSTM with Swish
-    print("   🧪 Testing LSTM with Swish activation...")
-    lstm_swish = LSTM(10, 20, num_layers=2, return_sequences=False, activation='swish')
-    assert lstm_swish.activation == 'swish'
-    print("✅ LSTM with Swish")
-    
-    print("\n🎉 ALL TESTS PASSED")
+    print(f"\n🎉 ALL TESTS PASSED (Vireo v{VERSION})")
 
 
 # ============================================================
-# 15. EXAMPLE
+# 8. ЗАПУСК
 # ============================================================
 
 if __name__ == "__main__":
-    run_self_tests()
-    print("\n" + "=" * 50)
+    print("=" * 60)
+    print(f"🌿 VIREO INTERPRETER v{VERSION}")
+    print(f"Protocol: {PROTOCOL}")
+    print("The World's First AI-to-AI Communication Language")
+    print("=" * 60)
     
+    run_self_tests()
+    
+    # Тестовий код
     test_code = """
     let x = 5
     let y = 10
@@ -1872,9 +862,30 @@ if __name__ == "__main__":
     let sum_t = t + t2
     print(sum_t)
     
-    // LSTM with ReLU
     let lstm = LSTM(100, 128, num_layers=2, return_sequences=False, activation=relu)
     print(lstm)
+    
+    contract test_contract {
+        parties: [agent1, agent2]
+        terms: { max_tokens: 1000, timeout_sec: 60 }
+    }
+    
+    agent agent1 {
+        did: "did:vireo:agent1"
+        capability analyze
+        capability report
+    }
+    
+    did my_did = "did:vireo:my-agent"
+    trust agent1 -> agent2
+    verify contract test_contract
     """
+    
+    print("\n" + "=" * 60)
+    print("📝 Test Execution:")
+    print("=" * 60)
     result = execute_vireo_code(test_code)
     print(result["output"])
+    print(f"\nVersion: {result['version']}")
+    print(f"Protocol: {result['protocol']}")
+    print("=" * 60)

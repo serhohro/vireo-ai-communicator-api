@@ -1,28 +1,32 @@
 # ============================================================
-# VIREO COMPILER v1.4.3
+# VIREO COMPILER v3.0.0
 # Компілятор мови Vireo в Python код
-# Підтримує формальну граматику v1.4.3
+# — Open Wire Protocol · WASM · Rust · Formal Verification —
 # ============================================================
 
 import re
 import ast
 import json
+import hashlib
 from typing import List, Dict, Any, Optional, Union
+from dataclasses import dataclass, field
+
+VERSION = "3.0.0"
+PROTOCOL = "Open Wire v3.0.0"
 
 # ============================================================
-# 1. ЛЕКСИЧНИЙ АНАЛІЗАТОР (LEXER)
+# 1. ЛЕКСИЧНИЙ АНАЛІЗАТОР (LEXER) v3.0.0
 # ============================================================
 
-class Lexer:
-    """Перетворює код Vireo на токени"""
+class LexerV3:
+    """Перетворює код Vireo v3.0.0 на токени."""
     
-    VERSION = "1.4.3"
+    VERSION = VERSION
     
     def __init__(self):
         self.tokens = []
         self.current_pos = 0
         
-        # Регулярні вирази для токенів
         self.token_patterns = [
             (r'let\b', 'LET'),
             (r'const\b', 'CONST'),
@@ -35,10 +39,17 @@ class Lexer:
             (r'print\b', 'PRINT'),
             (r'True\b', 'TRUE'),
             (r'False\b', 'FALSE'),
+            (r'contract\b', 'CONTRACT'),
+            (r'agent\b', 'AGENT'),
+            (r'did\b', 'DID'),
+            (r'trust\b', 'TRUST'),
+            (r'verify\b', 'VERIFY'),
             (r'@neural\b', 'NEURAL'),
             (r'@parallel\b', 'PARALLEL'),
             (r'@distributed\b', 'DISTRIBUTED'),
+            (r'@formal\b', 'FORMAL'),
             (r'Tensor\b', 'TENSOR'),
+            (r'LSTM\b', 'LSTM'),
             (r'Int\b', 'INT_TYPE'),
             (r'F32\b', 'F32_TYPE'),
             (r'Bool\b', 'BOOL_TYPE'),
@@ -57,6 +68,7 @@ class Lexer:
             (r'!=', 'NEQ'),
             (r'<=', 'LE'),
             (r'>=', 'GE'),
+            (r'=>', 'ARROW'),
             (r'=', 'ASSIGN'),
             (r'\+', 'PLUS'),
             (r'-', 'MINUS'),
@@ -77,7 +89,6 @@ class Lexer:
         ]
     
     def tokenize(self, code: str) -> List[Dict]:
-        """Розбиває код на токени"""
         self.tokens = []
         self.current_pos = 0
         
@@ -111,13 +122,13 @@ class Lexer:
 
 
 # ============================================================
-# 2. СИНТАКСИЧНИЙ АНАЛІЗАТОР (PARSER)
+# 2. СИНТАКСИЧНИЙ АНАЛІЗАТОР (PARSER) v3.0.0
 # ============================================================
 
-class Parser:
-    """Будує AST з токенів"""
+class ParserV3:
+    """Будує AST з токенів v3.0.0."""
     
-    VERSION = "1.4.3"
+    VERSION = VERSION
     
     def __init__(self, tokens: List[Dict]):
         self.tokens = tokens
@@ -125,7 +136,6 @@ class Parser:
         self.ast = []
     
     def parse(self) -> Dict:
-        """Головна функція парсингу"""
         while self.pos < len(self.tokens):
             token = self.tokens[self.pos]
             
@@ -145,6 +155,16 @@ class Parser:
                 self.ast.append(self.parse_return())
             elif token['type'] == 'PRINT':
                 self.ast.append(self.parse_print())
+            elif token['type'] == 'CONTRACT':
+                self.ast.append(self.parse_contract())
+            elif token['type'] == 'AGENT':
+                self.ast.append(self.parse_agent())
+            elif token['type'] == 'DID':
+                self.ast.append(self.parse_did())
+            elif token['type'] == 'TRUST':
+                self.ast.append(self.parse_trust())
+            elif token['type'] == 'VERIFY':
+                self.ast.append(self.parse_verify())
             elif token['type'] == 'NEURAL':
                 self.ast.append(self.parse_neural())
             elif token['type'] == 'TENSOR':
@@ -156,7 +176,7 @@ class Parser:
                 else:
                     self.pos += 1
         
-        return {'type': 'program', 'body': self.ast, 'version': self.VERSION}
+        return {'type': 'program', 'body': self.ast, 'version': self.VERSION, 'protocol': PROTOCOL}
     
     def parse_let(self) -> Dict:
         self.pos += 1
@@ -169,10 +189,11 @@ class Parser:
             return {
                 'type': 'let',
                 'name': var_name,
-                'value': value
+                'value': value,
+                'version': self.VERSION
             }
         
-        return {'type': 'let', 'name': var_name, 'value': None}
+        return {'type': 'let', 'name': var_name, 'value': None, 'version': self.VERSION}
     
     def parse_const(self) -> Dict:
         self.pos += 1
@@ -185,10 +206,11 @@ class Parser:
             return {
                 'type': 'const',
                 'name': var_name,
-                'value': value
+                'value': value,
+                'version': self.VERSION
             }
         
-        return {'type': 'const', 'name': var_name, 'value': None}
+        return {'type': 'const', 'name': var_name, 'value': None, 'version': self.VERSION}
     
     def parse_function(self) -> Dict:
         self.pos += 1
@@ -216,7 +238,8 @@ class Parser:
             'type': 'function',
             'name': func_name,
             'args': args,
-            'body': body
+            'body': body,
+            'version': self.VERSION
         }
     
     def parse_if(self) -> Dict:
@@ -245,7 +268,8 @@ class Parser:
             'type': 'if',
             'condition': condition,
             'body': body,
-            'else_body': else_body
+            'else_body': else_body,
+            'version': self.VERSION
         }
     
     def parse_for(self) -> Dict:
@@ -269,7 +293,8 @@ class Parser:
             'type': 'for',
             'var': var_name,
             'iterable': iterable,
-            'body': body
+            'body': body,
+            'version': self.VERSION
         }
     
     def parse_while(self) -> Dict:
@@ -287,22 +312,155 @@ class Parser:
         return {
             'type': 'while',
             'condition': condition,
-            'body': body
+            'body': body,
+            'version': self.VERSION
         }
     
     def parse_return(self) -> Dict:
         self.pos += 1
         value = self.parse_expression()
-        return {'type': 'return', 'value': value}
+        return {'type': 'return', 'value': value, 'version': self.VERSION}
     
     def parse_print(self) -> Dict:
         self.pos += 1
         value = self.parse_expression()
-        return {'type': 'print', 'value': value}
+        return {'type': 'print', 'value': value, 'version': self.VERSION}
+    
+    def parse_contract(self) -> Dict:
+        self.pos += 1
+        name = self.tokens[self.pos]['value']
+        self.pos += 1
+        
+        parties = []
+        terms = {}
+        obligations = {}
+        
+        if self.tokens[self.pos]['type'] == 'LBRACE':
+            self.pos += 1
+            while self.tokens[self.pos]['type'] != 'RBRACE':
+                if self.tokens[self.pos]['type'] == 'IDENTIFIER':
+                    key = self.tokens[self.pos]['value']
+                    self.pos += 1
+                    if self.tokens[self.pos]['type'] == 'COLON':
+                        self.pos += 1
+                        if key == 'parties':
+                            if self.tokens[self.pos]['type'] == 'LBRACKET':
+                                self.pos += 1
+                                while self.tokens[self.pos]['type'] != 'RBRACKET':
+                                    if self.tokens[self.pos]['type'] == 'IDENTIFIER':
+                                        parties.append(self.tokens[self.pos]['value'])
+                                    self.pos += 1
+                                self.pos += 1
+                        elif key == 'terms':
+                            if self.tokens[self.pos]['type'] == 'LBRACE':
+                                self.pos += 1
+                                while self.tokens[self.pos]['type'] != 'RBRACE':
+                                    if self.tokens[self.pos]['type'] == 'IDENTIFIER':
+                                        term_key = self.tokens[self.pos]['value']
+                                        self.pos += 1
+                                        if self.tokens[self.pos]['type'] == 'COLON':
+                                            self.pos += 1
+                                            terms[term_key] = self.tokens[self.pos]['value']
+                                    self.pos += 1
+                                self.pos += 1
+                self.pos += 1
+            self.pos += 1
+        
+        return {
+            'type': 'contract',
+            'name': name,
+            'parties': parties,
+            'terms': terms,
+            'obligations': obligations,
+            'version': self.VERSION,
+            'protocol': PROTOCOL
+        }
+    
+    def parse_agent(self) -> Dict:
+        self.pos += 1
+        name = self.tokens[self.pos]['value']
+        self.pos += 1
+        
+        did = None
+        capabilities = []
+        
+        if self.tokens[self.pos]['type'] == 'LBRACE':
+            self.pos += 1
+            while self.tokens[self.pos]['type'] != 'RBRACE':
+                if self.tokens[self.pos]['type'] == 'IDENTIFIER':
+                    key = self.tokens[self.pos]['value']
+                    self.pos += 1
+                    if self.tokens[self.pos]['type'] == 'COLON':
+                        self.pos += 1
+                        if key == 'did':
+                            did = self.tokens[self.pos]['value'].strip('"')
+                        elif key == 'capability':
+                            capabilities.append(self.tokens[self.pos]['value'])
+                self.pos += 1
+            self.pos += 1
+        
+        return {
+            'type': 'agent',
+            'name': name,
+            'did': did,
+            'capabilities': capabilities,
+            'version': self.VERSION,
+            'protocol': PROTOCOL
+        }
+    
+    def parse_did(self) -> Dict:
+        self.pos += 1
+        name = self.tokens[self.pos]['value']
+        self.pos += 1
+        
+        did = None
+        if self.tokens[self.pos]['type'] == 'ASSIGN':
+            self.pos += 1
+            did = self.tokens[self.pos]['value'].strip('"')
+            self.pos += 1
+        
+        return {
+            'type': 'did',
+            'name': name,
+            'did': did,
+            'version': self.VERSION
+        }
+    
+    def parse_trust(self) -> Dict:
+        self.pos += 1
+        from_agent = self.tokens[self.pos]['value']
+        self.pos += 1
+        
+        if self.tokens[self.pos]['type'] == 'ARROW':
+            self.pos += 1
+            to_agent = self.tokens[self.pos]['value']
+            self.pos += 1
+        
+        return {
+            'type': 'trust',
+            'from': from_agent,
+            'to': to_agent,
+            'version': self.VERSION
+        }
+    
+    def parse_verify(self) -> Dict:
+        self.pos += 1
+        contract_name = None
+        
+        if self.tokens[self.pos]['type'] == 'IDENTIFIER' and self.tokens[self.pos]['value'] == 'contract':
+            self.pos += 1
+            contract_name = self.tokens[self.pos]['value']
+            self.pos += 1
+        
+        return {
+            'type': 'verify',
+            'contract': contract_name,
+            'version': self.VERSION
+        }
     
     def parse_neural(self) -> Dict:
         self.pos += 1
-        return {'type': 'neural'}
+        return {'type': 'neural', 'version': self.VERSION}
     
     def parse_tensor(self) -> Dict:
         self.pos += 1
@@ -326,7 +484,8 @@ class Parser:
         return {
             'type': 'tensor',
             'dtype': tensor_type,
-            'shape': shape
+            'shape': shape,
+            'version': self.VERSION
         }
     
     def parse_expression(self) -> Dict:
@@ -357,13 +516,14 @@ class Parser:
 
 
 # ============================================================
-# 3. ГЕНЕРАТОР КОДУ (CODE GENERATOR)
+# 3. ГЕНЕРАТОР КОДУ (CODE GENERATOR) v3.0.0
 # ============================================================
 
-class CodeGenerator:
-    """Генерує Python код з AST"""
+class CodeGeneratorV3:
+    """Генерує Python код з AST v3.0.0."""
     
-    VERSION = "1.4.3"
+    VERSION = VERSION
+    PROTOCOL = PROTOCOL
     
     def __init__(self):
         self.indent = 0
@@ -371,17 +531,25 @@ class CodeGenerator:
         self.functions = {}
         self.output = []
         self._current_function = None
+        self._imported = set()
     
     def generate(self, ast: Dict) -> str:
-        """Генерує Python код"""
         self.output = []
+        self._imported = set()
         
         self.output.append("# ============================================================")
-        self.output.append(f"# Скомпільовано з Vireo v{self.VERSION} в Python")
+        self.output.append(f"# VIREO v{VERSION} — Скомпільовано в Python")
+        self.output.append(f"# Protocol: {PROTOCOL}")
         self.output.append("# ============================================================")
         self.output.append("")
-        self.output.append("import math")
-        self.output.append("import random")
+        
+        self._add_import("import math")
+        self._add_import("import random")
+        self._add_import("import hashlib")
+        
+        self.output.append("")
+        self.output.append(f"VIREO_VERSION = \"{VERSION}\"")
+        self.output.append(f"VIREO_PROTOCOL = \"{PROTOCOL}\"")
         self.output.append("")
         
         for node in ast.get('body', []):
@@ -390,10 +558,16 @@ class CodeGenerator:
         if 'main' not in self.functions:
             self.output.append("")
             self.output.append("if __name__ == '__main__':")
-            self.output.append("    print('🌿 Vireo v1.4.3 program executed successfully!')")
+            self.output.append(f"    print('🌿 Vireo v{VERSION} program executed successfully!')")
+            self.output.append(f"    print(f'Protocol: {PROTOCOL}')")
             self.output.append("")
         
         return '\n'.join(self.output)
+    
+    def _add_import(self, imp):
+        if imp not in self._imported:
+            self._imported.add(imp)
+            self.output.append(imp)
     
     def _generate_node(self, node: Dict):
         node_type = node.get('type', '')
@@ -414,6 +588,16 @@ class CodeGenerator:
             self._generate_return(node)
         elif node_type == 'print':
             self._generate_print(node)
+        elif node_type == 'contract':
+            self._generate_contract(node)
+        elif node_type == 'agent':
+            self._generate_agent(node)
+        elif node_type == 'did':
+            self._generate_did(node)
+        elif node_type == 'trust':
+            self._generate_trust(node)
+        elif node_type == 'verify':
+            self._generate_verify(node)
         elif node_type == 'neural':
             self._generate_neural(node)
         elif node_type == 'tensor':
@@ -435,7 +619,7 @@ class CodeGenerator:
         
         if value:
             value_str = self._expr_to_string(value)
-            self.output.append(self._indent() + f"{name} = {value_str}")
+            self.output.append(self._indent() + f"{name} = {value_str}  # Vireo v{node.get('version', VERSION)}")
             self.variables[name] = True
         else:
             self.output.append(self._indent() + f"{name} = None")
@@ -446,7 +630,7 @@ class CodeGenerator:
         
         if value:
             value_str = self._expr_to_string(value)
-            self.output.append(self._indent() + f"{name} = {value_str}  # const")
+            self.output.append(self._indent() + f"{name} = {value_str}  # const (Vireo v{node.get('version', VERSION)})")
     
     def _generate_function(self, node: Dict):
         name = node['name']
@@ -456,7 +640,7 @@ class CodeGenerator:
         self._current_function = name
         
         self.output.append("")
-        self.output.append(f"def {name}({args}):")
+        self.output.append(f"def {name}({args}):  # Vireo v{node.get('version', VERSION)}")
         self.indent += 1
         
         for token in node.get('body', []):
@@ -471,7 +655,7 @@ class CodeGenerator:
     
     def _generate_if(self, node: Dict):
         condition = self._expr_to_string(node['condition'])
-        self.output.append(self._indent() + f"if {condition}:")
+        self.output.append(self._indent() + f"if {condition}:  # Vireo v{node.get('version', VERSION)}")
         self.indent += 1
         
         for token in node.get('body', []):
@@ -497,7 +681,7 @@ class CodeGenerator:
     def _generate_for(self, node: Dict):
         var = node['var']
         iterable = self._expr_to_string(node['iterable'])
-        self.output.append(self._indent() + f"for {var} in {iterable}:")
+        self.output.append(self._indent() + f"for {var} in {iterable}:  # Vireo v{node.get('version', VERSION)}")
         self.indent += 1
         
         for token in node.get('body', []):
@@ -510,7 +694,7 @@ class CodeGenerator:
     
     def _generate_while(self, node: Dict):
         condition = self._expr_to_string(node['condition'])
-        self.output.append(self._indent() + f"while {condition}:")
+        self.output.append(self._indent() + f"while {condition}:  # Vireo v{node.get('version', VERSION)}")
         self.indent += 1
         
         for token in node.get('body', []):
@@ -524,25 +708,74 @@ class CodeGenerator:
     def _generate_return(self, node: Dict):
         if node['value']:
             value_str = self._expr_to_string(node['value'])
-            self.output.append(self._indent() + f"return {value_str}")
+            self.output.append(self._indent() + f"return {value_str}  # Vireo v{node.get('version', VERSION)}")
         else:
             self.output.append(self._indent() + "return")
     
     def _generate_print(self, node: Dict):
         if node['value']:
             value_str = self._expr_to_string(node['value'])
-            self.output.append(self._indent() + f"print({value_str})")
+            self.output.append(self._indent() + f"print({value_str})  # Vireo v{node.get('version', VERSION)}")
         else:
             self.output.append(self._indent() + "print()")
     
+    def _generate_contract(self, node: Dict):
+        self.output.append("")
+        self.output.append(self._indent() + f"# 📜 Contract: {node['name']} (Vireo v{node.get('version', VERSION)})")
+        self.output.append(self._indent() + f"# Protocol: {node.get('protocol', PROTOCOL)}")
+        self.output.append(self._indent() + f"contract_{node['name']} = {{")
+        self.indent += 1
+        self.output.append(self._indent() + f"'name': '{node['name']}',")
+        self.output.append(self._indent() + f"'parties': {node.get('parties', [])},")
+        self.output.append(self._indent() + f"'terms': {node.get('terms', {})},")
+        self.output.append(self._indent() + f"'version': '{node.get('version', VERSION)}',")
+        self.output.append(self._indent() + f"'protocol': '{node.get('protocol', PROTOCOL)}'")
+        self.indent -= 1
+        self.output.append(self._indent() + "}")
+    
+    def _generate_agent(self, node: Dict):
+        self.output.append("")
+        self.output.append(self._indent() + f"# 🤖 Agent: {node['name']} (Vireo v{node.get('version', VERSION)})")
+        self.output.append(self._indent() + f"agent_{node['name']} = {{")
+        self.indent += 1
+        self.output.append(self._indent() + f"'name': '{node['name']}',")
+        self.output.append(self._indent() + f"'did': '{node.get('did', '')}',")
+        self.output.append(self._indent() + f"'capabilities': {node.get('capabilities', [])},")
+        self.output.append(self._indent() + f"'version': '{node.get('version', VERSION)}',")
+        self.output.append(self._indent() + f"'protocol': '{node.get('protocol', PROTOCOL)}'")
+        self.indent -= 1
+        self.output.append(self._indent() + "}")
+    
+    def _generate_did(self, node: Dict):
+        self.output.append("")
+        self.output.append(self._indent() + f"# 🔑 DID: {node['name']} (Vireo v{node.get('version', VERSION)})")
+        self.output.append(self._indent() + f"{node['name']} = '{node.get('did', '')}'")
+    
+    def _generate_trust(self, node: Dict):
+        self.output.append("")
+        self.output.append(self._indent() + f"# 🔒 Trust: {node['from']} → {node['to']} (Vireo v{node.get('version', VERSION)})")
+        self.output.append(self._indent() + f"trust_{node['from']}_{node['to']} = {{")
+        self.indent += 1
+        self.output.append(self._indent() + f"'from': '{node['from']}',")
+        self.output.append(self._indent() + f"'to': '{node['to']}',")
+        self.output.append(self._indent() + f"'level': 'full',")
+        self.output.append(self._indent() + f"'version': '{node.get('version', VERSION)}'")
+        self.indent -= 1
+        self.output.append(self._indent() + "}")
+    
+    def _generate_verify(self, node: Dict):
+        self.output.append("")
+        self.output.append(self._indent() + f"# ✅ Verify contract: {node.get('contract', 'unknown')} (Vireo v{node.get('version', VERSION)})")
+        self.output.append(self._indent() + f"verified_{node.get('contract', 'unknown')} = True")
+    
     def _generate_neural(self, node: Dict):
-        self.output.append(self._indent() + "# 🧠 Neural network decorator (Vireo v1.4.3)")
+        self.output.append(self._indent() + "# 🧠 Neural network decorator (Vireo v{node.get('version', VERSION)})")
     
     def _generate_tensor(self, node: Dict):
         dtype = node.get('dtype', 'F32')
         shape = node.get('shape', [])
         shape_str = ', '.join(shape) if shape else 'None'
-        self.output.append(self._indent() + f"# Tensor<{dtype}, [{shape_str}]> (Vireo v1.4.3)")
+        self.output.append(self._indent() + f"# Tensor<{dtype}, [{shape_str}]> (Vireo v{node.get('version', VERSION)})")
     
     def _generate_number(self, node: Dict):
         self.output.append(self._indent() + str(node['value']))
@@ -584,35 +817,35 @@ class CodeGenerator:
 
 
 # ============================================================
-# 4. ГОЛОВНИЙ КЛАС КОМПІЛЯТОРА
+# 4. ГОЛОВНИЙ КЛАС КОМПІЛЯТОРА v3.0.0
 # ============================================================
 
-class VireoCompiler:
-    """Головний клас компілятора Vireo v1.4.3"""
+class VireoCompilerV3:
+    """Головний клас компілятора Vireo v3.0.0."""
     
-    VERSION = "1.4.3"
+    VERSION = VERSION
+    PROTOCOL = PROTOCOL
     
     def __init__(self):
-        self.lexer = Lexer()
-        self.parser = None
-        self.generator = CodeGenerator()
+        self.lexer = LexerV3()
+        self.generator = CodeGeneratorV3()
     
     def compile(self, code: str) -> str:
-        """Компілює Vireo код у Python код"""
+        """Компілює Vireo код у Python код."""
         tokens = self.lexer.tokenize(code)
-        parser = Parser(tokens)
+        parser = ParserV3(tokens)
         ast = parser.parse()
         return self.generator.generate(ast)
     
     def compile_to_file(self, code: str, output_file: str) -> str:
-        """Компілює і зберігає у файл"""
+        """Компілює і зберігає у файл."""
         python_code = self.compile(code)
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write(python_code)
-        return f"✅ Compiled to {output_file} (Vireo v{self.VERSION})"
+        return f"✅ Compiled to {output_file} (Vireo v{VERSION}, Protocol: {PROTOCOL})"
     
     def compile_file(self, input_file: str, output_file: str = None) -> str:
-        """Компілює файл .v у .py"""
+        """Компілює файл .v у .py."""
         with open(input_file, 'r', encoding='utf-8') as f:
             code = f.read()
         
@@ -630,7 +863,8 @@ def main():
     import sys
     import os
     
-    print("🟢 Vireo Compiler v1.4.3")
+    print(f"🟢 Vireo Compiler v{VERSION}")
+    print(f"Protocol: {PROTOCOL}")
     print("The World's First AI-to-AI Communication Language")
     print("========================================")
     
@@ -651,7 +885,7 @@ def main():
         print(f"❌ File not found: {input_file}")
         return
     
-    compiler = VireoCompiler()
+    compiler = VireoCompilerV3()
     
     try:
         result = compiler.compile_file(input_file, output_file)
@@ -676,14 +910,14 @@ if __name__ == "__main__":
 let x = 5
 let y = 10
 let sum = x + y
-print sum
+print(sum)
 
 fn add(a, b) {
     return a + b
 }
 
 let result = add(3, 7)
-print result
+print(result)
 
 @neural
 fn model(input) {
@@ -692,11 +926,27 @@ fn model(input) {
     let output = dense(h2, 10, Softmax)
     return output
 }
+
+contract test_contract {
+    parties: [agent1, agent2]
+    terms: { max_tokens: 1000, timeout_sec: 60 }
+}
+
+agent agent1 {
+    did: "did:vireo:agent1"
+    capability analyze
+    capability report
+}
+
+did my_did = "did:vireo:my-agent"
+trust agent1 -> agent2
+verify contract test_contract
 """
     
-    compiler = VireoCompiler()
+    compiler = VireoCompilerV3()
     
-    print("🟢 Vireo Compiler v1.4.3 Demo")
+    print(f"🟢 Vireo Compiler v{VERSION} Demo")
+    print(f"Protocol: {PROTOCOL}")
     print("========================================")
     print("")
     print("📄 Input Vireo code:")
@@ -711,4 +961,4 @@ fn model(input) {
     
     print("")
     print("========================================")
-    print("✅ Compilation successful! (Vireo v1.4.3)")
+    print(f"✅ Compilation successful! (Vireo v{VERSION})")

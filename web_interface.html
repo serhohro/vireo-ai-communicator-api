@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>🌿 Vireo v2.0.2 — AI-to-AI Communication</title>
+    <title>🌿 Vireo v3.0.0 — AI-to-AI Communication</title>
     <style>
         * {
             margin: 0;
@@ -20,7 +20,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
@@ -44,7 +44,7 @@
         }
 
         .header h1 span {
-            font-size: 0.5em;
+            font-size: 0.4em;
             color: #718096;
             -webkit-text-fill-color: #718096;
         }
@@ -55,6 +55,32 @@
             margin-top: 5px;
             letter-spacing: 1px;
         }
+
+        .header .badge-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .header .badge-row .badge {
+            display: inline-block;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 0.7em;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .badge.green { background: rgba(72, 187, 120, 0.2); color: #48bb78; border: 1px solid #48bb78; }
+        .badge.purple { background: rgba(159, 122, 234, 0.2); color: #9f7aea; border: 1px solid #9f7aea; }
+        .badge.orange { background: rgba(237, 137, 54, 0.2); color: #ed8936; border: 1px solid #ed8936; }
+        .badge.blue { background: rgba(99, 179, 237, 0.2); color: #63b3ed; border: 1px solid #63b3ed; }
+        .badge.red { background: rgba(252, 129, 129, 0.2); color: #fc8181; border: 1px solid #fc8181; }
+        .badge.wasm { background: rgba(99, 179, 237, 0.2); color: #63b3ed; border: 1px solid #63b3ed; }
+        .badge.rust { background: rgba(237, 137, 54, 0.2); color: #ed8936; border: 1px solid #ed8936; }
+        .badge.eu { background: rgba(72, 187, 120, 0.2); color: #48bb78; border: 1px solid #48bb78; }
 
         /* ===== STATUS BAR ===== */
         .status-bar {
@@ -72,154 +98,95 @@
         .status-item {
             font-size: 0.9em;
             color: #a0aec0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
-        .status-item .badge {
+        .status-item .dot {
             display: inline-block;
-            padding: 2px 10px;
-            border-radius: 12px;
-            font-size: 0.75em;
-            margin-left: 4px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse-dot 2s infinite;
         }
 
-        .badge.green {
-            background: rgba(72, 187, 120, 0.2);
-            color: #48bb78;
-            border: 1px solid #48bb78;
-        }
-        .badge.purple {
-            background: rgba(159, 122, 234, 0.2);
-            color: #9f7aea;
-            border: 1px solid #9f7aea;
-        }
-        .badge.orange {
-            background: rgba(237, 137, 54, 0.2);
-            color: #ed8936;
-            border: 1px solid #ed8936;
-        }
-        .badge.red {
-            background: rgba(252, 129, 129, 0.2);
-            color: #fc8181;
-            border: 1px solid #fc8181;
-        }
-        .badge.blue {
-            background: rgba(99, 179, 237, 0.2);
-            color: #63b3ed;
-            border: 1px solid #63b3ed;
+        .dot.green { background: #48bb78; }
+        .dot.blue { background: #63b3ed; }
+        .dot.orange { background: #ed8936; }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
         }
 
         /* ===== NAV TABS ===== */
-.nav-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 25px;
-    padding: 10px;
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(10px);
-}
+        .nav-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 25px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
 
-.nav-tab {
-    padding: 12px 24px;
-    border: 2px solid rgba(255, 255, 255, 0.15);
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.08);
-    color: #cbd5e0;
-    font-size: 0.95em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    letter-spacing: 0.3px;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
+        .nav-tab {
+            padding: 10px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #cbd5e0;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
 
-.nav-tab:hover {
-    background: rgba(255, 255, 255, 0.18);
-    color: #ffffff;
-    border-color: rgba(255, 255, 255, 0.35);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
-}
+        .nav-tab:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
 
-.nav-tab.active {
-    background: linear-gradient(135deg, rgba(72, 187, 120, 0.35), rgba(159, 122, 234, 0.35));
-    color: #ffffff;
-    border-color: rgba(72, 187, 120, 0.6);
-    box-shadow: 0 0 40px rgba(72, 187, 120, 0.15), inset 0 0 30px rgba(72, 187, 120, 0.08);
-    text-shadow: 0 0 20px rgba(72, 187, 120, 0.3);
-}
+        .nav-tab.active {
+            background: linear-gradient(135deg, rgba(72, 187, 120, 0.3), rgba(159, 122, 234, 0.3));
+            color: #ffffff;
+            border-color: rgba(72, 187, 120, 0.5);
+            box-shadow: 0 0 30px rgba(72, 187, 120, 0.15);
+        }
 
-/* Кольорові активні вкладки */
-.nav-tab.active[data-tab="autonomous"] { 
-    border-color: #48bb78;
-    background: linear-gradient(135deg, rgba(72, 187, 120, 0.3), rgba(72, 187, 120, 0.1));
-    box-shadow: 0 0 40px rgba(72, 187, 120, 0.2);
-}
-.nav-tab.active[data-tab="agents"] { 
-    border-color: #63b3ed;
-    background: linear-gradient(135deg, rgba(99, 179, 237, 0.3), rgba(99, 179, 237, 0.1));
-    box-shadow: 0 0 40px rgba(99, 179, 237, 0.2);
-}
-.nav-tab.active[data-tab="contracts"] { 
-    border-color: #9f7aea;
-    background: linear-gradient(135deg, rgba(159, 122, 234, 0.3), rgba(159, 122, 234, 0.1));
-    box-shadow: 0 0 40px rgba(159, 122, 234, 0.2);
-}
-.nav-tab.active[data-tab="execute"] { 
-    border-color: #ed8936;
-    background: linear-gradient(135deg, rgba(237, 137, 54, 0.3), rgba(237, 137, 54, 0.1));
-    box-shadow: 0 0 40px rgba(237, 137, 54, 0.2);
-}
-.nav-tab.active[data-tab="neural"] { 
-    border-color: #fc8181;
-    background: linear-gradient(135deg, rgba(252, 129, 129, 0.3), rgba(252, 129, 129, 0.1));
-    box-shadow: 0 0 40px rgba(252, 129, 129, 0.2);
-}
-.nav-tab.active[data-tab="providers"] { 
-    border-color: #68d391;
-    background: linear-gradient(135deg, rgba(104, 211, 145, 0.3), rgba(104, 211, 145, 0.1));
-    box-shadow: 0 0 40px rgba(104, 211, 145, 0.2);
-}
-.nav-tab.active[data-tab="chat"] { 
-    border-color: #f6ad55;
-    background: linear-gradient(135deg, rgba(246, 173, 85, 0.3), rgba(246, 173, 85, 0.1));
-    box-shadow: 0 0 40px rgba(246, 173, 85, 0.2);
-}
-.nav-tab.active[data-tab="roles"] { 
-    border-color: #fc8181;
-    background: linear-gradient(135deg, rgba(252, 129, 129, 0.3), rgba(252, 129, 129, 0.1));
-    box-shadow: 0 0 40px rgba(252, 129, 129, 0.2);
-}
-.nav-tab.active[data-tab="security"] { 
-    border-color: #f6ad55;
-    background: linear-gradient(135deg, rgba(246, 173, 85, 0.3), rgba(246, 173, 85, 0.1));
-    box-shadow: 0 0 40px rgba(246, 173, 85, 0.2);
-}
-.nav-tab.active[data-tab="models"] { 
-    border-color: #9f7aea;
-    background: linear-gradient(135deg, rgba(159, 122, 234, 0.3), rgba(159, 122, 234, 0.1));
-    box-shadow: 0 0 40px rgba(159, 122, 234, 0.2);
-}
+        .nav-tab .new-badge {
+            font-size: 0.55em;
+            background: linear-gradient(135deg, #48bb78, #9f7aea);
+            color: #0f0c29;
+            padding: 2px 10px;
+            border-radius: 12px;
+            margin-left: 6px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
 
-.nav-tab .new-badge {
-    font-size: 0.55em;
-    background: linear-gradient(135deg, #48bb78, #9f7aea);
-    color: #0f0c29;
-    padding: 2px 12px;
-    border-radius: 12px;
-    margin-left: 6px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    animation: pulse-badge 2s infinite;
-}
+        .nav-tab .v3-badge {
+            font-size: 0.5em;
+            background: #ed8936;
+            color: #0f0c29;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-left: 4px;
+            font-weight: 700;
+        }
 
-@keyframes pulse-badge {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.8; transform: scale(1.05); box-shadow: 0 0 20px rgba(159, 122, 234, 0.4); }
-}
+        /* ===== TAB CONTENT ===== */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
 
         /* ===== CARDS ===== */
         .card {
@@ -273,6 +240,12 @@
             border-color: #48bb78;
         }
 
+        .card input option,
+        .card select option {
+            background: #1a1a2e;
+            color: #e2e8f0;
+        }
+
         .card textarea {
             resize: vertical;
             min-height: 80px;
@@ -283,6 +256,12 @@
         .card .row {
             display: grid;
             grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .card .row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 15px;
         }
 
@@ -301,50 +280,34 @@
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
         }
 
-        .btn-green {
-            background: #48bb78;
-            color: #0f0c29;
-        }
-        .btn-green:hover {
-            background: #38a169;
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
         }
 
-        .btn-orange {
-            background: #ed8936;
-            color: #0f0c29;
-        }
-        .btn-orange:hover {
-            background: #dd6b20;
-        }
+        .btn-green { background: #48bb78; color: #0f0c29; }
+        .btn-green:hover { background: #38a169; }
 
-        .btn-purple {
-            background: #9f7aea;
-            color: #0f0c29;
-        }
-        .btn-purple:hover {
-            background: #805ad5;
-        }
+        .btn-orange { background: #ed8936; color: #0f0c29; }
+        .btn-orange:hover { background: #dd6b20; }
 
-        .btn-blue {
-            background: #63b3ed;
-            color: #0f0c29;
-        }
-        .btn-blue:hover {
-            background: #4299e1;
-        }
+        .btn-purple { background: #9f7aea; color: #0f0c29; }
+        .btn-purple:hover { background: #805ad5; }
 
-        .btn-red {
-            background: #fc8181;
-            color: #0f0c29;
-        }
-        .btn-red:hover {
-            background: #f56565;
-        }
+        .btn-blue { background: #63b3ed; color: #0f0c29; }
+        .btn-blue:hover { background: #4299e1; }
 
-        .btn-sm {
-            padding: 5px 14px;
-            font-size: 0.8em;
-        }
+        .btn-red { background: #fc8181; color: #0f0c29; }
+        .btn-red:hover { background: #f56565; }
+
+        .btn-wasm { background: #63b3ed; color: #0f0c29; }
+        .btn-wasm:hover { background: #4299e1; }
+
+        .btn-rust { background: #ed8936; color: #0f0c29; }
+        .btn-rust:hover { background: #dd6b20; }
+
+        .btn-sm { padding: 5px 14px; font-size: 0.8em; }
 
         /* ===== RESULT BOX ===== */
         .result-box {
@@ -357,54 +320,38 @@
             font-size: 0.85em;
             white-space: pre-wrap;
             word-break: break-all;
-            max-height: 300px;
+            max-height: 400px;
             overflow-y: auto;
             color: #e2e8f0;
+            line-height: 1.6;
         }
 
-        .result-box.error {
-            border-left-color: #fc8181;
-        }
+        .result-box.error { border-left-color: #fc8181; }
+        .result-box.warning { border-left-color: #ed8936; }
+        .result-box.success { border-left-color: #48bb78; }
+        .result-box.info { border-left-color: #63b3ed; }
 
-        .result-box.warning {
-            border-left-color: #ed8936;
-        }
-
-        .result-box.success {
-            border-left-color: #48bb78;
-        }
-
-        .result-box.info {
-            border-left-color: #63b3ed;
-        }
-
-        /* ===== AGENT ITEM ===== */
-        .agent-item {
-            display: flex;
-            justify-content: space-between;
+        /* ===== WEBSOCKET STATUS ===== */
+        .ws-status {
+            display: inline-flex;
             align-items: center;
-            padding: 10px 14px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 8px;
-            margin-bottom: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            flex-wrap: wrap;
             gap: 8px;
-        }
-
-        .agent-item .name {
-            font-weight: 600;
-            color: #48bb78;
-        }
-
-        .agent-item .model {
-            color: #a0aec0;
-            font-size: 0.85em;
-        }
-
-        .agent-item .caps {
-            color: #9f7aea;
+            padding: 4px 14px;
+            border-radius: 20px;
             font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .ws-status.connected {
+            background: rgba(72, 187, 120, 0.2);
+            color: #48bb78;
+            border: 1px solid #48bb78;
+        }
+
+        .ws-status.disconnected {
+            background: rgba(252, 129, 129, 0.2);
+            color: #fc8181;
+            border: 1px solid #fc8181;
         }
 
         /* ===== FOOTER ===== */
@@ -421,7 +368,6 @@
             color: #48bb78;
             text-decoration: none;
         }
-
         .footer a:hover {
             text-decoration: underline;
         }
@@ -435,45 +381,18 @@
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2em;
-            }
-
-            .card .row {
-                grid-template-columns: 1fr;
-            }
-
-            .nav-tab {
-                padding: 8px 14px;
-                font-size: 0.8em;
-            }
-
-            .status-bar {
-                gap: 8px 16px;
-                font-size: 0.8em;
-            }
-
-            .agent-item {
-                flex-direction: column;
-                align-items: flex-start;
-            }
+            .header h1 { font-size: 2em; }
+            .card .row { grid-template-columns: 1fr; }
+            .card .row-3 { grid-template-columns: 1fr; }
+            .nav-tab { padding: 6px 12px; font-size: 0.75em; }
+            .status-bar { gap: 6px 12px; font-size: 0.75em; }
         }
 
         /* ===== SCROLLBAR ===== */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.25);
-        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.03); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
     </style>
 </head>
 <body>
@@ -484,20 +403,32 @@
         <!-- HEADER -->
         <!-- ============================================================ -->
         <header class="header">
-            <h1>🌿 Vireo <span>v2.0.2</span></h1>
+            <h1>🌿 Vireo <span>v3.0.0</span></h1>
             <p class="subtitle">The World's First AI-to-AI Communication Language</p>
+            <p class="subtitle" style="font-size:0.8em; color:#718096;">
+                Open Wire Protocol · WASM · Rust · Formal Verification · Federated Trust
+            </p>
+            <div class="badge-row">
+                <span class="badge green">✅ Open Wire</span>
+                <span class="badge wasm">⚡ WASM</span>
+                <span class="badge rust">🦀 Rust</span>
+                <span class="badge purple">🔐 Federated Trust</span>
+                <span class="badge blue">🧠 Formal Verification</span>
+                <span class="badge orange">🔌 MCP</span>
+                <span class="badge eu">🇪🇺 EU Providers</span>
+            </div>
         </header>
 
         <!-- ============================================================ -->
         <!-- STATUS BAR -->
         <!-- ============================================================ -->
         <div class="status-bar">
-            <span class="status-item">✅ Real AI-to-AI</span>
-            <span class="status-item">🧠 6+ LLM Providers</span>
-            <span class="status-item">🔄 Autonomous Agents</span>
-            <span class="status-item">🆓 Free Tier Available</span>
-            <span class="status-item">🔥 Mistral AI</span>
-            <span class="status-item"><span class="badge red">🚧 v2.0.2</span></span>
+            <span class="status-item"><span class="dot green"></span> Server: <span id="server-status">Checking...</span></span>
+            <span class="status-item"><span class="dot blue"></span> WebSocket: <span id="ws-status">Disconnected</span></span>
+            <span class="status-item">🌐 Open Wire v3.0.0</span>
+            <span class="status-item">🧠 9+ LLM Providers</span>
+            <span class="status-item">🤖 Autonomous Agents</span>
+            <span class="status-item"><span class="badge green">🚀 v3.0.0</span></span>
         </div>
 
         <!-- ============================================================ -->
@@ -507,13 +438,15 @@
             <button class="nav-tab active" data-tab="autonomous">🤖 Autonomous</button>
             <button class="nav-tab" data-tab="agents">🧠 Agents</button>
             <button class="nav-tab" data-tab="contracts">📜 Contracts <span class="new-badge">NEW</span></button>
-            <button class="nav-tab" data-tab="execute">▶️ Execute</button>
-            <button class="nav-tab" data-tab="neural">🧠 Neural</button>
+            <button class="nav-tab" data-tab="wire">🌐 Open Wire <span class="v3-badge">v3</span></button>
+            <button class="nav-tab" data-tab="did">🔐 DIDs <span class="v3-badge">v3</span></button>
+            <button class="nav-tab" data-tab="wasm">⚡ WASM <span class="v3-badge">v3</span></button>
+            <button class="nav-tab" data-tab="rust">🦀 Rust <span class="v3-badge">v3</span></button>
+            <button class="nav-tab" data-tab="mcp">🔌 MCP <span class="v3-badge">v3</span></button>
             <button class="nav-tab" data-tab="providers">📡 Providers</button>
             <button class="nav-tab" data-tab="chat">💬 Chat</button>
-            <button class="nav-tab" data-tab="roles">🎭 Roles</button>
+            <button class="nav-tab" data-tab="docs">📚 Docs</button>
             <button class="nav-tab" data-tab="security">🔐 Security</button>
-            <button class="nav-tab" data-tab="models">🧠 Models</button>
         </div>
 
         <!-- ============================================================ -->
@@ -521,10 +454,10 @@
         <!-- ============================================================ -->
         <div id="tab-autonomous" class="tab-content active">
             <div class="card">
-                <h3><span class="icon">🤖</span> Autonomous AI-to-AI Communication</h3>
+                <h3><span class="icon">🤖</span> Autonomous AI-to-AI Communication <span style="font-size:0.5em; color:#48bb78;">v3.0.0</span></h3>
                 <p style="color:#a0aec0; margin-bottom:15px;">
                     Two AI agents negotiate and execute tasks completely autonomously.
-                    <span style="color:#48bb78; font-weight:600;">🔥 Mistral AI supported</span>
+                    <span style="color:#48bb78;">🔥 v3.0.0 with Formal Verification</span>
                 </p>
 
                 <div class="row">
@@ -540,12 +473,20 @@
 
                 <div style="margin-top:12px;">
                     <label class="label">📡 LLM Provider</label>
-                    <select id="auto-provider">
-                        <option value="ollama">🦙 Ollama (local)</option>
-                        <option value="mistral" selected>🔥 Mistral AI</option>
-                        <option value="openai">🤖 OpenAI GPT</option>
-                        <option value="claude">🧠 Anthropic Claude</option>
-                        <option value="gemini">🌟 Google Gemini</option>
+                    <select id="auto-provider" style="background: rgba(255,255,255,0.05); color: #e2e8f0;">
+                        <optgroup label="🇪🇺 European Providers">
+                            <option value="mistral">🔥 Mistral AI (France)</option>
+                            <option value="aleph_alpha">🇩🇪 Aleph Alpha (Germany)</option>
+                            <option value="cohere">🇨🇭 Cohere (Switzerland)</option>
+                        </optgroup>
+                        <optgroup label="🌍 Global Providers">
+                            <option value="ollama">🦙 Ollama (local)</option>
+                            <option value="qwen">🐉 Qwen AI (Alibaba)</option>
+                            <option value="deepseek">🧠 DeepSeek</option>
+                            <option value="openai">🤖 OpenAI GPT</option>
+                            <option value="claude">🧠 Anthropic Claude</option>
+                            <option value="gemini">🌟 Google Gemini</option>
+                        </optgroup>
                     </select>
                 </div>
 
@@ -554,9 +495,10 @@
                     <textarea id="auto-task" rows="2">Create a neural network for MNIST classification with 2 layers</textarea>
                 </div>
 
-                <button class="btn btn-green" onclick="startAutonomous()" style="margin-top:15px;">
-                    🚀 Start Autonomous Negotiation
-                </button>
+                <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+                    <button class="btn btn-green" onclick="startAutonomous()">🚀 Start Negotiation</button>
+                    <button class="btn btn-purple" onclick="formalVerify()">🧠 Formal Verify</button>
+                </div>
 
                 <div id="auto-result" class="result-box info" style="margin-top:15px;">
                     🤖 Ready for autonomous AI-to-AI communication.
@@ -565,36 +507,31 @@
         </div>
 
         <!-- ============================================================ -->
-        <!-- TAB: AGENTS (ВИПРАВЛЕНО) -->
+        <!-- TAB: AGENTS -->
         <!-- ============================================================ -->
         <div id="tab-agents" class="tab-content">
             <div class="card">
-                <h3><span class="icon">🧠</span> Agents Management</h3>
+                <h3><span class="icon">🧠</span> Agents Management <span style="font-size:0.5em; color:#63b3ed;">v3.0.0</span></h3>
 
                 <div class="row">
                     <div>
-                        <label class="label">🤖 Agent 1 (Proposer)</label>
+                        <label class="label">🤖 Agent 1</label>
                         <input type="text" id="agent1-id" value="agent-vision" />
-                        <input type="text" id="agent1-model" value="qwen2.5-coder:latest" style="margin-top:6px;" />
-                        <button class="btn btn-green btn-sm" onclick="registerAgent('agent1')" style="margin-top:6px;">📝 Register</button>
-                        <button class="btn btn-purple btn-sm" onclick="addCapability('agent1')" style="margin-top:6px;">📌 Add Capability</button>
-                        <input type="text" id="agent1-capability" placeholder="Capability name" style="margin-top:6px;" />
+                        <input type="text" id="agent1-did" placeholder="DID (optional)" style="margin-top:6px;" />
+                        <button class="btn btn-green btn-sm" onclick="registerAgentV3('agent1')" style="margin-top:6px;">📝 Register v3</button>
                     </div>
                     <div>
-                        <label class="label">🤖 Agent 2 (Executor)</label>
+                        <label class="label">🤖 Agent 2</label>
                         <input type="text" id="agent2-id" value="agent-training" />
-                        <input type="text" id="agent2-model" value="qwen2.5-coder:latest" style="margin-top:6px;" />
-                        <button class="btn btn-green btn-sm" onclick="registerAgent('agent2')" style="margin-top:6px;">📝 Register</button>
-                        <button class="btn btn-purple btn-sm" onclick="addCapability('agent2')" style="margin-top:6px;">📌 Add Capability</button>
-                        <input type="text" id="agent2-capability" placeholder="Capability name" style="margin-top:6px;" />
+                        <input type="text" id="agent2-did" placeholder="DID (optional)" style="margin-top:6px;" />
+                        <button class="btn btn-green btn-sm" onclick="registerAgentV3('agent2')" style="margin-top:6px;">📝 Register v3</button>
                     </div>
                 </div>
 
-                <!-- 🆕 ВИПРАВЛЕНО: додано поле для введення ID агента -->
                 <div style="margin-top:15px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-                    <input type="text" id="status-agent-id" placeholder="Enter Agent ID for status" style="flex:1; min-width:150px; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#e2e8f0;">
-                    <button class="btn btn-blue" onclick="listAgents()">📋 List Agents</button>
-                    <button class="btn btn-purple" onclick="getAgentStatus()">🔍 Get Status</button>
+                    <button class="btn btn-blue" onclick="listAgentsV3()">📋 List Agents (v3)</button>
+                    <input type="text" id="status-agent-id" placeholder="Agent ID" style="flex:1; min-width:150px;" />
+                    <button class="btn btn-purple" onclick="getAgentStatusV3()">🔍 Get Status</button>
                 </div>
 
                 <div id="agents-result" class="result-box info" style="margin-top:15px;">
@@ -604,22 +541,21 @@
         </div>
 
         <!-- ============================================================ -->
-        <!-- TAB: CONTRACTS (v2.0.2) -->
+        <!-- TAB: CONTRACTS -->
         <!-- ============================================================ -->
         <div id="tab-contracts" class="tab-content">
             <div class="card">
-                <h3><span class="icon">📜</span> Contracts Management <span style="color:#9f7aea; font-size:0.6em;">v2.0.2</span></h3>
+                <h3><span class="icon">📜</span> Contracts v3.0.0 <span style="font-size:0.5em; color:#9f7aea;">Formal Verification</span></h3>
                 <p style="color:#a0aec0; margin-bottom:15px;">
-                    Create, execute, and cryptographically verify contracts between agents.
-                    <span style="color:#9f7aea; font-weight:600;">🆕 VERIFY + ESCALATE states</span>
+                    Create, execute, and formally verify contracts between agents.
+                    <span style="color:#9f7aea;">🧠 SMT-based verification</span>
                 </p>
 
-                <!-- Create Contract -->
                 <div style="background:rgba(255,255,255,0.03); border-radius:10px; padding:18px; margin-bottom:18px;">
-                    <h4 style="color:#48bb78; margin:0 0 12px 0;">🆕 Create New Contract</h4>
-                    <div class="row">
+                    <h4 style="color:#48bb78; margin:0 0 12px 0;">🆕 Create Contract (v3)</h4>
+                    <div class="row-3">
                         <div>
-                            <label class="label">Parties (comma separated)</label>
+                            <label class="label">Parties (comma)</label>
                             <input type="text" id="contract-parties" value="agent-vision, agent-training" />
                         </div>
                         <div>
@@ -627,12 +563,8 @@
                             <input type="number" id="contract-max-tokens" value="1000" />
                         </div>
                         <div>
-                            <label class="label">Timeout (seconds)</label>
+                            <label class="label">Timeout (sec)</label>
                             <input type="number" id="contract-timeout" value="60" />
-                        </div>
-                        <div>
-                            <label class="label">Max Cost (USD)</label>
-                            <input type="number" id="contract-max-cost" value="5.0" step="0.1" />
                         </div>
                     </div>
                     <div style="margin-top:12px;">
@@ -648,73 +580,160 @@
     }
 }</textarea>
                     </div>
-                    <button class="btn btn-green" onclick="createContract()" style="margin-top:12px;">📝 Create Contract</button>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+                        <button class="btn btn-green" onclick="createContractV3()">📝 Create v3</button>
+                        <button class="btn btn-purple" onclick="formalVerifyContract()">🧠 Formal Verify</button>
+                    </div>
                     <div id="contract-create-result" class="result-box info" style="margin-top:12px;"></div>
                 </div>
 
-                <!-- Execute & Verify -->
-                <div style="background:rgba(255,255,255,0.03); border-radius:10px; padding:18px; margin-bottom:18px;">
-                    <h4 style="color:#ed8936; margin:0 0 12px 0;">▶️ Execute & Verify Contract</h4>
+                <div style="background:rgba(255,255,255,0.03); border-radius:10px; padding:18px;">
+                    <h4 style="color:#ed8936; margin:0 0 12px 0;">▶️ Execute & Verify</h4>
                     <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                        <input type="text" id="execute-contract-id" placeholder="Enter Contract ID" style="flex:1; min-width:200px;" />
-                        <button class="btn btn-orange" onclick="executeContract()">▶️ Execute</button>
-                        <button class="btn btn-purple" onclick="verifyContract()">🔍 Verify</button>
+                        <input type="text" id="execute-contract-id" placeholder="Contract ID" style="flex:1; min-width:200px;" />
+                        <button class="btn btn-orange" onclick="executeContractV3()">▶️ Execute</button>
+                        <button class="btn btn-purple" onclick="verifyContractV3()">🔍 Verify</button>
                     </div>
                     <div id="contract-execute-result" class="result-box info" style="margin-top:12px;"></div>
                 </div>
+            </div>
+        </div>
 
-                <!-- Contract List -->
-                <div style="background:rgba(255,255,255,0.03); border-radius:10px; padding:18px;">
-                    <h4 style="color:#63b3ed; margin:0 0 12px 0;">📋 Contracts List</h4>
-                    <button class="btn btn-blue" onclick="listContracts()">📋 List All Contracts</button>
-                    <div id="contract-list-result" class="result-box info" style="margin-top:12px;"></div>
+        <!-- ============================================================ -->
+        <!-- TAB: OPEN WIRE -->
+        <!-- ============================================================ -->
+        <div id="tab-wire" class="tab-content">
+            <div class="card">
+                <h3><span class="icon">🌐</span> Open Wire Protocol <span style="font-size:0.5em; color:#63b3ed;">v3.0.0</span></h3>
+                <p style="color:#a0aec0; margin-bottom:15px;">
+                    Binary protocol with Protobuf/FlatBuffers. 10x faster than JSON.
+                </p>
+
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <input type="text" id="wire-message-type" value="PROPOSE" style="flex:0 0 150px;" />
+                    <input type="text" id="wire-sender" value="agent-1" style="flex:1;" />
+                    <input type="text" id="wire-recipient" value="agent-2" style="flex:1;" />
+                </div>
+                <div style="margin-top:12px;">
+                    <label class="label">Payload (JSON)</label>
+                    <textarea id="wire-payload" rows="3" style="font-family:monospace;">{"contract_id": "contract-123", "terms": {"max_tokens": 1000}}</textarea>
+                </div>
+
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+                    <button class="btn btn-green" onclick="sendWireMessage()">📤 Send Message</button>
+                    <button class="btn btn-blue" onclick="sendWireBinary()">📤 Send Binary</button>
+                    <button class="btn btn-purple" onclick="getWireVersion()">📡 Get Version</button>
+                </div>
+
+                <div id="wire-result" class="result-box info" style="margin-top:15px;">
+                    🌐 Open Wire Protocol ready.
                 </div>
             </div>
         </div>
 
         <!-- ============================================================ -->
-        <!-- TAB: EXECUTE -->
+        <!-- TAB: DIDs -->
         <!-- ============================================================ -->
-        <div id="tab-execute" class="tab-content">
+        <div id="tab-did" class="tab-content">
             <div class="card">
-                <h3><span class="icon">▶️</span> Execute Vireo Code</h3>
-                <label class="label">📝 Vireo Code</label>
-                <textarea id="execute-code" rows="6" style="font-family:monospace;">agent "greeter" {
-    capability "greet" {
-        input: name: string
-        output: message: string
-        action: "Hello, {name}!"
+                <h3><span class="icon">🔐</span> DIDs & Federated Trust <span style="font-size:0.5em; color:#9f7aea;">v3.0.0</span></h3>
+                <p style="color:#a0aec0; margin-bottom:15px;">
+                    Decentralized Identifiers with ZK-SNARK proofs. No central authority.
+                </p>
+
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <input type="text" id="did-name" value="agent-1" style="flex:1;" />
+                    <button class="btn btn-green" onclick="createDID()">🔑 Create DID</button>
+                </div>
+
+                <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+                    <input type="text" id="did-verify-id" placeholder="DID to verify" style="flex:1;" />
+                    <button class="btn btn-purple" onclick="verifyDID()">🔍 Verify DID</button>
+                </div>
+
+                <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+                    <input type="text" id="trust-agent-a" placeholder="Agent A DID" style="flex:1;" />
+                    <input type="text" id="trust-agent-b" placeholder="Agent B DID" style="flex:1;" />
+                    <button class="btn btn-orange" onclick="establishTrust()">🔒 Establish Trust</button>
+                </div>
+
+                <div id="did-result" class="result-box info" style="margin-top:15px;">
+                    🔐 DIDs ready. Create your decentralized identity.
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB: WASM -->
+        <!-- ============================================================ -->
+        <div id="tab-wasm" class="tab-content">
+            <div class="card">
+                <h3><span class="icon">⚡</span> WASM Runtime <span style="font-size:0.5em; color:#63b3ed;">v3.0.0</span></h3>
+                <p style="color:#a0aec0; margin-bottom:15px;">
+                    Run Vireo agents in the browser. Edge computing support.
+                </p>
+
+                <div>
+                    <label class="label">Vireo Code</label>
+                    <textarea id="wasm-code" rows="5" style="font-family:monospace;">agent vision {
+    capability analyze_images {
+        input: image: bytes
+        output: result: string
+        action: "Analyzing image"
     }
-}
+}</textarea>
+                </div>
 
-execute greet("World") -> result
-output result</textarea>
-                <button class="btn btn-green" onclick="executeCode()" style="margin-top:12px;">▶️ Execute</button>
-                <div id="execute-result" class="result-box info" style="margin-top:12px;">
-                    📝 Enter Vireo code and press Execute.
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+                    <button class="btn btn-wasm" onclick="compileWASM()">⚡ Compile to WASM</button>
+                    <button class="btn btn-blue" onclick="executeWASM()">▶️ Execute WASM</button>
+                </div>
+
+                <div id="wasm-result" class="result-box info" style="margin-top:15px;">
+                    ⚡ WASM runtime ready. Compile Vireo to WebAssembly.
                 </div>
             </div>
         </div>
 
         <!-- ============================================================ -->
-        <!-- TAB: NEURAL -->
+        <!-- TAB: RUST -->
         <!-- ============================================================ -->
-        <div id="tab-neural" class="tab-content">
+        <div id="tab-rust" class="tab-content">
             <div class="card">
-                <h3><span class="icon">🧠</span> Neural Network Builder</h3>
-                <div class="row">
-                    <div>
-                        <label class="label">Layers</label>
-                        <input type="text" id="neural-layers" value="[784, 128, 10]" />
-                    </div>
-                    <div>
-                        <label class="label">Activation</label>
-                        <input type="text" id="neural-activation" value="ReLU" />
-                    </div>
+                <h3><span class="icon">🦀</span> Rust SDK <span style="font-size:0.5em; color:#ed8936;">v3.0.0</span></h3>
+                <p style="color:#a0aec0; margin-bottom:15px;">
+                    50x faster than Python. Memory safe by design.
+                </p>
+
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <button class="btn btn-rust" onclick="rustStatus()">🦀 Check Status</button>
+                    <button class="btn btn-orange" onclick="rustExecute()">▶️ Execute in Rust</button>
                 </div>
-                <button class="btn btn-purple" onclick="buildNeural()" style="margin-top:12px;">🧠 Build Network</button>
-                <div id="neural-result" class="result-box info" style="margin-top:12px;">
-                    📝 Define layers and activation function.
+
+                <div id="rust-result" class="result-box info" style="margin-top:15px;">
+                    🦀 Rust SDK ready. Execute code natively.
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TAB: MCP -->
+        <!-- ============================================================ -->
+        <div id="tab-mcp" class="tab-content">
+            <div class="card">
+                <h3><span class="icon">🔌</span> MCP Integration <span style="font-size:0.5em; color:#ed8936;">v3.0.0</span></h3>
+                <p style="color:#a0aec0; margin-bottom:15px;">
+                    Model Context Protocol — discover and invoke tools.
+                </p>
+
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <button class="btn btn-blue" onclick="listMCPTools()">🔧 List Tools</button>
+                    <input type="text" id="mcp-tool" placeholder="Tool name" style="flex:1;" />
+                    <button class="btn btn-green" onclick="invokeMCPTool()">▶️ Invoke Tool</button>
+                </div>
+
+                <div id="mcp-result" class="result-box info" style="margin-top:15px;">
+                    🔌 MCP ready. Discover and invoke tools.
                 </div>
             </div>
         </div>
@@ -724,8 +743,12 @@ output result</textarea>
         <!-- ============================================================ -->
         <div id="tab-providers" class="tab-content">
             <div class="card">
-                <h3><span class="icon">📡</span> LLM Providers</h3>
-                <button class="btn btn-blue" onclick="listProviders()">📡 List Providers</button>
+                <h3><span class="icon">📡</span> LLM Providers <span style="font-size:0.5em; color:#48bb78;">🇪🇺 EU & Global</span></h3>
+                <p style="color:#a0aec0; margin-bottom:15px;">
+                    <span style="color:#48bb78;">🇪🇺 European:</span> Mistral AI (FR), Aleph Alpha (DE), Cohere (CH)
+                    <span style="color:#63b3ed;">🌍 Global:</span> OpenAI, Claude, Gemini, Qwen, DeepSeek
+                </p>
+                <button class="btn btn-blue" onclick="listProvidersV3()">📡 List Providers</button>
                 <div id="providers-result" class="result-box info" style="margin-top:15px;">
                     📡 Click to see available LLM providers.
                 </div>
@@ -739,7 +762,7 @@ output result</textarea>
             <div class="card">
                 <h3><span class="icon">💬</span> AI Chat</h3>
                 <label class="label">📝 Message</label>
-                <input type="text" id="chat-message" value="What is Vireo?" />
+                <input type="text" id="chat-message" value="What is Vireo v3.0.0?" />
                 <label class="label" style="margin-top:10px;">🤖 Models (comma separated)</label>
                 <input type="text" id="chat-models" value="ChatGPT, Mistral" />
                 <button class="btn btn-green" onclick="sendChat()" style="margin-top:12px;">💬 Send</button>
@@ -750,48 +773,40 @@ output result</textarea>
         </div>
 
         <!-- ============================================================ -->
-        <!-- TAB: ROLES -->
+        <!-- TAB: DOCS -->
         <!-- ============================================================ -->
-        <div id="tab-roles" class="tab-content">
+        <div id="tab-docs" class="tab-content">
             <div class="card">
-                <h3><span class="icon">🎭</span> Agent Roles</h3>
-                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:15px;">
-                    <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:8px; border-left:3px solid #48bb78;">
-                        <strong style="color:#48bb78;">MASTER</strong>
-                        <div style="color:#a0aec0; font-size:0.8em;">Coordinates other agents</div>
+                <h3><span class="icon">📚</span> Documentation</h3>
+                <p style="color:#a0aec0; margin-bottom:15px;">
+                    Vireo v3.0.0 API Documentation and Guides.
+                </p>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                    <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:10px; border-left:3px solid #48bb78;">
+                        <strong style="color:#48bb78;">📄 README</strong>
+                        <div style="color:#a0aec0; font-size:0.85em; margin-top:5px;">Project overview and quick start</div>
+                        <a href="/docs" style="color:#48bb78; font-size:0.9em;">Open →</a>
                     </div>
-                    <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:8px; border-left:3px solid #63b3ed;">
-                        <strong style="color:#63b3ed;">WORKER</strong>
-                        <div style="color:#a0aec0; font-size:0.8em;">Executes tasks</div>
+                    <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:10px; border-left:3px solid #9f7aea;">
+                        <strong style="color:#9f7aea;">📡 API Reference</strong>
+                        <div style="color:#a0aec0; font-size:0.85em; margin-top:5px;">All API endpoints and methods</div>
+                        <a href="/api/docs" style="color:#9f7aea; font-size:0.9em;">Open →</a>
                     </div>
-                    <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:8px; border-left:3px solid #ed8936;">
-                        <strong style="color:#ed8936;">EXECUTOR</strong>
-                        <div style="color:#a0aec0; font-size:0.8em;">Compute-intensive tasks</div>
+                    <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:10px; border-left:3px solid #63b3ed;">
+                        <strong style="color:#63b3ed;">🔌 WebSocket</strong>
+                        <div style="color:#a0aec0; font-size:0.85em; margin-top:5px;">Real-time communication</div>
+                        <a href="/api/health" style="color:#63b3ed; font-size:0.9em;">Check →</a>
                     </div>
-                    <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:8px; border-left:3px solid #9f7aea;">
-                        <strong style="color:#9f7aea;">GUARDIAN</strong>
-                        <div style="color:#a0aec0; font-size:0.8em;">Verification & security</div>
-                    </div>
-                    <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:8px; border-left:3px solid #fc8181;">
-                        <strong style="color:#fc8181;">RESEARCHER</strong>
-                        <div style="color:#a0aec0; font-size:0.8em;">Research & analysis</div>
-                    </div>
-                    <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:8px; border-left:3px solid #48bb78;">
-                        <strong style="color:#48bb78;">ANALYST</strong>
-                        <div style="color:#a0aec0; font-size:0.8em;">Data analysis</div>
-                    </div>
-                    <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:8px; border-left:3px solid #ed8936;">
-                        <strong style="color:#ed8936;">TEACHER</strong>
-                        <div style="color:#a0aec0; font-size:0.8em;">Training & education</div>
-                    </div>
-                    <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:8px; border-left:3px solid #a0aec0;">
-                        <strong style="color:#a0aec0;">CUSTOM</strong>
-                        <div style="color:#a0aec0; font-size:0.8em;">User-defined role</div>
+                    <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:10px; border-left:3px solid #ed8936;">
+                        <strong style="color:#ed8936;">🚀 Quick Start</strong>
+                        <div style="color:#a0aec0; font-size:0.85em; margin-top:5px;">Get started with Vireo</div>
+                        <a href="/" style="color:#ed8936; font-size:0.9em;">API Home →</a>
                     </div>
                 </div>
-                <button class="btn btn-purple" onclick="listRoles()">🎭 List All Roles</button>
-                <div id="roles-result" class="result-box info" style="margin-top:15px;">
-                    🎭 Click to see available agent roles.
+                <div style="margin-top:15px; padding:15px; background:rgba(255,255,255,0.03); border-radius:10px;">
+                    <p style="color:#718096; font-size:0.85em;">
+                        📚 Full documentation available at <a href="/docs" style="color:#48bb78;">/docs</a>
+                    </p>
                 </div>
             </div>
         </div>
@@ -801,31 +816,15 @@ output result</textarea>
         <!-- ============================================================ -->
         <div id="tab-security" class="tab-content">
             <div class="card">
-                <h3><span class="icon">🔐</span> Security & Cryptography</h3>
+                <h3><span class="icon">🔐</span> Security v3.0.0</h3>
                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
                     <button class="btn btn-green" onclick="generateKeys()">🔑 Generate Keys</button>
-                    <button class="btn btn-orange" onclick="signMessage()">✍️ Sign Message</button>
-                    <button class="btn btn-purple" onclick="testTrust()">🔒 Test Trust</button>
+                    <button class="btn btn-orange" onclick="signMessageV3()">✍️ Sign Message</button>
+                    <button class="btn btn-purple" onclick="verifySignature()">✅ Verify Signature</button>
+                    <button class="btn btn-blue" onclick="testTrust()">🔒 Test Trust</button>
                 </div>
                 <div id="security-result" class="result-box info" style="margin-top:15px;">
                     🔐 Security tools ready.
-                </div>
-            </div>
-        </div>
-
-        <!-- ============================================================ -->
-        <!-- TAB: MODELS -->
-        <!-- ============================================================ -->
-        <div id="tab-models" class="tab-content">
-            <div class="card">
-                <h3><span class="icon">🧠</span> Models Management</h3>
-                <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                    <button class="btn btn-blue" onclick="listModels()">📋 List Models</button>
-                    <button class="btn btn-green" onclick="loadModel()">📥 Load Model</button>
-                    <button class="btn btn-purple" onclick="predictModel()">🔮 Predict</button>
-                </div>
-                <div id="models-result" class="result-box info" style="margin-top:15px;">
-                    🧠 Models ready.
                 </div>
             </div>
         </div>
@@ -835,14 +834,15 @@ output result</textarea>
         <!-- ============================================================ -->
         <footer class="footer">
             <p>
-                🌿 <strong>Vireo v2.0.2</strong> — The World's First AI-to-AI Communication Language
+                🌿 <strong>Vireo v3.0.0</strong> — The World's First AI-to-AI Communication Language
             </p>
             <p style="margin-top:5px;">
-                <a href="https://github.com/serhohro/vireo-ai-communicator-api" target="_blank">GitHub</a> ·
-                <a href="/docs">Documentation</a> ·
-                <span style="color:#9f7aea;">🤖 Real AI-to-AI</span> ·
-                <span style="color:#ed8936;">🔥 Mistral AI</span> ·
-                <span style="color:#63b3ed;">🚧 v2.0.2</span>
+                <a href="https://github.com/serhohro/vireo-ai-communicator-4" target="_blank">GitHub</a> ·
+                <a href="/docs">📚 Documentation</a> ·
+                <a href="/api/docs">📡 API Docs</a> ·
+                <span style="color:#48bb78;">🇪🇺 EU Providers</span> ·
+                <span style="color:#63b3ed;">⚡ WASM</span> ·
+                <span style="color:#ed8936;">🦀 Rust</span>
             </p>
             <p class="quote">
                 "Let PyTorch handle the tensors; let Vireo handle the trust." — Qwen
@@ -855,7 +855,6 @@ output result</textarea>
     <!-- JAVASCRIPT -->
     <!-- ============================================================ -->
     <script>
-
         // ============================================================
         // NAVIGATION
         // ============================================================
@@ -871,33 +870,75 @@ output result</textarea>
         // ============================================================
         // HELPERS
         // ============================================================
+        const BASE_URL = window.location.origin;
+
         function showResult(elementId, message, type = 'info') {
             const el = document.getElementById(elementId);
-            const types = {
-                'success': '✅',
-                'error': '❌',
-                'warning': '⚠️',
-                'info': 'ℹ️'
-            };
-            const icon = types[type] || 'ℹ️';
+            if (!el) return;
+            const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
             el.className = `result-box ${type}`;
-            el.textContent = `${icon} ${message}`;
+            el.textContent = `${icons[type] || 'ℹ️'} ${message}`;
         }
 
-        function getAgentId(prefix) {
-            return document.getElementById(prefix + '-id').value.trim();
-        }
-
-        function getAgentModel(prefix) {
-            return document.getElementById(prefix + '-model').value.trim();
-        }
-
-        function getCapability(prefix) {
-            return document.getElementById(prefix + '-capability').value.trim();
+        async function apiCall(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }
+                });
+                return await response.json();
+            } catch (e) {
+                return { error: e.message };
+            }
         }
 
         // ============================================================
-        // AUTONOMOUS
+        // WEBSOCKET
+        // ============================================================
+        let ws = null;
+        let wsStatus = document.getElementById('ws-status');
+
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const url = `${protocol}//${window.location.host}/socket.io/`;
+            try {
+                ws = new WebSocket(url);
+                ws.onopen = () => {
+                    wsStatus.textContent = 'Connected';
+                    wsStatus.className = 'ws-status connected';
+                    console.log('✅ WebSocket connected');
+                };
+                ws.onclose = () => {
+                    wsStatus.textContent = 'Disconnected';
+                    wsStatus.className = 'ws-status disconnected';
+                    setTimeout(connectWebSocket, 5000);
+                };
+                ws.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        console.log('📨 WebSocket message:', data);
+                    } catch (e) {}
+                };
+            } catch (e) {
+                console.warn('WebSocket not available:', e);
+            }
+        }
+
+        // ============================================================
+        // SERVER STATUS
+        // ============================================================
+        async function checkServerStatus() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                document.getElementById('server-status').textContent = data.version || 'Running';
+            } catch (e) {
+                document.getElementById('server-status').textContent = 'Offline';
+            }
+        }
+
+        // ============================================================
+        // AUTONOMOUS (v3)
         // ============================================================
         async function startAutonomous() {
             const agentA = document.getElementById('auto-agent-a').value.trim();
@@ -913,35 +954,26 @@ output result</textarea>
             showResult('auto-result', '🚀 Starting autonomous negotiation...', 'info');
 
             try {
-                // Спочатку реєструємо агентів
-                await fetch('/api/agent/register', {
+                // Register agents
+                await apiCall('/api/v3/agent/register', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: agentA, model: 'qwen2.5-coder:latest' })
+                    body: JSON.stringify({ id: agentA, name: agentA, model: 'qwen2.5-coder:latest' })
                 });
-                await fetch('/api/agent/register', {
+                await apiCall('/api/v3/agent/register', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: agentB, model: 'qwen2.5-coder:latest' })
+                    body: JSON.stringify({ id: agentB, name: agentB, model: 'qwen2.5-coder:latest' })
                 });
 
-                const response = await fetch(`/api/llm/agent/${agentA}/auto_negotiate`, {
+                const data = await apiCall(`/api/llm/agent/${agentA}/auto_negotiate`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        recipient: agentB,
-                        task: task,
-                        provider: provider
-                    })
+                    body: JSON.stringify({ recipient: agentB, task, provider })
                 });
-
-                const data = await response.json();
 
                 if (data.status === 'success') {
                     let output = '✅ AUTONOMOUS NEGOTIATION COMPLETE!\n\n';
                     output += `Sender: ${data.sender}\n`;
                     output += `Recipient: ${data.recipient}\n`;
-                    output += `Decision: ${data.decision.decision}\n`;
+                    output += `Decision: ${data.decision?.decision || 'commit'}\n`;
                     output += `Task: ${task}\n\n`;
                     output += JSON.stringify(data, null, 2);
                     showResult('auto-result', output, 'success');
@@ -953,12 +985,36 @@ output result</textarea>
             }
         }
 
+        async function formalVerify() {
+            showResult('auto-result', '🧠 Running formal verification...', 'info');
+            try {
+                const data = await apiCall('/api/v3/formal/verify', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        contract: {
+                            id: 'test-contract',
+                            parties: ['agent-vision', 'agent-training'],
+                            terms: { max_tokens: 1000 }
+                        },
+                        properties: ['safety', 'liveness']
+                    })
+                });
+                if (data.verified) {
+                    showResult('auto-result', `✅ Formal verification passed!\n${JSON.stringify(data.details, null, 2)}`, 'success');
+                } else {
+                    showResult('auto-result', `❌ Formal verification failed: ${JSON.stringify(data.details)}`, 'error');
+                }
+            } catch (e) {
+                showResult('auto-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
         // ============================================================
-        // AGENTS (ВИПРАВЛЕНО)
+        // AGENTS (v3)
         // ============================================================
-        async function registerAgent(prefix) {
-            const id = getAgentId(prefix);
-            const model = getAgentModel(prefix);
+        async function registerAgentV3(prefix) {
+            const id = document.getElementById(prefix + '-id').value.trim();
+            const did = document.getElementById(prefix + '-did').value.trim();
 
             if (!id) {
                 showResult('agents-result', '⚠️ Please enter Agent ID.', 'warning');
@@ -966,114 +1022,56 @@ output result</textarea>
             }
 
             try {
-                const response = await fetch('/api/agent/register', {
+                const data = await apiCall('/api/v3/agent/register', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id, model })
+                    body: JSON.stringify({ id, name: id, did: did || undefined })
                 });
-                const data = await response.json();
-
-                if (data.success) {
-                    showResult('agents-result', `✅ Agent ${id} registered successfully!`, 'success');
-                } else {
-                    showResult('agents-result', `❌ Error: ${data.error}`, 'error');
-                }
+                showResult('agents-result', data.success ?
+                    `✅ Agent ${id} registered!` :
+                    `❌ Error: ${data.error}`, data.success ? 'success' : 'error');
             } catch (e) {
                 showResult('agents-result', `❌ Error: ${e.message}`, 'error');
             }
         }
 
-        async function addCapability(prefix) {
-            const id = getAgentId(prefix);
-            const capability = getCapability(prefix);
-
-            if (!id || !capability) {
-                showResult('agents-result', '⚠️ Please enter Agent ID and Capability name.', 'warning');
-                return;
-            }
-
+        async function listAgentsV3() {
             try {
-                const response = await fetch(`/api/agent/${id}/capability`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: capability, description: '' })
-                });
-                const data = await response.json();
-
-                if (data.success) {
-                    showResult('agents-result', `✅ Capability "${capability}" added to ${id}!`, 'success');
-                    document.getElementById(prefix + '-capability').value = '';
-                } else {
-                    showResult('agents-result', `❌ Error: ${data.error}`, 'error');
-                }
-            } catch (e) {
-                showResult('agents-result', `❌ Error: ${e.message}`, 'error');
-            }
-        }
-
-        async function listAgents() {
-            try {
-                const response = await fetch('/api/agent/list');
-                const data = await response.json();
-
-                if (data.success) {
-                    let output = '📋 Registered Agents:\n\n';
-                    const agents = Object.keys(data.details);
-                    if (agents.length === 0) {
-                        output += 'No agents registered yet.';
-                    } else {
-                        agents.forEach(id => {
-                            const agent = data.details[id];
-                            output += `🤖 ${id}\n`;
-                            output += `   Model: ${agent.model}\n`;
-                            output += `   Status: ${agent.status}\n`;
-                            if (agent.capabilities && agent.capabilities.length > 0) {
-                                const caps = agent.capabilities.map(c => typeof c === 'string' ? c : c.name || c).join(', ');
-                                output += `   Capabilities: ${caps}\n`;
-                            }
-                            output += '\n';
-                        });
-                        output += `📊 Total: ${agents.length} agents`;
-                    }
+                const data = await apiCall('/api/v3/agents');
+                if (data.agents) {
+                    let output = '📋 Agents (v3):\n\n';
+                    Object.entries(data.agents).forEach(([id, agent]) => {
+                        output += `🤖 ${id}\n`;
+                        output += `   DID: ${agent.did || 'N/A'}\n`;
+                        output += `   Status: ${agent.status}\n`;
+                        output += `   Capabilities: ${(agent.capabilities || []).join(', ') || 'none'}\n\n`;
+                    });
+                    output += `📊 Total: ${data.total || Object.keys(data.agents).length} agents`;
                     showResult('agents-result', output, 'info');
                 } else {
-                    showResult('agents-result', `❌ Error: ${data.error}`, 'error');
+                    showResult('agents-result', '📋 No agents found.', 'warning');
                 }
             } catch (e) {
                 showResult('agents-result', `❌ Error: ${e.message}`, 'error');
             }
         }
 
-        // ============================================================
-        // GET AGENT STATUS (ВИПРАВЛЕНО)
-        // ============================================================
-        async function getAgentStatus() {
+        async function getAgentStatusV3() {
             const id = document.getElementById('status-agent-id').value.trim();
-
             if (!id) {
-                showResult('agents-result', '⚠️ Please enter an Agent ID in the field above.', 'warning');
+                showResult('agents-result', '⚠️ Please enter Agent ID.', 'warning');
                 return;
             }
-
             try {
-                const response = await fetch(`/api/agent/${id}/status`);
-                const data = await response.json();
-
-                if (data.success) {
-                    const agent = data.agent;
-                    let output = `🔍 Agent: ${agent.id}\n`;
-                    output += `   Model: ${agent.model}\n`;
-                    output += `   Status: ${agent.status}\n`;
-                    output += `   Registered: ${agent.registered_at || 'N/A'}\n`;
-                    if (agent.capabilities && agent.capabilities.length > 0) {
-                        const caps = agent.capabilities.map(c => typeof c === 'string' ? c : c.name || c).join(', ');
-                        output += `   Capabilities: ${caps}`;
-                    } else {
-                        output += '   Capabilities: none';
-                    }
+                const data = await apiCall(`/api/v3/agent/${id}/status`);
+                if (data.agent) {
+                    const a = data.agent;
+                    let output = `🔍 Agent: ${a.id}\n`;
+                    output += `   DID: ${a.did || 'N/A'}\n`;
+                    output += `   Status: ${a.status}\n`;
+                    output += `   Capabilities: ${(a.capabilities || []).join(', ') || 'none'}`;
                     showResult('agents-result', output, 'info');
                 } else {
-                    showResult('agents-result', `❌ Error: ${data.error}`, 'error');
+                    showResult('agents-result', `❌ ${data.error || 'Agent not found'}`, 'error');
                 }
             } catch (e) {
                 showResult('agents-result', `❌ Error: ${e.message}`, 'error');
@@ -1081,13 +1079,12 @@ output result</textarea>
         }
 
         // ============================================================
-        // CONTRACTS (v2.0.2)
+        // CONTRACTS (v3)
         // ============================================================
-        async function createContract() {
+        async function createContractV3() {
             const parties = document.getElementById('contract-parties').value.split(',').map(s => s.trim());
             const maxTokens = parseInt(document.getElementById('contract-max-tokens').value);
             const timeout = parseInt(document.getElementById('contract-timeout').value);
-            const maxCost = parseFloat(document.getElementById('contract-max-cost').value);
 
             let obligations;
             try {
@@ -1097,45 +1094,64 @@ output result</textarea>
                 return;
             }
 
-            const data = {
-                parties: parties,
-                terms: {
-                    max_tokens: maxTokens,
-                    timeout_sec: timeout,
-                    max_cost_usd: maxCost
-                },
-                obligations: obligations,
-                on_failure: 'escalate'
-            };
-
             showResult('contract-create-result', '⏳ Creating contract...', 'info');
 
             try {
-                const response = await fetch('/api/v2/contracts', {
+                const data = await apiCall('/api/v3/propose', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify({
+                        contract_id: `contract-${Date.now()}`,
+                        parties,
+                        terms: { max_tokens: maxTokens, timeout_sec: timeout },
+                        obligations,
+                        on_failure: 'escalate'
+                    })
                 });
-                const result = await response.json();
 
-                if (result.success) {
-                    let output = `✅ Contract created successfully!\n`;
-                    output += `Contract ID: ${result.contract_id}\n`;
-                    output += `Status: ${result.contract.status}\n`;
-                    output += `Parties: ${result.contract.parties.join(', ')}`;
+                if (data.contract) {
+                    let output = `✅ Contract created!\n`;
+                    output += `ID: ${data.contract.id}\n`;
+                    output += `Status: ${data.contract.status}\n`;
+                    output += `Parties: ${data.contract.parties.join(', ')}`;
                     showResult('contract-create-result', output, 'success');
-                    document.getElementById('execute-contract-id').value = result.contract_id;
+                    document.getElementById('execute-contract-id').value = data.contract.id;
                 } else {
-                    showResult('contract-create-result', `❌ Error: ${result.error}`, 'error');
+                    showResult('contract-create-result', `❌ ${data.error || 'Unknown error'}`, 'error');
                 }
             } catch (e) {
                 showResult('contract-create-result', `❌ Error: ${e.message}`, 'error');
             }
         }
 
-        async function executeContract() {
-            const contractId = document.getElementById('execute-contract-id').value.trim();
+        async function formalVerifyContract() {
+            showResult('contract-create-result', '🧠 Formal verification...', 'info');
+            try {
+                const data = await apiCall('/api/v3/formal/verify', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        contract: {
+                            parties: document.getElementById('contract-parties').value.split(',').map(s => s.trim()),
+                            terms: {
+                                max_tokens: parseInt(document.getElementById('contract-max-tokens').value),
+                                timeout_sec: parseInt(document.getElementById('contract-timeout').value)
+                            }
+                        },
+                        properties: ['safety', 'liveness', 'fairness']
+                    })
+                });
+                showResult('contract-create-result',
+                    data.verified ?
+                    '✅ Contract is mathematically correct!' :
+                    '❌ Contract has issues: ' + JSON.stringify(data.details),
+                    data.verified ? 'success' : 'error'
+                );
+            } catch (e) {
+                showResult('contract-create-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
 
+        async function executeContractV3() {
+            const contractId = document.getElementById('execute-contract-id').value.trim();
             if (!contractId) {
                 showResult('contract-execute-result', '⚠️ Please enter a Contract ID.', 'warning');
                 return;
@@ -1144,183 +1160,393 @@ output result</textarea>
             showResult('contract-execute-result', '⏳ Executing contract...', 'info');
 
             try {
-                const response = await fetch(`/api/v2/contracts/${contractId}/execute`, {
-                    method: 'POST'
+                const data = await apiCall('/api/v3/execute', {
+                    method: 'POST',
+                    body: JSON.stringify({ contract_id: contractId, executor: 'agent-vision' })
                 });
-                const result = await response.json();
 
-                if (result.success) {
-                    let output = `✅ Contract executed successfully!\n`;
-                    output += `Status: ${result.execution.status}\n`;
-                    output += `Results: ${JSON.stringify(result.execution.results, null, 2)}`;
+                if (data.result) {
+                    let output = `✅ Executed!\n`;
+                    output += `Execution ID: ${data.execution_id}\n`;
+                    output += `Status: ${data.result.status}`;
                     showResult('contract-execute-result', output, 'success');
                 } else {
-                    showResult('contract-execute-result', `❌ Error: ${result.error}`, 'error');
+                    showResult('contract-execute-result', `❌ ${data.error || 'Unknown error'}`, 'error');
                 }
             } catch (e) {
                 showResult('contract-execute-result', `❌ Error: ${e.message}`, 'error');
             }
         }
 
-        async function verifyContract() {
+        async function verifyContractV3() {
             const contractId = document.getElementById('execute-contract-id').value.trim();
-
             if (!contractId) {
                 showResult('contract-execute-result', '⚠️ Please enter a Contract ID.', 'warning');
                 return;
             }
 
-            showResult('contract-execute-result', '⏳ Verifying contract...', 'info');
+            showResult('contract-execute-result', '⏳ Verifying...', 'info');
 
             try {
-                const response = await fetch(`/api/v2/contracts/${contractId}/verify`, {
-                    method: 'POST'
+                const data = await apiCall('/api/v3/verify', {
+                    method: 'POST',
+                    body: JSON.stringify({ contract_id: contractId })
                 });
-                const result = await response.json();
 
-                if (result.success) {
-                    let output = `🔐 Verification complete!\n`;
-                    output += `Verified: ${result.verification.verified}\n`;
-                    output += `Proof: ${result.verification.proof}\n`;
-                    output += `Details: ${JSON.stringify(result.verification.details, null, 2)}`;
-                    showResult('contract-execute-result', output, 'success');
+                if (data.verified !== undefined) {
+                    showResult('contract-execute-result',
+                        data.verified ? '✅ Contract verified!' : '❌ Verification failed',
+                        data.verified ? 'success' : 'error'
+                    );
                 } else {
-                    showResult('contract-execute-result', `❌ Error: ${result.error}`, 'error');
+                    showResult('contract-execute-result', `❌ ${data.error || 'Unknown error'}`, 'error');
                 }
             } catch (e) {
                 showResult('contract-execute-result', `❌ Error: ${e.message}`, 'error');
             }
         }
 
-        async function listContracts() {
-            showResult('contract-list-result', '⏳ Loading contracts...', 'info');
+        // ============================================================
+        // OPEN WIRE
+        // ============================================================
+        async function sendWireMessage() {
+            const type = document.getElementById('wire-message-type').value.trim();
+            const sender = document.getElementById('wire-sender').value.trim();
+            const recipient = document.getElementById('wire-recipient').value.trim();
+            let payload;
+            try {
+                payload = JSON.parse(document.getElementById('wire-payload').value);
+            } catch (e) {
+                showResult('wire-result', '❌ Invalid JSON payload.', 'error');
+                return;
+            }
+
+            showResult('wire-result', '⏳ Sending Open Wire message...', 'info');
 
             try {
-                const response = await fetch('/api/v2/contracts');
-                if (response.status === 404) {
-                    showResult('contract-list-result', '📋 No contracts created yet. Use "Create Contract" above.', 'warning');
-                    return;
-                }
-                const result = await response.json();
+                const data = await apiCall('/api/v3/message', {
+                    method: 'POST',
+                    body: JSON.stringify({ type, sender, recipient, payload })
+                });
 
-                if (result.success && result.contracts && result.contracts.length > 0) {
-                    let output = '📋 Contracts List:\n\n';
-                    result.contracts.forEach(c => {
-                        output += `📄 ${c.contract_id} [${c.status}]\n`;
-                        output += `   Parties: ${c.parties.join(', ')}\n`;
-                        output += `   Created: ${c.created_at || 'N/A'}\n\n`;
-                    });
-                    output += `📊 Total: ${result.contracts.length} contracts`;
-                    showResult('contract-list-result', output, 'info');
+                if (data.message_id) {
+                    let output = `✅ Message sent!\n`;
+                    output += `ID: ${data.message_id}\n`;
+                    output += `Type: ${data.type}\n`;
+                    output += `Wire size: ${data.wire_size} bytes`;
+                    showResult('wire-result', output, 'success');
                 } else {
-                    showResult('contract-list-result', '📋 No contracts found.', 'warning');
+                    showResult('wire-result', `❌ ${data.error || 'Unknown error'}`, 'error');
                 }
             } catch (e) {
-                let output = '📋 Use these API endpoints to manage contracts:\n\n';
-                output += 'POST   /api/v2/contracts              - Create contract\n';
-                output += 'GET    /api/v2/contracts/{id}         - Get contract\n';
-                output += 'POST   /api/v2/contracts/{id}/execute - Execute contract\n';
-                output += 'POST   /api/v2/contracts/{id}/verify  - Verify contract\n';
-                showResult('contract-list-result', output, 'info');
+                showResult('wire-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function sendWireBinary() {
+            showResult('wire-result', '⏳ Sending binary message...', 'info');
+            try {
+                const msg = {
+                    type: document.getElementById('wire-message-type').value.trim(),
+                    sender: document.getElementById('wire-sender').value.trim(),
+                    recipient: document.getElementById('wire-recipient').value.trim(),
+                    payload: { test: 'binary' }
+                };
+
+                const response = await fetch('/api/v3/message/binary', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/octet-stream' },
+                    body: JSON.stringify(msg)
+                });
+                const data = await response.json();
+                showResult('wire-result',
+                    data.success ? `✅ Binary sent! Size: ${data.size} bytes` :
+                    `❌ ${data.error || 'Unknown error'}`,
+                    data.success ? 'success' : 'error'
+                );
+            } catch (e) {
+                showResult('wire-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function getWireVersion() {
+            try {
+                const data = await apiCall('/api/v3/protocol/version');
+                let output = '📡 Protocol Version:\n\n';
+                output += `Version: ${data.version}\n`;
+                output += `Protocol: ${data.protocol}\n`;
+                output += `Wire Format: ${data.wire_format}\n`;
+                output += `Features: ${(data.features || []).join(', ')}`;
+                showResult('wire-result', output, 'info');
+            } catch (e) {
+                showResult('wire-result', `❌ Error: ${e.message}`, 'error');
             }
         }
 
         // ============================================================
-        // EXECUTE
+        // DIDs
         // ============================================================
-        async function executeCode() {
-            const code = document.getElementById('execute-code').value;
-
-            if (!code) {
-                showResult('execute-result', '⚠️ Please enter Vireo code.', 'warning');
+        async function createDID() {
+            const name = document.getElementById('did-name').value.trim();
+            if (!name) {
+                showResult('did-result', '⚠️ Please enter a name.', 'warning');
                 return;
             }
 
-            showResult('execute-result', '⏳ Executing code...', 'info');
+            showResult('did-result', '⏳ Creating DID...', 'info');
 
             try {
-                const response = await fetch('/api/interpreter', {
+                const data = await apiCall('/api/v3/did/create', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name })
+                });
+
+                if (data.did) {
+                    let output = `🔑 DID Created!\n\n`;
+                    output += `DID: ${data.did}\n`;
+                    output += `Public Key: ${data.public_key || 'N/A'}\n`;
+                    output += `Created: ${data.created_at || 'N/A'}`;
+                    showResult('did-result', output, 'success');
+                } else {
+                    showResult('did-result', `❌ ${data.error || 'Unknown error'}`, 'error');
+                }
+            } catch (e) {
+                showResult('did-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function verifyDID() {
+            const did = document.getElementById('did-verify-id').value.trim();
+            if (!did) {
+                showResult('did-result', '⚠️ Please enter a DID.', 'warning');
+                return;
+            }
+
+            showResult('did-result', '⏳ Verifying DID...', 'info');
+
+            try {
+                const data = await apiCall('/api/v3/did/verify', {
+                    method: 'POST',
+                    body: JSON.stringify({ did, proof: 'mock_proof' })
+                });
+
+                showResult('did-result',
+                    data.verified ? `✅ DID verified: ${did}` :
+                    `❌ DID verification failed: ${data.error || 'Unknown'}`,
+                    data.verified ? 'success' : 'error'
+                );
+            } catch (e) {
+                showResult('did-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function establishTrust() {
+            const agentA = document.getElementById('trust-agent-a').value.trim();
+            const agentB = document.getElementById('trust-agent-b').value.trim();
+
+            if (!agentA || !agentB) {
+                showResult('did-result', '⚠️ Please enter both DIDs.', 'warning');
+                return;
+            }
+
+            showResult('did-result', '⏳ Establishing trust...', 'info');
+
+            try {
+                const data = await apiCall('/api/v3/trust/establish', {
+                    method: 'POST',
+                    body: JSON.stringify({ agent_a: agentA, agent_b: agentB })
+                });
+
+                if (data.trust) {
+                    let output = `🔒 Trust established!\n\n`;
+                    output += `Agent A: ${data.trust.agent_a}\n`;
+                    output += `Agent B: ${data.trust.agent_b}\n`;
+                    output += `Trust Level: ${data.trust.trust_level}`;
+                    showResult('did-result', output, 'success');
+                } else {
+                    showResult('did-result', `❌ ${data.error || 'Unknown error'}`, 'error');
+                }
+            } catch (e) {
+                showResult('did-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        // ============================================================
+        // WASM
+        // ============================================================
+        async function compileWASM() {
+            const code = document.getElementById('wasm-code').value.trim();
+            if (!code) {
+                showResult('wasm-result', '⚠️ Please enter Vireo code.', 'warning');
+                return;
+            }
+
+            showResult('wasm-result', '⏳ Compiling to WASM...', 'info');
+
+            try {
+                const data = await apiCall('/api/v3/wasm/compile', {
+                    method: 'POST',
                     body: JSON.stringify({ code })
                 });
-                const data = await response.json();
 
-                if (data.success) {
-                    let output = `✅ Code executed successfully!\n\n`;
-                    output += `Result: ${data.result}\n`;
-                    output += `Output: ${data.output}`;
-                    showResult('execute-result', output, 'success');
+                if (data.wasm_size) {
+                    let output = `⚡ WASM compiled!\n\n`;
+                    output += `Size: ${data.wasm_size} bytes\n`;
+                    output += `Format: ${data.format}`;
+                    showResult('wasm-result', output, 'success');
                 } else {
-                    showResult('execute-result', `❌ Error: ${data.error}`, 'error');
+                    showResult('wasm-result', `❌ ${data.error || 'Unknown error'}`, 'error');
                 }
             } catch (e) {
-                showResult('execute-result', `❌ Error: ${e.message}`, 'error');
+                showResult('wasm-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function executeWASM() {
+            showResult('wasm-result', '⏳ Executing WASM...', 'info');
+
+            try {
+                const data = await apiCall('/api/v3/wasm/execute', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        wasm_module: 'mock_wasm_module',
+                        params: { input: 'test_data' }
+                    })
+                });
+
+                if (data.result) {
+                    showResult('wasm-result', `✅ WASM executed!\nResult: ${JSON.stringify(data.result, null, 2)}`, 'success');
+                } else {
+                    showResult('wasm-result', `❌ ${data.error || 'Unknown error'}`, 'error');
+                }
+            } catch (e) {
+                showResult('wasm-result', `❌ Error: ${e.message}`, 'error');
             }
         }
 
         // ============================================================
-        // NEURAL
+        // RUST
         // ============================================================
-        async function buildNeural() {
-            let layers;
+        async function rustStatus() {
             try {
-                layers = JSON.parse(document.getElementById('neural-layers').value);
+                const data = await apiCall('/api/v3/rust/status');
+                let output = '🦀 Rust Status:\n\n';
+                output += `Available: ${data.available ? '✅' : '❌'}\n`;
+                output += `Version: ${data.version || 'N/A'}\n`;
+                output += `Features: ${(data.features || []).join(', ') || 'N/A'}`;
+                showResult('rust-result', output, data.available ? 'success' : 'info');
             } catch (e) {
-                showResult('neural-result', '❌ Invalid layers format. Use JSON array e.g. [784, 128, 10]', 'error');
+                showResult('rust-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function rustExecute() {
+            showResult('rust-result', '⏳ Executing in Rust...', 'info');
+            try {
+                const data = await apiCall('/api/v3/rust/execute', {
+                    method: 'POST',
+                    body: JSON.stringify({ code: 'fn main() { println!("Hello from Rust!"); }' })
+                });
+                showResult('rust-result',
+                    data.success ? `✅ Rust executed!\n${data.result}` :
+                    `❌ ${data.error || 'Unknown error'}`,
+                    data.success ? 'success' : 'error'
+                );
+            } catch (e) {
+                showResult('rust-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        // ============================================================
+        // MCP
+        // ============================================================
+        async function listMCPTools() {
+            try {
+                const data = await apiCall('/api/v3/mcp/tools');
+                if (data.tools) {
+                    let output = '🔧 MCP Tools:\n\n';
+                    data.tools.forEach(t => {
+                        output += `📌 ${t.name}\n`;
+                        output += `   ${t.description}\n`;
+                        if (t.input_schema) {
+                            output += `   Schema: ${JSON.stringify(t.input_schema)}\n`;
+                        }
+                        output += '\n';
+                    });
+                    output += `📊 Total: ${data.total} tools`;
+                    showResult('mcp-result', output, 'info');
+                } else {
+                    showResult('mcp-result', '📋 No tools found.', 'warning');
+                }
+            } catch (e) {
+                showResult('mcp-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function invokeMCPTool() {
+            const tool = document.getElementById('mcp-tool').value.trim();
+            if (!tool) {
+                showResult('mcp-result', '⚠️ Please enter a tool name.', 'warning');
                 return;
             }
 
-            const activation = document.getElementById('neural-activation').value.trim();
-
-            showResult('neural-result', '⏳ Building network...', 'info');
+            showResult('mcp-result', `⏳ Invoking ${tool}...`, 'info');
 
             try {
-                const response = await fetch('/api/neural', {
+                const data = await apiCall('/api/v3/mcp/invoke', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ layers, activation })
+                    body: JSON.stringify({ tool, params: { test: 'data' } })
                 });
-                const data = await response.json();
 
-                if (data.success) {
-                    let output = `✅ Neural network created!\n\n`;
-                    output += `Layers: ${data.layers.join(' → ')}\n`;
-                    output += `Activation: ${data.activation}\n`;
-                    output += `Message: ${data.message}`;
-                    showResult('neural-result', output, 'success');
+                if (data.result) {
+                    showResult('mcp-result', `✅ ${tool} executed!\n${JSON.stringify(data.result, null, 2)}`, 'success');
                 } else {
-                    showResult('neural-result', `❌ Error: ${data.error}`, 'error');
+                    showResult('mcp-result', `❌ ${data.error || 'Unknown error'}`, 'error');
                 }
             } catch (e) {
-                showResult('neural-result', `❌ Error: ${e.message}`, 'error');
+                showResult('mcp-result', `❌ Error: ${e.message}`, 'error');
             }
         }
 
         // ============================================================
-        // PROVIDERS
+        // PROVIDERS (v3)
         // ============================================================
-        async function listProviders() {
+        async function listProvidersV3() {
             showResult('providers-result', '⏳ Loading providers...', 'info');
-
             try {
                 const response = await fetch('/api/providers');
                 const data = await response.json();
 
                 if (data.success) {
-                    let output = '📡 Available LLM Providers:\n\n';
-                    data.providers.forEach(p => {
-                        output += `🔹 ${p.toUpperCase()}\n`;
-                        if (data.models[p]) {
-                            output += `   Models: ${data.models[p].join(', ')}\n`;
-                        }
-                        output += '\n';
+                    let output = '📡 LLM Providers:\n\n';
+                    
+                    // European providers
+                    output += '🇪🇺 EUROPEAN PROVIDERS:\n';
+                    data.providers.filter(p => p.type === 'eu').forEach(p => {
+                        output += `  🔹 ${p.name} (${p.country})\n`;
+                        output += `     Models: ${p.models.join(', ')}\n`;
+                        output += `     ID: ${p.id}\n\n`;
                     });
-                    output += `📊 Total: ${data.providers.length} providers`;
-                    output += `\n🔢 Total models: ${Object.values(data.models).reduce((a, b) => a + b.length, 0)}`;
+                    
+                    // Local providers
+                    output += '🦙 LOCAL PROVIDERS:\n';
+                    data.providers.filter(p => p.type === 'local').forEach(p => {
+                        output += `  🔹 ${p.name} (${p.country})\n`;
+                        output += `     Models: ${p.models.join(', ')}\n\n`;
+                    });
+                    
+                    // Global providers
+                    output += '🌍 GLOBAL PROVIDERS:\n';
+                    data.providers.filter(p => p.type === 'global').forEach(p => {
+                        output += `  🔹 ${p.name} (${p.country})\n`;
+                        output += `     Models: ${p.models.join(', ')}\n\n`;
+                    });
+                    
+                    output += `📊 Total: ${data.total} providers`;
+                    output += `\n🇪🇺 EU providers: ${data.eu_providers.length}`;
                     showResult('providers-result', output, 'info');
                 } else {
-                    showResult('providers-result', `❌ Error: ${data.error}`, 'error');
+                    showResult('providers-result', `❌ ${data.error || 'Unknown error'}`, 'error');
                 }
             } catch (e) {
                 showResult('providers-result', `❌ Error: ${e.message}`, 'error');
@@ -1328,7 +1554,7 @@ output result</textarea>
         }
 
         // ============================================================
-        // CHAT
+        // CHAT (legacy)
         // ============================================================
         async function sendChat() {
             const message = document.getElementById('chat-message').value.trim();
@@ -1339,25 +1565,22 @@ output result</textarea>
                 return;
             }
 
-            showResult('chat-result', '⏳ Sending message...', 'info');
+            showResult('chat-result', '⏳ Sending...', 'info');
 
             try {
-                const response = await fetch('/api/chat', {
+                const data = await apiCall('/api/chat', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message, models })
                 });
-                const data = await response.json();
 
-                if (data.success) {
-                    let output = `💬 Chat Response:\n\n`;
-                    output += `Message: ${message}\n\n`;
+                if (data.responses) {
+                    let output = `💬 Responses:\n\n`;
                     data.responses.forEach(r => {
                         output += `🤖 ${r.model}: ${r.response}\n\n`;
                     });
                     showResult('chat-result', output, 'success');
                 } else {
-                    showResult('chat-result', `❌ Error: ${data.error}`, 'error');
+                    showResult('chat-result', `❌ ${data.error || 'Unknown error'}`, 'error');
                 }
             } catch (e) {
                 showResult('chat-result', `❌ Error: ${e.message}`, 'error');
@@ -1365,195 +1588,91 @@ output result</textarea>
         }
 
         // ============================================================
-        // ROLES
-        // ============================================================
-        async function listRoles() {
-            showResult('roles-result', '🎭 Available Agent Roles:\n\n' +
-                'MASTER     - Coordinates other agents\n' +
-                'WORKER     - Executes tasks\n' +
-                'EXECUTOR   - Compute-intensive tasks\n' +
-                'GUARDIAN   - Verification & security\n' +
-                'RESEARCHER - Research & analysis\n' +
-                'ANALYST    - Data analysis\n' +
-                'TEACHER    - Training & education\n' +
-                'CUSTOM     - User-defined role\n\n' +
-                '📊 Total: 8 roles', 'info');
-        }
-
-        // ============================================================
-        // SECURITY
+        // SECURITY (v3)
         // ============================================================
         async function generateKeys() {
             showResult('security-result', '⏳ Generating keys...', 'info');
-
             try {
-                const response = await fetch('/api/crypto/generate_keys', {
-                    method: 'POST'
-                });
-                const data = await response.json();
-
+                const data = await apiCall('/api/crypto/generate_keys', { method: 'POST' });
                 if (data.status === 'success') {
-                    let output = `🔑 Ed25519 Keys Generated:\n\n`;
-                    output += `Public Key: ${data.public_key}\n`;
-                    output += `Private Key: ${data.private_key}\n`;
-                    output += `Version: ${data.version || '2.0.1'}`;
+                    let output = '🔑 Ed25519 Keys:\n\n';
+                    output += `Public: ${data.public_key}\n`;
+                    output += `Private: ${data.private_key}`;
                     showResult('security-result', output, 'success');
                 } else {
-                    showResult('security-result', `❌ Error: ${data.message}`, 'error');
+                    showResult('security-result', `❌ ${data.message}`, 'error');
                 }
             } catch (e) {
                 showResult('security-result', `❌ Error: ${e.message}`, 'error');
             }
         }
 
-        async function signMessage() {
-            const message = prompt('Enter message to sign:', 'Hello Vireo Security!');
-
+        async function signMessageV3() {
+            const message = prompt('Enter message to sign:', 'Hello Vireo v3.0.0!');
             if (!message) {
                 showResult('security-result', '⚠️ No message provided.', 'warning');
                 return;
             }
 
-            showResult('security-result', '⏳ Signing message...', 'info');
+            showResult('security-result', '⏳ Signing...', 'info');
 
             try {
-                const response = await fetch('/api/crypto/sign', {
+                const data = await apiCall('/api/crypto/sign', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message })
                 });
-                const data = await response.json();
 
                 if (data.status === 'success') {
-                    let output = `✍️ Message Signed:\n\n`;
+                    let output = `✍️ Signed:\n\n`;
                     output += `Message: ${message}\n`;
-                    output += `Signature: ${data.signature}\n`;
+                    output += `Signature: ${data.signature}`;
                     showResult('security-result', output, 'success');
                 } else {
-                    showResult('security-result', `❌ Error: ${data.message}`, 'error');
+                    showResult('security-result', `❌ ${data.message}`, 'error');
                 }
+            } catch (e) {
+                showResult('security-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function verifySignature() {
+            showResult('security-result', '⏳ Verifying...', 'info');
+            try {
+                const data = await apiCall('/api/crypto/verify', { method: 'POST' });
+                showResult('security-result',
+                    data.valid ? '✅ Signature verified!' : '❌ Invalid signature',
+                    data.valid ? 'success' : 'error'
+                );
             } catch (e) {
                 showResult('security-result', `❌ Error: ${e.message}`, 'error');
             }
         }
 
         async function testTrust() {
-            showResult('security-result', '⏳ Testing trust protocol...', 'info');
-
+            showResult('security-result', '⏳ Testing trust...', 'info');
             try {
-                const response = await fetch('/api/crypto/test_trust', {
-                    method: 'POST'
-                });
-                const data = await response.json();
-
-                if (data.status === 'success') {
-                    let output = `🔒 Trust Protocol Test:\n\n`;
-                    output += `Status: ${data.status}\n`;
-                    output += `Message: ${data.message}\n`;
-                    output += `Version: ${data.version || '2.0.1'}`;
-                    showResult('security-result', output, 'success');
-                } else {
-                    showResult('security-result', `❌ Error: ${data.message}`, 'error');
-                }
+                const data = await apiCall('/api/crypto/test_trust', { method: 'POST' });
+                showResult('security-result',
+                    data.status === 'success' ? '✅ Trust protocol passed!' :
+                    `❌ ${data.message || 'Failed'}`,
+                    data.status === 'success' ? 'success' : 'error'
+                );
             } catch (e) {
                 showResult('security-result', `❌ Error: ${e.message}`, 'error');
             }
         }
 
         // ============================================================
-        // MODELS
-        // ============================================================
-        async function listModels() {
-            showResult('models-result', '⏳ Loading models...', 'info');
-
-            try {
-                const response = await fetch('/models/list');
-                const data = await response.json();
-
-                if (data.success) {
-                    let output = '🧠 Available Models:\n\n';
-                    data.models.forEach(m => {
-                        output += `📦 ${m}\n`;
-                    });
-                    output += `\n📊 Total: ${data.total} models`;
-                    showResult('models-result', output, 'info');
-                } else {
-                    showResult('models-result', `❌ Error: ${data.error}`, 'error');
-                }
-            } catch (e) {
-                showResult('models-result', `❌ Error: ${e.message}`, 'error');
-            }
-        }
-
-        async function loadModel() {
-            const modelName = prompt('Enter model name to load:', 'resnet50');
-
-            if (!modelName) {
-                showResult('models-result', '⚠️ No model name provided.', 'warning');
-                return;
-            }
-
-            showResult('models-result', `⏳ Loading ${modelName}...`, 'info');
-
-            try {
-                const response = await fetch(`/models/load/${modelName}`, {
-                    method: 'POST'
-                });
-                const data = await response.json();
-
-                if (data.success) {
-                    let output = `✅ Model loaded successfully!\n\n`;
-                    output += `Model: ${data.model}\n`;
-                    output += `Device: ${data.device}\n`;
-                    output += `Message: ${data.message}`;
-                    showResult('models-result', output, 'success');
-                } else {
-                    showResult('models-result', `❌ Error: ${data.error}`, 'error');
-                }
-            } catch (e) {
-                showResult('models-result', `❌ Error: ${e.message}`, 'error');
-            }
-        }
-
-        async function predictModel() {
-            const modelName = prompt('Enter model name:', 'resnet50');
-            const text = prompt('Enter text to predict:', 'The future of AI is autonomous');
-
-            if (!modelName || !text) {
-                showResult('models-result', '⚠️ Model name and text required.', 'warning');
-                return;
-            }
-
-            showResult('models-result', '⏳ Running prediction...', 'info');
-
-            try {
-                const response = await fetch(`/models/predict/${modelName}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text })
-                });
-                const data = await response.json();
-
-                if (data.success) {
-                    let output = `🔮 Prediction Result:\n\n`;
-                    output += `Model: ${data.model}\n`;
-                    output += `Result: ${data.result}\n`;
-                    output += `Version: ${data.version || '2.0.1'}`;
-                    showResult('models-result', output, 'success');
-                } else {
-                    showResult('models-result', `❌ Error: ${data.error}`, 'error');
-                }
-            } catch (e) {
-                showResult('models-result', `❌ Error: ${e.message}`, 'error');
-            }
-        }
-
-        // ============================================================
         // INIT
         // ============================================================
-        console.log('🌿 Vireo v2.0.2 Web Interface loaded.');
+        checkServerStatus();
+        connectWebSocket();
+        console.log('🌿 Vireo v3.0.0 Web Interface loaded.');
         console.log('📚 API Docs: http://localhost:5000/api/docs');
         console.log('📡 API Health: http://localhost:5000/api/health');
+
+        // Health check interval
+        setInterval(checkServerStatus, 30000);
     </script>
 
 </body>

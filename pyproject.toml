@@ -1,0 +1,248 @@
+# pyproject.toml — Vireo v3.0.0
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vireo-ai"
+version = "3.0.0"
+description = "Vireo — The World's First AI-to-AI Communication Language"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Serhii", email = "serhohro@vireo.ai"}
+]
+maintainers = [
+    {name = "Vireo Team", email = "team@vireo.ai"}
+]
+
+# Python version
+requires-python = ">=3.9"
+
+# Core dependencies
+dependencies = [
+    "lark>=1.1.0",
+    "click>=8.1.0",
+    "cryptography>=41.0.0",
+    "pynacl>=1.5.0",
+    "blake3>=0.3.0",
+    "protobuf>=4.21.0",
+    "flatbuffers>=23.0.0",
+    "msgpack>=1.0.0",
+    "redis>=4.5.0",
+    "websockets>=11.0.0",
+    "grpcio>=1.54.0",
+    "aiohttp>=3.8.0",
+    "llvmlite>=0.40.0",
+    "numba>=0.57.0",
+    "flask>=2.3.0",
+    "flask-cors>=4.0.0",
+    "flask-socketio>=5.3.0",
+    "python-socketio>=5.9.0",
+    "python-dotenv>=1.0.0",
+    "pyyaml>=6.0",
+    "pydantic>=2.0.0",
+    "click>=8.1.0",
+]
+
+[project.optional-dependencies]
+gpu = [
+    "cupy-cuda11x>=12.0.0",
+    "pyopencl>=2022.3.0",
+]
+wasm = ["wasmtime>=8.0.0"]
+ml = [
+    "numpy>=1.24.0",
+    "torch>=2.0.0",
+    "transformers>=4.30.0",
+    "torchvision>=0.15.0",
+    "pillow>=10.0.0",
+]
+eu-llm = [
+    "mistralai>=0.1.0",
+    "requests>=2.31.0",
+]
+test = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-benchmark>=4.0.0",
+    "pytest-cov>=4.1.0",
+    "pytest-xdist>=3.3.0",
+    "hypothesis>=6.75.0",
+]
+dev = [
+    "black>=23.0.0",
+    "ruff>=0.0.270",
+    "mypy>=1.4.0",
+    "pre-commit>=3.3.0",
+    "isort>=5.12.0",
+    "bandit>=1.7.0",
+    "safety>=2.3.0",
+    "pip-audit>=2.5.0",
+]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.0.0",
+    "mkdocs-autorefs>=0.4.0",
+    "mkdocs-include-markdown-plugin>=4.0.0",
+    "mkdocstrings>=0.22.0",
+    "mkdocstrings-python>=1.0.0",
+]
+prod = [
+    "gunicorn>=21.0.0",
+    "uvicorn>=0.23.0",
+    "python-multipart>=0.0.6",
+    "email-validator>=2.0.0",
+]
+all = [
+    "vireo-ai[gpu,wasm,ml,eu-llm,test,dev,docs,prod]"
+]
+
+[project.urls]
+Homepage = "https://github.com/serhohro/vireo-ai-communicator-4"
+Repository = "https://github.com/serhohro/vireo-ai-communicator-4"
+Documentation = "https://docs.vireo.ai"
+Issues = "https://github.com/serhohro/vireo-ai-communicator-4/issues"
+Changelog = "https://github.com/serhohro/vireo-ai-communicator-4/blob/main/CHANGELOG.md"
+
+[project.scripts]
+vireo = "cli.main:cli"
+vireo-server = "api.server:main"
+vireo-wasm = "runtime.wasm.compiler:main"
+
+[project.entry-points."vireo.providers"]
+mistral = "protocol.llm_provider_eu:MistralProvider"
+aleph_alpha = "protocol.llm_provider_eu:AlephAlphaProvider"
+cohere = "protocol.llm_provider_eu:CohereProvider"
+
+[project.entry-points."vireo.transports"]
+redis = "protocol.transport.redis:RedisTransport"
+websocket = "protocol.transport.websocket:WebSocketTransport"
+grpc = "protocol.transport.grpc:GRPCTransport"
+
+[project.entry-points."vireo.sandboxes"]
+level1 = "core.sandbox.level1:SandboxLevel1"
+level2 = "core.sandbox.level2:SandboxLevel2"
+level3 = "core.sandbox.level3:SandboxLevel3"
+
+[project.entry-points.pytest11]
+vireo = "conftest"
+
+[project.classifiers]
+"Development Status :: 5 - Production/Stable"
+"Intended Audience :: Developers"
+"Intended Audience :: Science/Research"
+"Intended Audience :: Information Technology"
+"License :: OSI Approved :: Apache Software License"
+"Operating System :: OS Independent"
+"Programming Language :: Python :: 3"
+"Programming Language :: Python :: 3.9"
+"Programming Language :: Python :: 3.10"
+"Programming Language :: Python :: 3.11"
+"Programming Language :: Python :: 3.12"
+"Programming Language :: Python :: Implementation :: CPython"
+"Programming Language :: Python :: Implementation :: PyPy"
+"Topic :: Scientific/Engineering :: Artificial Intelligence"
+"Topic :: Scientific/Engineering :: Human-Machine Interfaces"
+"Topic :: Software Development :: Libraries :: Python Modules"
+"Topic :: Software Development :: Embedded Systems"
+"Topic :: System :: Distributed Computing"
+"Topic :: Security :: Cryptography"
+
+# ============================================================
+# TOOL CONFIGURATIONS
+# ============================================================
+
+[tool.black]
+target-version = ['py39', 'py310', 'py311', 'py312']
+line-length = 100
+include = '\.pyi?$'
+
+[tool.ruff]
+target-version = "py39"
+line-length = 100
+select = [
+    "E", "F", "W", "I", "N", "UP", "B", "SIM", "C4", "ARG",
+    "Q", "RUF", "TCH", "TID", "PYI"
+]
+ignore = [
+    "E501",  # line too long (handled by black)
+    "B008",  # function call in default argument
+    "RUF012",  # mutable class attributes
+]
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "build",
+    "dist",
+    "*.egg-info",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+]
+
+[tool.mypy]
+python_version = "3.9"
+strict = true
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+warn_return_any = true
+warn_unreachable = true
+exclude = [
+    "tests",
+    "examples",
+    "scripts",
+]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-v --cov=core --cov=protocol --cov=language --cov=runtime --cov-report=html --cov-report=term"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*", "*Test"]
+python_functions = ["test_*", "*_test"]
+markers = [
+    "benchmark: mark a test as a benchmark",
+    "unit: mark a test as a unit test",
+    "integration: mark a test as an integration test",
+    "conformance: mark a test as a conformance test",
+    "interop: mark a test as an interoperability test",
+    "performance: mark a test as a performance test",
+    "slow: mark a test as slow",
+    "gpu: mark a test as requiring GPU",
+    "wasm: mark a test as requiring WASM",
+]
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+source = ["core", "protocol", "language", "runtime"]
+omit = ["tests/*", "examples/*", "scripts/*", "**/__init__.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+]
+show_missing = true
+
+[tool.pip-audit]
+require_hashes = false
+cache_dir = ".cache/pip-audit"
+desc = false
+dry_run = false
+index_url = "https://pypi.org/simple"

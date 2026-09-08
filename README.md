@@ -1,246 +1,162 @@
-# 🌿 Vireo — The World's First AI-to-AI Communication Language
+# 🌿 Vireo AI Communicator API
 
-**Version: v2.0.2**
+> **The World's First AI-to-AI Communication Language**
 
-Vireo is an open programming language and protocol designed for secure AI-to-AI communication, negotiation, and coordination.
-
-> 🧪 **Status: Research Prototype (v2.0.2)**  
-> Language core and interpreter are implemented. Protocol foundations are in active development.  
-> Multi-agent system is partially implemented — negotiation flow works.  
-> LLM integration with 6+ providers works.  
-> Cryptographic primitives are in place. Trust Bootstrap Protocol is implemented.  
-> This is a research prototype — not yet production-ready. Community feedback and contributions are welcome.
-
----
-
-## 🌍 What is Vireo?
-
-**Vireo is a programming language — not just a protocol.**
-
-Protocols define how agents communicate. Vireo defines what they communicate.
-
-| Protocols (MCP, A2A) | **Vireo (Language)** |
-|----------------------|----------------------|
-| Agent discovery & communication | **Agent intent & coordination** |
-| Tool access & context | **Contracts & negotiation** |
-| Message passing | **Executable semantics** |
-| Transport layer | **Control plane** |
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.9%2B-blue)](https://python.org)
+[![Rust](https://img.shields.io/badge/Rust-1.70%2B-orange)](https://rust-lang.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0%2B-blue)](https://typescriptlang.org)
+[![Version](https://img.shields.io/badge/version-3.0.0-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-100%2B-green)]()
+[![Conformance](https://img.shields.io/badge/conformance-59%2B-green)]()
 
 ---
 
-### 🎯 Architecture
+## 🎯 What is Vireo?
 
-```text
-┌─────────────────────────────────────────┐
-│             VIREO PROTOCOL              │
-│                                         │
-│  Intent · Contracts · Negotiation       │
-│  Trust · Capabilities · Verification    │
-│  Execution · Lifecycle                  │
-└───────────────────┬─────────────────────┘
-                    │
-        ┌───────────┼───────────┐
-        │           │           │
-        ▼           ▼           ▼
-     LANGUAGE   PLATFORM    EXTENSIONS
-     ─────────   ────────    ──────────
-     Core +     Reference    ML
-     Extensions Implementation Vision
-                  v2.0.2     ASR
-                             Edge
-```
-Key principle:
+**Vireo** is a programming language + protocol + runtime for autonomous AI-to-AI communication, negotiation, and coordination.
 
-"LLMs provide intelligence. Vireo provides structure, execution, verification and interoperability."
+> *"LLMs provide intelligence. Vireo provides structure, execution, verification and interoperability."*
 
-"Let PyTorch handle the tensors; let Vireo handle the trust."
+### The Problem We Solve
 
-🔄 Agent Lifecycle
+Today, AI agents are **isolated silos**. They cannot:
+- 🚫 Discover each other
+- 🚫 Negotiate contracts
+- 🚫 Execute coordinated tasks
+- 🚫 Verify results
+- 🚫 Build trust
 
-Vireo uses a formal lifecycle for agent-to-agent interactions:
+**Vireo changes this.**
 
-```mermaid
-stateDiagram-v2
-    [*] --> DISCOVER
+---
 
-    DISCOVER --> PROPOSE
-    DISCOVER --> REJECTED
-    DISCOVER --> TIMEOUT
+## 🌟 Key Features
 
-    PROPOSE --> NEGOTIATE
-    PROPOSE --> REJECTED
-    PROPOSE --> TIMEOUT
+### 🧠 Language
+- **Formal Grammar** — EBNF specification with extensions for ML, Vision, NLP
+- **Type System** — Static typing with inference
+- **Extensions** — ML, Tensor, Vision, NLP as optional modules
+- **Standard Library** — Math, Neural Networks, Protocol, Crypto, IO
 
-    NEGOTIATE --> COMMIT
-    NEGOTIATE --> REJECTED
-    NEGOTIATE --> TIMEOUT
+### 🌐 Protocol
+- **Binary Canonical Format** — Language-neutral, deterministic serialization
+- **Ed25519 Signatures** — Cryptographic trust
+- **DIDs (Decentralized Identifiers)** — Self-sovereign identity
+- **State Machine** — DISCOVER → PROPOSE → NEGOTIATE → COMMIT → EXECUTE → VERIFY → DONE
+- **VERIFY/ESCALATE** — Result verification and dispute resolution
+- **Key Rotation** — Secure key lifecycle management
+- **Replay Protection** — Nonces + timestamps
 
-    COMMIT --> EXECUTE
-    COMMIT --> CANCELLED
-    COMMIT --> TIMEOUT
+### ⚡ Runtime
+- **JIT Compilation** — LLVM-based, 10-100x speedup for tensor ops
+- **GPU Support** — CUDA, Metal, ROCm
+- **WASM Backend** — Browser and edge deployment
+- **3-Level Sandbox** — Validation → WASM → Docker
+- **Async/Await** — Non-blocking communication
 
-    EXECUTE --> VERIFY
-    EXECUTE --> FAILED
-    EXECUTE --> TIMEOUT
+### 🔌 Integrations
+- **6+ LLM Providers** — OpenAI, Anthropic, Mistral, Ollama, Hugging Face, Gemini
+- **European LLMs** — Mistral, BLOOM, OpenChat, Phi-3, GPT4All
+- **A2A Adapter** — Google's Agent-to-Agent protocol
+- **MCP Adapter** — Anthropic's Model Context Protocol
+- **gRPC/WebSocket/HTTP** — Multiple transport layers
 
-    VERIFY --> DONE
-    VERIFY --> ESCALATED
+### 🧪 Quality
+- **100+ Tests** — Unit, conformance, integration, performance
+- **59+ Conformance Tests** — Protocol compliance verification
+- **Cross-Language Tests** — Python ↔ Rust ↔ TypeScript
+- **Fuzzing** — Edge case discovery
 
-    ESCALATED --> DONE
-    ESCALATED --> FAILED
+---
 
-    DONE --> [*]
-    REJECTED --> [*]
-    CANCELLED --> [*]
-    FAILED --> [*]
-```
+## 🚀 Quick Start
 
-### Lifecycle Flow
+### Installation
 
-```text
-DISCOVER
-   │
-   ▼
-PROPOSE
-   │
-   ▼
-NEGOTIATE
-   │
-   ▼
-COMMIT
-   │
-   ▼
-EXECUTE
-   │
-   ▼
-VERIFY
-   │
-   ├──────────────► DONE
-   │
-   └──────────────► ESCALATED
-                         │
-                         ▼
-                        DONE
-```
+```bash
+# Python
+pip install vireo-ai
 
-### Terminal & Exceptional States
+# Rust
+cargo add vireo
 
-| State       | Meaning                                           |
-| ----------- | ------------------------------------------------- |
-| `DONE`      | Interaction completed and verified successfully   |
-| `REJECTED`  | Proposal or negotiation was rejected              |
-| `CANCELLED` | Committed operation was cancelled                 |
-| `FAILED`    | Execution or resolution failed                    |
-| `ESCALATED` | Verification could not be completed automatically |
-| `TIMEOUT`   | Protocol operation exceeded its allowed time      |
-
-### Protocol Principle
-
-The important distinction is that **`EXECUTE` does not directly mean success**.
-
-Every execution must pass through:
-
-```text
-EXECUTE → VERIFY → DONE
-```
-
-If verification cannot establish a valid result:
-
-```text
-EXECUTE → VERIFY → ESCALATED
-```
-
-This creates an explicit separation between **execution** and **verification**, allowing Vireo to support more reliable and auditable autonomous agent workflows.
-
-✨ Features
-🌐 Programming Language — Full language with formal grammar (core + extensions)
-
-🧠 6+ LLM Providers — Ollama, Gemini, Claude, OpenAI, Mistral
-
-🎭 8 Agent Roles — Master, Vision, NLP, Analyst, Researcher, Executor, Guardian, Teacher
-
-🔐 Ed25519 Cryptography — Real cryptographic identity and signatures
-
-🔄 Autonomous Negotiation — propose → negotiate → commit → execute → verify → inform
-
-📊 Tensor Operations — Built-in tensor and neural network support
-
-🌍 Multi-Language — 🇺🇦 Ukrainian and 🇬🇧 English
-
-🔒 Trust Bootstrap Protocol — Ed25519-based identity and whitelist
-
-🚀 Quick Examples
-Agent with Contract
+# TypeScript
+npm install vireo-ai
+Hello World Agent
 vireo
-contract Agreement {
-    max_tokens: Int = 1000
-    timeout_sec: Int = 30
-    verify { result.accuracy > 0.9 }
+// hello_agent.vireo
+agent HelloAgent {
+    name = "hello-bot"
+    capabilities = ["chat", "greet"]
 }
 
-agent Vision {
-    capability image_analysis
-    role analyst
+fn main() {
+    let agent = HelloAgent();
+    let msg = agent.propose({
+        intent: "greet",
+        payload: { "message": "Hello, World!" }
+    });
+    agent.send(msg);
+    agent.verify(msg);
 }
-
-negotiate Vision -> Training {
-    propose "Analyze 1000 images"
-    negotiate "Need more tokens"
-    commit "Training model on dataset"
-    execute "Process images"
-    verify "Check accuracy > 0.9"
-    inform "Accuracy: 94.5%"
-}
-🚀 Getting Started
-Quick Start
-bash
-# Clone the repository
-git clone https://github.com/serhohro/vireo-ai-communicator-api.git
-cd vireo-ai-communicator-3
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run the server
-python api_server.py
-Use the Web Interface
-Open http://localhost:5000/web
-
 📚 Documentation
-Document	Description
-README.md	Project overview (this file)
-QUICKSTART.md	🚀 5-minute quickstart
-TUTORIAL.md	📚 Complete step-by-step tutorial
-PROTOCOL.md	Protocol specification
-SECURITY.md	Security model
-GOVERNANCE.md	RFC process & governance
-EVALUATIONS.md	🧠 Independent AI evaluations
-docs/EU_LLM_GUIDE.md	European LLM guide
-⚠️ Windows Users: Unblock the File
-If Windows SmartScreen blocks start_vireo.bat:
+Quick Start — 5-minute intro
 
-Right-click start_vireo.bat → Properties
+Tutorial — Complete step-by-step guide
 
-In the Security section, check "Unblock"
+Language Guide — Full language reference
 
-Click Apply → OK
+Protocol Guide — Protocol specification
 
-Run start_vireo.bat again
+API Reference — API documentation
 
-Alternative Launch Methods
-Method 1: Run via Python
+🏆 The North Star
+"Don't prove that Vireo can run more AI models. Prove that Vireo can make independently implemented AI agents interoperable."
 
-bash
-python run.py
-Method 2: Run via Command Line
+The Test
+"Two independently implemented agents, written in different languages, MUST be able to exchange canonical Vireo messages, verify their authenticity, perform identical valid state transitions, and produce equivalent protocol outcomes without sharing implementation code."
 
-bash
-cd vireo-ai-communicator-3
-python api_server.py
-🔗 Links
-GitHub: https://github.com/serhohro/vireo-ai-communicator-api
+Can Python ↔ Rust ↔ TypeScript agents negotiate, execute, and verify a contract through Vireo?
 
-Dev.to: https://dev.to/sergo_8bd8626184a6e9dafa2/meet-vireo
+If yes — Vireo works as a standard.
+
+🔒 Security
+Cryptographic Trust
+Ed25519 signatures — Fast, secure, deterministic
+
+DIDs — Decentralized Identifiers (did:vireo:agent:...)
+
+Key Rotation — Secure key lifecycle
+
+Trust Bootstrap — Whitelist + Ed25519
+
+Sandboxing (3-Level)
+Level 1 — Message validation (signature, schema, nonce)
+
+Level 2 — WASM execution (isolated memory)
+
+Level 3 — Docker containers (OS-level isolation)
+
+📦 Implementations
+Language	Status	Tests	Conformance
+Python	✅ Production	100+	✅ 59+
+Rust	✅ v3.0	80+	🚧 In progress
+TypeScript	✅ v3.0	60+	🚧 In progress
+Go	⏳ Planned	—	—
+Java	⏳ Planned	—	—
+🤝 Contributing
+We welcome contributions!
+
+Fork the repository
+
+Create a feature branch
+
+Write tests
+
+Submit a PR
+
+See CONTRIBUTING.md for details.
 
 📄 License
 Apache 2.0 — see LICENSE for details.

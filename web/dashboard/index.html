@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vireo Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <span class="brand-icon">🌿</span>
+                <span class="brand-text">Vireo</span>
+                <span class="brand-version">v3.0</span>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#overview" class="nav-item active" data-section="overview">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-label">Overview</span>
+                </a>
+                <a href="#agents" class="nav-item" data-section="agents">
+                    <span class="nav-icon">🤖</span>
+                    <span class="nav-label">Agents</span>
+                    <span class="nav-badge" id="agentBadge">0</span>
+                </a>
+                <a href="#messages" class="nav-item" data-section="messages">
+                    <span class="nav-icon">💬</span>
+                    <span class="nav-label">Messages</span>
+                    <span class="nav-badge" id="messageBadge">0</span>
+                </a>
+                <a href="#contracts" class="nav-item" data-section="contracts">
+                    <span class="nav-icon">📄</span>
+                    <span class="nav-label">Contracts</span>
+                    <span class="nav-badge" id="contractBadge">0</span>
+                </a>
+                <a href="#network" class="nav-item" data-section="network">
+                    <span class="nav-icon">🌐</span>
+                    <span class="nav-label">Network</span>
+                </a>
+                <a href="#settings" class="nav-item" data-section="settings">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-label">Settings</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="connection-status">
+                    <span class="status-dot disconnected" id="statusDot"></span>
+                    <span class="status-text" id="statusText">Disconnected</span>
+                </div>
+                <button class="btn-connect" id="connectBtn">Connect</button>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Overview Section -->
+            <section id="section-overview" class="section active">
+                <div class="section-header">
+                    <div>
+                        <h1>Dashboard Overview</h1>
+                        <p>Real-time status of your Vireo ecosystem</p>
+                    </div>
+                    <div class="header-time" id="headerTime"></div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">🤖</div>
+                        <div class="stat-content">
+                            <span class="stat-value" id="statAgents">0</span>
+                            <span class="stat-label">Total Agents</span>
+                        </div>
+                        <div class="stat-change positive" id="statAgentsChange">+0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">💬</div>
+                        <div class="stat-content">
+                            <span class="stat-value" id="statMessages">0</span>
+                            <span class="stat-label">Messages</span>
+                        </div>
+                        <div class="stat-change positive" id="statMessagesChange">+0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📄</div>
+                        <div class="stat-content">
+                            <span class="stat-value" id="statContracts">0</span>
+                            <span class="stat-label">Contracts</span>
+                        </div>
+                        <div class="stat-change neutral" id="statContractsChange">0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⚡</div>
+                        <div class="stat-content">
+                            <span class="stat-value" id="statUptime">0s</span>
+                            <span class="stat-label">Uptime</span>
+                        </div>
+                        <div class="stat-change positive">↑</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🔗</div>
+                        <div class="stat-content">
+                            <span class="stat-value" id="statConnections">0</span>
+                            <span class="stat-label">Connections</span>
+                        </div>
+                        <div class="stat-change positive" id="statConnectionsChange">+0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">💾</div>
+                        <div class="stat-content">
+                            <span class="stat-value" id="statMemory">0 MB</span>
+                            <span class="stat-label">Memory Usage</span>
+                        </div>
+                        <div class="stat-change neutral" id="statMemoryChange">0%</div>
+                    </div>
+                </div>
+                
+                <div class="charts-row">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Activity</h3>
+                            <div class="chart-controls">
+                                <button class="chart-btn active" data-period="1h">1H</button>
+                                <button class="chart-btn" data-period="24h">24H</button>
+                                <button class="chart-btn" data-period="7d">7D</button>
+                            </div>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="activityChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Agent Status</h3>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="recent-activity">
+                    <h3>Recent Activity</h3>
+                    <div class="activity-list" id="activityList">
+                        <div class="activity-empty">No recent activity</div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Agents Section -->
+            <section id="section-agents" class="section">
+                <div class="section-header">
+                    <h1>Agents</h1>
+                    <button class="btn btn-primary" id="createAgentBtn">+ New Agent</button>
+                </div>
+                <div class="agent-grid" id="agentGrid">
+                    <div class="loading">Loading agents...</div>
+                </div>
+            </section>
+            
+            <!-- Messages Section -->
+            <section id="section-messages" class="section">
+                <div class="section-header">
+                    <h1>Messages</h1>
+                    <button class="btn btn-outline" id="clearMessagesBtn">Clear All</button>
+                </div>
+                <div class="message-list" id="messageList">
+                    <div class="message-empty">No messages</div>
+                </div>
+            </section>
+            
+            <!-- Contracts Section -->
+            <section id="section-contracts" class="section">
+                <div class="section-header">
+                    <h1>Contracts</h1>
+                    <button class="btn btn-primary" id="createContractBtn">+ New Contract</button>
+                </div>
+                <div class="contract-list" id="contractList">
+                    <div class="contract-empty">No contracts</div>
+                </div>
+            </section>
+            
+            <!-- Network Section -->
+            <section id="section-network" class="section">
+                <div class="section-header">
+                    <h1>Network</h1>
+                </div>
+                <div class="network-visualization" id="networkVis">
+                    <div class="network-empty">
+                        <div style="font-size:48px;margin-bottom:16px;">🌐</div>
+                        <p>Network visualization</p>
+                        <p style="font-size:13px;color:var(--text-muted);">Connect agents to see the network graph</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Settings Section -->
+            <section id="section-settings" class="section">
+                <div class="section-header">
+                    <h1>Settings</h1>
+                </div>
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <h3>Connection</h3>
+                        <div class="settings-item">
+                            <label>API URL</label>
+                            <input type="text" id="apiUrl" value="http://localhost:8000/api/v1">
+                        </div>
+                        <div class="settings-item">
+                            <label>WebSocket URL</label>
+                            <input type="text" id="wsUrl" value="ws://localhost:8000/ws">
+                        </div>
+                        <div class="settings-item">
+                            <label>API Key</label>
+                            <input type="password" id="apiKey" placeholder="Enter API key">
+                        </div>
+                        <button class="btn btn-primary" id="saveSettingsBtn">Save Settings</button>
+                    </div>
+                    <div class="settings-card">
+                        <h3>Preferences</h3>
+                        <div class="settings-item">
+                            <label>Theme</label>
+                            <select id="themeSelect">
+                                <option value="light">Light</option>
+                                <option value="dark">Dark</option>
+                                <option value="auto" selected>Auto</option>
+                            </select>
+                        </div>
+                        <div class="settings-item">
+                            <div class="toggle-group">
+                                <input type="checkbox" id="autoRefresh" checked>
+                                <label for="autoRefresh">Auto-refresh (5s)</label>
+                            </div>
+                        </div>
+                        <div class="settings-item">
+                            <div class="toggle-group">
+                                <input type="checkbox" id="soundAlerts">
+                                <label for="soundAlerts">Sound Alerts</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-card">
+                        <h3>About</h3>
+                        <div class="about-info">
+                            <p><strong>Vireo v3.0.0</strong></p>
+                            <p>The World's First AI-to-AI Communication Language</p>
+                            <div class="about-links">
+                                <a href="#" onclick="showToast('GitHub', 'info');return false;">GitHub</a>
+                                <a href="#" onclick="showToast('Documentation', 'info');return false;">Docs</a>
+                                <a href="#" onclick="showToast('Discord', 'info');return false;">Discord</a>
+                            </div>
+                            <div class="about-version">
+                                <span>Built with ❤️ by Serhii (serhohro)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

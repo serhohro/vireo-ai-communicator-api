@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vireo AI - Agent Platform</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <span class="brand-icon">🌿</span>
+                <span class="brand-text">Vireo</span>
+                <span class="brand-version">v3.0</span>
+            </div>
+            <div class="nav-links">
+                <a href="#dashboard" class="nav-link active" data-page="dashboard">Dashboard</a>
+                <a href="#agents" class="nav-link" data-page="agents">Agents</a>
+                <a href="#messages" class="nav-link" data-page="messages">Messages</a>
+                <a href="#contracts" class="nav-link" data-page="contracts">Contracts</a>
+                <a href="#settings" class="nav-link" data-page="settings">Settings</a>
+            </div>
+            <div class="nav-actions">
+                <div class="connection-status" id="connectionStatus">
+                    <span class="status-dot disconnected"></span>
+                    <span class="status-text">Disconnected</span>
+                </div>
+                <button class="btn btn-primary btn-sm" id="connectBtn">Connect</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Dashboard Page -->
+        <section id="page-dashboard" class="page active">
+            <div class="page-header">
+                <h1>Dashboard</h1>
+                <p>Overview of your Vireo AI ecosystem</p>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">🤖</div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="agentCount">0</span>
+                        <span class="stat-label">Active Agents</span>
+                    </div>
+                    <div class="stat-change positive">+12%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💬</div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="messageCount">0</span>
+                        <span class="stat-label">Messages Processed</span>
+                    </div>
+                    <div class="stat-change positive">+8%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📄</div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="contractCount">0</span>
+                        <span class="stat-label">Active Contracts</span>
+                    </div>
+                    <div class="stat-change neutral">0%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="uptimeDisplay">0s</span>
+                        <span class="stat-label">System Uptime</span>
+                    </div>
+                    <div class="stat-change positive">↑</div>
+                </div>
+            </div>
+
+            <!-- Activity Chart -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3>Activity Overview</h3>
+                    <div class="chart-controls">
+                        <button class="chart-btn active" data-period="1h">1H</button>
+                        <button class="chart-btn" data-period="24h">24H</button>
+                        <button class="chart-btn" data-period="7d">7D</button>
+                        <button class="chart-btn" data-period="30d">30D</button>
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="recent-activity">
+                <h3>Recent Activity</h3>
+                <div class="activity-list" id="activityList">
+                    <div class="activity-empty">No recent activity</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Agents Page -->
+        <section id="page-agents" class="page">
+            <div class="page-header">
+                <h1>Agents</h1>
+                <button class="btn btn-primary" id="createAgentBtn">+ New Agent</button>
+            </div>
+
+            <!-- Agent Filters -->
+            <div class="filter-bar">
+                <input type="text" class="filter-input" placeholder="Search agents..." id="agentSearch">
+                <select class="filter-select" id="agentStatusFilter">
+                    <option value="all">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="idle">Idle</option>
+                    <option value="busy">Busy</option>
+                    <option value="offline">Offline</option>
+                </select>
+                <select class="filter-select" id="agentCapabilityFilter">
+                    <option value="all">All Capabilities</option>
+                    <option value="text-generation">Text Generation</option>
+                    <option value="code-analysis">Code Analysis</option>
+                    <option value="image-processing">Image Processing</option>
+                    <option value="data-analysis">Data Analysis</option>
+                    <option value="negotiation">Negotiation</option>
+                </select>
+            </div>
+
+            <!-- Agent Grid -->
+            <div class="agent-grid" id="agentGrid">
+                <!-- Agents rendered by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Messages Page -->
+        <section id="page-messages" class="page">
+            <div class="page-header">
+                <h1>Messages</h1>
+                <div class="header-actions">
+                    <button class="btn btn-outline" id="clearMessagesBtn">Clear All</button>
+                </div>
+            </div>
+
+            <!-- Message Filters -->
+            <div class="filter-bar">
+                <input type="text" class="filter-input" placeholder="Search messages..." id="messageSearch">
+                <select class="filter-select" id="messageTypeFilter">
+                    <option value="all">All Types</option>
+                    <option value="propose">Propose</option>
+                    <option value="commit">Commit</option>
+                    <option value="execute">Execute</option>
+                    <option value="verify">Verify</option>
+                    <option value="escalate">Escalate</option>
+                    <option value="done">Done</option>
+                    <option value="error">Error</option>
+                </select>
+            </div>
+
+            <!-- Message List -->
+            <div class="message-list" id="messageList">
+                <div class="message-empty">No messages</div>
+            </div>
+        </section>
+
+        <!-- Contracts Page -->
+        <section id="page-contracts" class="page">
+            <div class="page-header">
+                <h1>Contracts</h1>
+                <button class="btn btn-primary" id="createContractBtn">+ New Contract</button>
+            </div>
+
+            <!-- Contract Stats -->
+            <div class="contract-stats">
+                <div class="contract-stat">
+                    <span class="stat-value" id="contractTotal">0</span>
+                    <span class="stat-label">Total</span>
+                </div>
+                <div class="contract-stat">
+                    <span class="stat-value" id="contractActive">0</span>
+                    <span class="stat-label">Active</span>
+                </div>
+                <div class="contract-stat">
+                    <span class="stat-value" id="contractPending">0</span>
+                    <span class="stat-label">Pending</span>
+                </div>
+                <div class="contract-stat">
+                    <span class="stat-value" id="contractCompleted">0</span>
+                    <span class="stat-label">Completed</span>
+                </div>
+            </div>
+
+            <!-- Contract List -->
+            <div class="contract-list" id="contractList">
+                <div class="contract-empty">No contracts</div>
+            </div>
+        </section>
+
+        <!-- Settings Page -->
+        <section id="page-settings" class="page">
+            <div class="page-header">
+                <h1>Settings</h1>
+                <p>Configure your Vireo instance</p>
+            </div>
+
+            <div class="settings-grid">
+                <!-- General Settings -->
+                <div class="settings-card">
+                    <h3>General</h3>
+                    <div class="settings-item">
+                        <label>Instance Name</label>
+                        <input type="text" id="instanceName" value="Vireo AI Platform">
+                    </div>
+                    <div class="settings-item">
+                        <label>API URL</label>
+                        <input type="text" id="apiUrl" value="http://localhost:8000/api/v1">
+                    </div>
+                    <div class="settings-item">
+                        <label>WebSocket URL</label>
+                        <input type="text" id="wsUrl" value="ws://localhost:8000/ws">
+                    </div>
+                </div>
+
+                <!-- Authentication -->
+                <div class="settings-card">
+                    <h3>Authentication</h3>
+                    <div class="settings-item">
+                        <label>API Key</label>
+                        <div class="input-with-action">
+                            <input type="password" id="apiKey" placeholder="Enter your API key">
+                            <button class="btn btn-sm btn-outline" id="showApiKeyBtn">Show</button>
+                        </div>
+                    </div>
+                    <div class="settings-item">
+                        <label>JWT Token</label>
+                        <div class="input-with-action">
+                            <input type="password" id="jwtToken" placeholder="Enter JWT token">
+                            <button class="btn btn-sm btn-outline" id="showJwtBtn">Show</button>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="saveAuthBtn">Save Authentication</button>
+                </div>
+
+                <!-- System Settings -->
+                <div class="settings-card">
+                    <h3>System</h3>
+                    <div class="settings-item">
+                        <label>Log Level</label>
+                        <select id="logLevel">
+                            <option value="debug">Debug</option>
+                            <option value="info" selected>Info</option>
+                            <option value="warning">Warning</option>
+                            <option value="error">Error</option>
+                        </select>
+                    </div>
+                    <div class="settings-item">
+                        <label>Theme</label>
+                        <select id="themeSelect">
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                            <option value="auto" selected>Auto</option>
+                        </select>
+                    </div>
+                    <div class="settings-item">
+                        <label>Auto-refresh</label>
+                        <div class="toggle-group">
+                            <input type="checkbox" id="autoRefresh" checked>
+                            <label for="autoRefresh">Enable auto-refresh (5s)</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- About -->
+                <div class="settings-card">
+                    <h3>About</h3>
+                    <div class="about-info">
+                        <p><strong>Vireo v3.0.0</strong></p>
+                        <p>The World's First AI-to-AI Communication Language</p>
+                        <div class="about-links">
+                            <a href="https://github.com/vireo-ai" target="_blank">GitHub</a>
+                            <a href="https://docs.vireo.ai" target="_blank">Documentation</a>
+                            <a href="https://discord.gg/vireo-ai" target="_blank">Discord</a>
+                        </div>
+                        <div class="about-version">
+                            <span>Built with ❤️ by Serhii (serhohro)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Container -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">Modal</h2>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Modal content rendered by JavaScript -->
+            </div>
+            <div class="modal-footer" id="modalFooter">
+                <button class="btn btn-outline" id="modalCancel">Cancel</button>
+                <button class="btn btn-primary" id="modalConfirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>

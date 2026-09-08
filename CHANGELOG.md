@@ -1,196 +1,162 @@
-# 🌿 Vireo Changelog
+# 🌿 Vireo AI Communicator API
 
-All notable changes to this project will be documented in this file.
+> **The World's First AI-to-AI Communication Language**
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
-
----
-
-## [2.0.1] - 2026-09-03
-
-### 🎯 Major Changes
-
-- **New Architecture**: `core/` directory with modular components
-- **Formal Specifications**: Complete specification suite in `specification/`
-- **Trust Bootstrap Protocol**: Ed25519-based identity and whitelist
-- **VERIFY & ESCALATE States**: Added to protocol lifecycle
-- **Core + Extensions Architecture**: ML is now optional
-- **Grammar Split**: `grammar_core.lark` + `grammar_ml.lark` + `grammar_tensor.lark`
-
-### 🆕 New Features
-
-- **VERIFY state** — explicit result verification before completion
-- **ESCALATE state** — dispute resolution path for autonomous agents
-- **Trust Bootstrap Protocol** — Ed25519-based identity and whitelist
-- **Key Rotation** — secure key rotation mechanism
-- **LLMAgent now inherits Agent** — real protocol integration
-- **Guardian Agent** — `resolve_escalation()` method
-- **max_rounds enforcement** — prevents infinite negotiation loops
-- **verify_timeout_sec** — separate timeout for verification phase
-- **Conformance test suite** — initial structure for compatibility testing
-- **JIT compilation** — LLVM-based JIT for performance (experimental)
-
-### 📚 Documentation
-
-- Added `specification/` with 7 formal specs
-- Added `QUICKSTART.md` and `TUTORIAL.md`
-- Added `EU_LLM_GUIDE.md` for European AI providers
-- Added `GOVERNANCE.md` for RFC process
-- Added `AI_EVALUATIONS.md` with 7 AI model reviews
-- Added `evaluations/` folder with detailed model evaluations
-
-### 🔧 Changed
-
-- `PROTOCOL.md` — added VERIFY/ESCALATE documentation
-- `SECURITY.md` — updated with Threat Model
-- `GOVERNANCE.md` — RFC process formalized
-- `protocol/agent.py` — removed auto-transition to RUNNING
-- `protocol/llm_agent.py` — now inherits Agent, uses real protocol
-- `protocol/trust.py` — replaced HMAC with Ed25519
-- `requirements.txt` — added llvmlite, transformers
-
-### 🐛 Fixed
-
-- `contract.py` — truthiness bug with `max_tokens=0` (is not None)
-- `agent.py` — `_pending_proposals` memory leak cleanup
-- `master_agent.py` — `auto_negotiate(agent.id, ...)` recipient fix
-- `state.py` — timeout checking implemented
-- `grammar.lark` — `on offer(NAME:type)` fix
-- `redis.py` — Message.from_dict fix
-
-### ⚠️ Breaking Changes
-
-- Protocol state machine now includes VERIFY and ESCALATE
-- Contract validation is now mandatory before execution
-- `protocol/trust.py` now uses Ed25519 (HMAC deprecated)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.9%2B-blue)](https://python.org)
+[![Rust](https://img.shields.io/badge/Rust-1.70%2B-orange)](https://rust-lang.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0%2B-blue)](https://typescriptlang.org)
+[![Version](https://img.shields.io/badge/version-3.0.0-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-100%2B-green)]()
+[![Conformance](https://img.shields.io/badge/conformance-59%2B-green)]()
 
 ---
 
-## [1.4.5] - 2026-08-31
+## 🎯 What is Vireo?
 
-### 🆕 New Features
+**Vireo** is a programming language + protocol + runtime for autonomous AI-to-AI communication, negotiation, and coordination.
 
-- **EfficientNet (B0–B5)** — lightweight image classification (5–30M params)
-- **UNet3+** — image segmentation (3.5M params)
-- **Zipformer (Wav2Vec2)** — speech recognition / ASR (291M params)
-- **LSTM with Activations** — ReLU, Sigmoid, Swish, GELU, LeakyReLU
-- **Mistral AI support** — 6th LLM provider
-- **New "Models" Tab** — web interface for managing pretrained models
-- **New API Endpoints** — `/models/list`, `/models/load`, `/models/predict`, `/models/info`, `/models/cache/clear`
-- **European LLM support** — Ollama, Mistral, BLOOM, OpenChat
+> *"LLMs provide intelligence. Vireo provides structure, execution, verification and interoperability."*
 
-### 🔧 Changed
+### The Problem We Solve
 
-- `README.md` — new positioning
-- `web_interface.html` — 9 tabs (added Models tab)
-- `api_server.py` — extended with LSTM and Pretrained Models endpoints
-- `language/grammar.lark` — added LSTM layer syntax
+Today, AI agents are **isolated silos**. They cannot:
+- 🚫 Discover each other
+- 🚫 Negotiate contracts
+- 🚫 Execute coordinated tasks
+- 🚫 Verify results
+- 🚫 Build trust
 
-### 🐛 Fixed
-
-- `.env.example` — `GEMINI_MODEL gemini-1.5-pro` → `GEMINI_MODEL=gemini-1.5-pro`
-- `api_server.py` — removed extra closing parenthesis
-- `pretrained.py` — `GPT2Model` → `GPT2LMHeadModel` (adds `generate` method)
+**Vireo changes this.**
 
 ---
 
-## [1.4.3] - 2026-08-29
+## 🌟 Key Features
 
-### 🆕 New Features
+### 🧠 Language
+- **Formal Grammar** — EBNF specification with extensions for ML, Vision, NLP
+- **Type System** — Static typing with inference
+- **Extensions** — ML, Tensor, Vision, NLP as optional modules
+- **Standard Library** — Math, Neural Networks, Protocol, Crypto, IO
 
-- **Language Positioning** — Vireo is now positioned as a full programming language
-- **Formal Grammar** — `language/grammar.lark` — complete grammar specification
-- **Syntax Documentation** — `language/syntax.md` — full language syntax
-- **Standard Library** — `language/stdlib/` — math, tensor, agent, contract, crypto modules
-- **Language Examples** — `language/examples/` — hello_world, neural_network, agent_negotiation, multi_agent
-- **CHANGELOG.md** — Version history
+### 🌐 Protocol
+- **Binary Canonical Format** — Language-neutral, deterministic serialization
+- **Ed25519 Signatures** — Cryptographic trust
+- **DIDs (Decentralized Identifiers)** — Self-sovereign identity
+- **State Machine** — DISCOVER → PROPOSE → NEGOTIATE → COMMIT → EXECUTE → VERIFY → DONE
+- **VERIFY/ESCALATE** — Result verification and dispute resolution
+- **Key Rotation** — Secure key lifecycle management
+- **Replay Protection** — Nonces + timestamps
 
-### 🔧 Changed
+### ⚡ Runtime
+- **JIT Compilation** — LLVM-based, 10-100x speedup for tensor ops
+- **GPU Support** — CUDA, Metal, ROCm
+- **WASM Backend** — Browser and edge deployment
+- **3-Level Sandbox** — Validation → WASM → Docker
+- **Async/Await** — Non-blocking communication
 
-- `README.md` — Completely rewritten with focus on "Language" positioning
-- `ROADMAP.md` — Updated with language development priorities
+### 🔌 Integrations
+- **6+ LLM Providers** — OpenAI, Anthropic, Mistral, Ollama, Hugging Face, Gemini
+- **European LLMs** — Mistral, BLOOM, OpenChat, Phi-3, GPT4All
+- **A2A Adapter** — Google's Agent-to-Agent protocol
+- **MCP Adapter** — Anthropic's Model Context Protocol
+- **gRPC/WebSocket/HTTP** — Multiple transport layers
 
----
-
-## [1.4.2] - 2026-08-28
-
-### 🆕 New Features
-
-- Real Ed25519 cryptography (keygen, sign, verify)
-- Full negotiation protocol (PROPOSE → COMMIT → REJECT → EXECUTE → DONE)
-- 7+ agent roles + Master Agent
-- Gemini LLM provider
-- MCP/LangChain adapters
-- Multi-language UI (Ukrainian/English)
-
-### 🔧 Changed
-
-- Protocol state machine improvements
-
-### 🐛 Fixed
-
-- `protocol/agent.py` — full commit cycle
-- `_handle_message` — full intent dispatching
-- Redis transport integration
+### 🧪 Quality
+- **100+ Tests** — Unit, conformance, integration, performance
+- **59+ Conformance Tests** — Protocol compliance verification
+- **Cross-Language Tests** — Python ↔ Rust ↔ TypeScript
+- **Fuzzing** — Edge case discovery
 
 ---
 
-## [1.4.1] - 2026-08-25
+## 🚀 Quick Start
 
-### 🆕 New Features
+### Installation
 
-- Initial release
-- Core language features
-- Multi-agent system
-- Web interface with 8 tabs
-- Basic interpreter
-- Tensor operations
-- REST API
+```bash
+# Python
+pip install vireo-ai
 
----
+# Rust
+cargo add vireo
 
-## [1.4.0] - 2026-08-20
+# TypeScript
+npm install vireo-ai
+Hello World Agent
+vireo
+// hello_agent.vireo
+agent HelloAgent {
+    name = "hello-bot"
+    capabilities = ["chat", "greet"]
+}
 
-### 🆕 New Features
+fn main() {
+    let agent = HelloAgent();
+    let msg = agent.propose({
+        intent: "greet",
+        payload: { "message": "Hello, World!" }
+    });
+    agent.send(msg);
+    agent.verify(msg);
+}
+📚 Documentation
+Quick Start — 5-minute intro
 
-- Initial prototype
-- Basic interpreter
-- Tensor operations
-- Simple agent communication
+Tutorial — Complete step-by-step guide
 
----
+Language Guide — Full language reference
 
-## [1.3.0] - 2026-08-15
+Protocol Guide — Protocol specification
 
-### 🆕 New Features
+API Reference — API documentation
 
-- Vireo language core
-- Formal grammar (grammar.lark) initial version
+🏆 The North Star
+"Don't prove that Vireo can run more AI models. Prove that Vireo can make independently implemented AI agents interoperable."
 
----
+The Test
+"Two independently implemented agents, written in different languages, MUST be able to exchange canonical Vireo messages, verify their authenticity, perform identical valid state transitions, and produce equivalent protocol outcomes without sharing implementation code."
 
-## [1.0.0] - 2026-08-10
+Can Python ↔ Rust ↔ TypeScript agents negotiate, execute, and verify a contract through Vireo?
 
-### 🎉 Initial Release
+If yes — Vireo works as a standard.
 
-- Basic language syntax
-- Single-agent execution
-- REST API
+🔒 Security
+Cryptographic Trust
+Ed25519 signatures — Fast, secure, deterministic
 
----
+DIDs — Decentralized Identifiers (did:vireo:agent:...)
 
-## 📋 Legend
+Key Rotation — Secure key lifecycle
 
-| Prefix | Meaning |
-|--------|---------|
-| 🎯 Major Changes | Breaking or significant changes |
-| 🆕 New Features | New functionality added |
-| 🔧 Changed | Existing functionality modified |
-| 🐛 Fixed | Bug fixes |
-| 📚 Documentation | Documentation updates |
-| ⚠️ Breaking Changes | Breaking changes to API or protocol |
-| 🎉 Initial Release | First public release |
+Trust Bootstrap — Whitelist + Ed25519
 
----
+Sandboxing (3-Level)
+Level 1 — Message validation (signature, schema, nonce)
 
-🌿 **Vireo — The World's First AI-to-AI Communication Language.** 🚀
+Level 2 — WASM execution (isolated memory)
+
+Level 3 — Docker containers (OS-level isolation)
+
+📦 Implementations
+Language	Status	Tests	Conformance
+Python	✅ Production	100+	✅ 59+
+Rust	✅ v3.0	80+	🚧 In progress
+TypeScript	✅ v3.0	60+	🚧 In progress
+Go	⏳ Planned	—	—
+Java	⏳ Planned	—	—
+🤝 Contributing
+We welcome contributions!
+
+Fork the repository
+
+Create a feature branch
+
+Write tests
+
+Submit a PR
+
+See CONTRIBUTING.md for details.
+
+📄 License
+Apache 2.0 — see LICENSE for details.

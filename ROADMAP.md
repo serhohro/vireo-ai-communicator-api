@@ -1,217 +1,136 @@
-# 🗺️ Vireo Development Roadmap
+# Contributing to Vireo
 
-## 🌿 Vision
+We love your input! We want to make contributing to Vireo as easy and transparent as possible.
 
-Vireo's mission is to become the **standard language and protocol** for autonomous AI-to-AI communication, enabling interoperability across different implementations, providers, and platforms.
+## Development Process
 
----
+1. Fork the repo
+2. Create a feature branch (`git checkout -b feature/amazing`)
+3. Make your changes
+4. Write tests
+5. Run tests (`pytest`)
+6. Commit your changes (`git commit -m 'Add amazing feature'`)
+7. Push to the branch (`git push origin feature/amazing`)
+8. Open a Pull Request
 
-## 📊 Phase Overview
+## Code Style
 
-| Phase | Version | Timeline | Status |
-|-------|---------|----------|--------|
-| **Phase 1: Hardening** | v1.4.5 | Aug 2026 | ✅ Done |
-| **Phase 2: Specification** | v2.0.1 | Sep 2026 | 🚧 In Progress |
-| **Phase 3: Core Implementation** | v2.1.0 | Q4 2026 | 📅 Planned |
-| **Phase 4: Interoperability** | v2.2.0 | Q1 2027 | 📅 Planned |
-| **Phase 5: Production** | v3.0.0 | Q3 2027 | 📅 Planned |
+### Python
+- Black for formatting
+- MyPy for type checking
+- Ruff for linting
 
----
+```bash
+black .
+mypy .
+ruff check .
+Rust
+cargo fmt
 
-## ✅ Phase 1: Hardening (v1.4.5) — COMPLETED
+cargo clippy
 
-**Goal:** Stabilize existing codebase and fix critical issues.
+TypeScript
+npm run format
 
-### Completed Tasks
+npm run lint
 
-- [x] 7 critical fixes (contract.py, agent.py, master_agent.py, state.py, grammar.lark, redis.py)
-- [x] Added VERIFY and ESCALATE states
-- [x] Timeout checking with background thread
-- [x] Contract validation before execution
-- [x] Pending proposal cleanup
-- [x] QUICKSTART.md and TUTORIAL.md
-- [x] Mistral AI support
-- [x] European LLM support (Ollama, Mistral, BLOOM, OpenChat)
-- [x] Core + Extensions architecture
+Testing
+Run all tests
+bash
+pytest
+Run specific tests
+bash
+pytest tests/unit/test_wire_format.py
+Run conformance tests
+bash
+pytest tests/conformance/
+Run cross-language tests
+bash
+pytest tests/interop/
+Pull Request Process
+Update the README.md with details of changes if needed
 
----
+Update the CHANGELOG.md with details of changes
 
-## 🚧 Phase 2: Specification (v2.0.1) — IN PROGRESS
+The PR will be merged once you have the sign-off of two maintainers
 
-**Goal:** Create formal specifications for all components to enable independent implementations.
+Code of Conduct
+Please read CODE_OF_CONDUCT.md for details.
 
-### Tasks
+Questions?
+Feel free to open an issue or contact the maintainers.
 
-| # | Task | Status | Priority |
-|---|------|--------|----------|
-| 1 | LANGUAGE.md — Core language specification | ✅ Done | 🔴 P0 |
-| 2 | PROTOCOL.md — Protocol specification | ✅ Done | 🔴 P0 |
-| 3 | AST.md — Abstract Syntax Tree specification | ✅ Done | 🔴 P0 |
-| 4 | WIRE_FORMAT.md — Wire format specification | ✅ Done | 🔴 P0 |
-| 5 | CONTRACTS.md — Contract specification | ✅ Done | 🔴 P0 |
-| 6 | TRUST_BOOTSTRAP.md — Trust bootstrap protocol | ✅ Done | 🟠 P1 |
-| 7 | INTEROPERABILITY.md — Interoperability guidelines | ✅ Done | 🟠 P1 |
-| 8 | schema.json — JSON Schema for messages | 🚧 In Progress | 🔴 P0 |
-| 9 | security.md — Security & Auth Specification | 🚧 In Progress | 🔴 P0 |
-| 10 | Semantic Specification — Formal semantics | 📅 Planned | 🔴 P0 |
-
-### Deliverables
-
-- Complete specification suite in `specification/`
-- AI_EVALUATIONS.md with 7 model reviews
-- GOVERNANCE.md with RFC process
-- EVALUATIONS.md and evaluations/ folder
-
----
-
-## 📅 Phase 3: Core Implementation (v2.1.0) — PLANNED
-
-**Goal:** Implement core components based on formal specifications.
-
-### Tasks
-
-| # | Task | Priority | Status |
-|---|------|----------|--------|
-| 8 | Trust Bootstrap Protocol implementation | 🔴 P0 | 🚧 In Progress |
-| 9 | Core Agent with roles and capabilities | 🔴 P0 | 🚧 In Progress |
-| 10 | Core Protocol with full state machine | 🔴 P0 | 🚧 In Progress |
-| 11 | Core Contract validation engine | 🔴 P0 | 🚧 In Progress |
-| 12 | Core Verification with cryptographic proof | 🔴 P0 | 🚧 In Progress |
-| 13 | **Async/await protocol** | 🔴 P0 | 📅 Planned |
-| 14 | **LLMAgent inherits Agent** | 🔴 P0 | 🚧 In Progress |
-| 15 | Capability Discovery registry | 🟠 P1 | 📅 Planned |
-| 16 | Execution runner with sandboxing | 🟠 P1 | 📅 Planned |
-| 17 | Key rotation support | 🟠 P1 | 🚧 In Progress |
-| 18 | max_rounds enforcement | 🟠 P1 | ✅ Done |
-| 19 | resolve_escalation() in Guardian | 🟠 P1 | 🚧 In Progress |
-| 20 | MCP Server adapter | 🟡 P2 | 📅 Planned |
-
-### Deliverables
-
-- Fully functional core in `core/`
-- All P0 tasks completed
-- Initial test suite
-- Async protocol ready
+text
 
 ---
 
-## 📅 Phase 4: Interoperability (v2.2.0) — PLANNED
+### `LICENSE`
+Apache License
+Version 2.0, January 2004
+http://www.apache.org/licenses/
 
-**Goal:** Enable cross-language and cross-platform interoperability.
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 
-### Tasks
+Definitions.
 
-| # | Task | Priority | Status |
-|---|------|----------|--------|
-| 21 | Python SDK (stable) | 🔴 P0 | 📅 Planned |
-| 22 | Conformance Test Suite | 🔴 P0 | 🚧 In Progress |
-| 23 | WASM Runtime (Rust → wasm32) | 🟠 P1 | 📅 Planned |
-| 24 | TypeScript SDK | 🟠 P1 | 📅 Planned |
-| 25 | Rust Implementation | 🟠 P1 | 📅 Planned |
-| 26 | A2A Adapter | 🟠 P1 | 📅 Planned |
-| 27 | MCP Adapter (complete) | 🟠 P1 | 📅 Planned |
-| 28 | Open Wire Specification implementation | 🟡 P2 | 📅 Planned |
-| 29 | JIT Compilation (LLVM) | 🟡 P2 | 📅 Planned |
-| 30 | GPU Support (CUDA → Metal → ROCm) | 🟡 P2 | 📅 Planned |
+"License" shall mean the terms and conditions for use, reproduction, and distribution as defined by Sections 1 through 9 of this document.
 
-### Deliverables
+"Licensor" shall mean the copyright owner or entity authorized by the copyright owner that is granting the License.
 
-- Working Python ↔ Rust interoperability
-- TypeScript SDK for web agents
-- Conformance Test Suite
-- WASM Runtime for sandboxing
+"Legal Entity" shall mean the union of the acting entity and all other entities that control, are controlled by, or are under common control with that entity.
 
----
+"You" (or "Your") shall mean an individual or Legal Entity exercising permissions granted by this License.
 
-## 📅 Phase 5: Production (v3.0.0) — PLANNED
+"Source" form shall mean the preferred form for making modifications, including but not limited to software source code, documentation source, and configuration files.
 
-**Goal:** Production-ready system with performance and security.
+"Object" form shall mean any form resulting from mechanical transformation or translation of a Source form, including but not limited to compiled object code, generated documentation, and conversions to other media types.
 
-### Tasks
+"Work" shall mean the work of authorship, whether in Source or Object form, made available under the License, as indicated by a copyright notice that is included in or attached to the work.
 
-| # | Task | Priority | Status |
-|---|------|----------|--------|
-| 31 | Formal verification of contracts | 🟡 P2 | 📅 Planned |
-| 32 | Integration with European LLMs | 🟠 P1 | ✅ Done |
-| 33 | Performance optimization | 🟠 P1 | 📅 Planned |
-| 34 | Host Interoperability Hackathon | 🟡 P2 | 📅 Planned |
-| 35 | IETF-style RFC draft | 🟡 P2 | 📅 Planned |
-| 36 | IEEE/ISO standardization proposal | 🟢 P3 | 📅 Planned |
-| 37 | Vireo Foundation establishment | 🟢 P3 | 📅 Planned |
+"Derivative Works" shall mean any work, whether in Source or Object form, that is based on (or derived from) the Work and for which the editorial revisions, annotations, elaborations, or other modifications represent, as a whole, an original work of authorship.
 
-### Deliverables
+"Contribution" shall mean any work of authorship, including the original version of the Work and any modifications or additions to that Work or Derivative Works thereof, that is intentionally submitted to Licensor for inclusion in the Work by the copyright owner or by an individual or Legal Entity authorized to submit on behalf of the copyright owner.
 
-- Production-ready v3.0 release
-- Performance benchmarks
-- Hackathon results
-- Standardization proposal
+"Contributor" shall mean Licensor and any individual or Legal Entity on behalf of whom a Contribution has been received by Licensor and subsequently incorporated within the Work.
 
----
+Grant of Copyright License.
 
-## 🎯 Key Milestones
+Subject to the terms and conditions of this License, each Contributor hereby grants to You a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable copyright license to reproduce, prepare Derivative Works of, publicly display, publicly perform, sublicense, and distribute the Work and such Derivative Works in Source or Object form.
 
-| Milestone | Version | Target Date | Success Criteria |
-|-----------|---------|-------------|------------------|
-| **Hardening** | v1.4.5 | Aug 2026 | 7 critical fixes + docs | ✅ Done |
-| **Specification** | v2.0.1 | Sep 2026 | Complete specification suite | 🚧 In Progress |
-| **Core Implementation** | v2.1.0 | Q4 2026 | Core implementation complete | 📅 Planned |
-| **Interop Demo** | v2.1.0 | Q4 2026 | Python ↔ Rust agents negotiate | 📅 Planned |
-| **SDK Release** | v2.2.0 | Q1 2027 | TypeScript SDK + full A2A/MCP | 📅 Planned |
-| **Production** | v3.0.0 | Q3 2027 | WASM runtime + GPU support | 📅 Planned |
-| **Standardization** | v3.0.0 | Q3 2027 | IEEE/ISO proposal | 📅 Planned |
+Grant of Patent License.
 
----
+Subject to the terms and conditions of this License, each Contributor hereby grants to You a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable (except as stated in this section) patent license to make, have made, use, offer to sell, sell, import, and otherwise transfer the Work, where such license applies only to those patent claims licensable by such Contributor that are necessarily infringed by their Contribution(s) alone or by combination of their Contribution(s) with the Work to which such Contribution(s) was submitted.
 
-## 🔄 North Star
+Redistribution.
 
-> **"Can two independently implemented agents (Python ↔ Rust) negotiate, execute, and cryptographically verify a contract through Vireo?"**
+You may reproduce and distribute copies of the Work or Derivative Works thereof in any medium, with or without modifications, and in Source or Object form, provided that You meet the following conditions:
 
-This is the ultimate test of Vireo as a **standard** rather than just a framework.
+(a) You must give any other recipients of the Work or Derivative Works a copy of this License; and
 
----
+(b) You must cause any modified files to carry prominent notices stating that You changed the files; and
 
-## 📋 Governance
+(c) You must retain, in the Source form of any Derivative Works that You distribute, all copyright, patent, trademark, and attribution notices from the Source form of the Work, excluding those notices that do not pertain to any part of the Derivative Works; and
 
-All significant changes follow the RFC process defined in [GOVERNANCE.md](GOVERNANCE.md).
+(d) If the Work includes a "NOTICE" text file as part of its distribution, then any Derivative Works that You distribute must include a readable copy of the attribution notices contained within such NOTICE file, excluding those notices that do not pertain to any part of the Derivative Works, in at least one of the following places: within a NOTICE text file distributed as part of the Derivative Works; within the Source form or documentation, if provided along with the Derivative Works; or, within a display generated by the Derivative Works, if and wherever such third-party notices normally appear.
 
-- **RFC**: Proposals for new features or changes
-- **Review**: At least 2 maintainers approve
-- **Implementation**: Code review + tests required
+Submission of Contributions.
 
----
+Unless You explicitly state otherwise, any Contribution intentionally submitted for inclusion in the Work by You to the Licensor shall be under the terms and conditions of this License, without any additional terms or conditions.
 
-## 🤝 How to Contribute
+Trademarks.
 
-1. Review [CONTRIBUTING.md](CONTRIBUTING.md)
-2. Check open issues and RFCs
-3. Submit PR with clear description and tests
-4. Pass CI/CD checks
+This License does not grant permission to use the trade names, trademarks, service marks, or product names of the Licensor, except as required for reasonable and customary use in describing the origin of the Work and reproducing the content of the NOTICE file.
 
----
+Disclaimer of Warranty.
 
-## 📊 Key Metrics
+Unless required by applicable law or agreed to in writing, Licensor provides the Work (and each Contributor provides its Contributions) on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied, including, without limitation, any warranties or conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
 
-| Metric | v1.4.3 | v2.0.1 | Target v3.0 |
-|--------|--------|--------|-------------|
-| Agent Roles | 8 | 8 | 15+ |
-| LLM Providers | 5+ | 6+ | 10+ |
-| Tests Coverage | 0% | 20% | 80% |
-| Documentation | Good | Comprehensive | Complete |
-| Implementations | Python | Python | Python, Rust, TypeScript |
-| Specifications | 0 | 7 | 12+ |
-| Conformance Tests | 0 | 10+ | 50+ |
+Limitation of Liability.
 
----
+In no event and under no legal theory, whether in tort (including negligence), contract, or otherwise, unless required by applicable law (such as deliberate and grossly negligent acts) or agreed to in writing, shall any Contributor be liable to You for damages, including any direct, indirect, special, incidental, or consequential damages of any character arising as a result of this License or out of the use or inability to use the Work.
 
-## 🔗 Related Documents
+Accepting Warranty or Additional Liability.
 
-- [PROTOCOL.md](PROTOCOL.md) — Protocol specification
-- [GOVERNANCE.md](GOVERNANCE.md) — RFC process
-- [CONTRIBUTING.md](CONTRIBUTING.md) — How to contribute
-- [CHANGELOG.md](CHANGELOG.md) — Version history
+While redistributing the Work or Derivative Works thereof, You may choose to offer, and charge a fee for, acceptance of support, warranty, indemnity, or other liability obligations and/or rights consistent with this License. However, in accepting such obligations, You may act only on Your own behalf and on Your sole responsibility, not on behalf of any other Contributor.
 
----
-
-*Last updated: 2026-09-03*
-
-🌿 **Vireo — The World's First AI-to-AI Communication Language.** 🚀
+END OF TERMS AND CONDITIONS
