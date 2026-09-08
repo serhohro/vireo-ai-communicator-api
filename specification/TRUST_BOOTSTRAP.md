@@ -1,351 +1,274 @@
-```markdown
-# 🔐 Vireo Trust Bootstrap Protocol
+# Vireo Trust Bootstrap Specification v3.0.0
 
-**Version:** 2.0.1  
-**Status:** Draft  
-**Last Updated:** 2026-01-15
+## Overview
 
----
+Trust bootstrap establishes initial trust between AI agents in the Vireo ecosystem. It provides a secure foundation for agent identity verification, message authentication, and secure communication.
 
-## 1. Overview
+## Trust Model
 
-The Trust Bootstrap Protocol establishes initial trust between agents before any contract negotiation or execution.
+### Layers of Trust
+┌─────────────────────────────────────────────────────────────┐
+│ TRUST LAYERS │
+├─────────────────────────────────────────────────────────────┤
+│ │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ Layer 4: Reputation-Based Trust │ │
+│ │ (Dynamic trust based on behavior) │ │
+│ └─────────────────────────────────────────────────────┘ │
+│ │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ Layer 3: Verified Credentials │ │
+│ │ (DIDs, signed credentials) │ │
+│ └─────────────────────────────────────────────────────┘ │
+│ │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ Layer 2: Cryptographic Identity │ │
+│ │ (Ed25519 key pairs) │ │
+│ └─────────────────────────────────────────────────────┘ │
+│ │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ Layer 1: Whitelist │ │
+│ │ (Pre-configured trusted agents) │ │
+│ └─────────────────────────────────────────────────────┘ │
+│ │
+└─────────────────────────────────────────────────────────────┘
 
-### Goals
-
-1. **Identity Verification** — Confirm agent identity
-2. **Public Key Exchange** — Share cryptographic keys
-3. **Trust Establishment** — Build mutual trust
-4. **Secure Communication** — Enable encrypted messaging
-
----
-
-## 2. Trust Model
-
-### Agent Identity
-
-Each agent has a unique identity consisting of:
-
-```python
-@dataclass
-class AgentIdentity:
-    agent_id: str          # Unique identifier
-    public_key: bytes      # Ed25519 public key
-    capabilities: List[str] # Agent capabilities
-    metadata: Dict[str, Any] # Additional metadata
-Trust Levels
-Level	Description
-None	No trust, agent unknown
-Partial	Identity verified, not fully trusted
-Full	Identity verified and trusted
-Bridged	Trusted via intermediary
-3. Bootstrap Flow
 text
-┌────────────┐                      ┌────────────┐
-│   Agent A  │                      │   Agent B  │
-└─────┬──────┘                      └─────┬──────┘
-      │                                    │
-      │  1. DISCOVER (public_key)          │
-      ├───────────────────────────────────►│
-      │                                    │
-      │  2. DISCOVER_RESPONSE (public_key) │
-      │◄───────────────────────────────────┤
-      │                                    │
-      │  3. CHALLENGE (nonce)              │
-      ├───────────────────────────────────►│
-      │                                    │
-      │  4. CHALLENGE_RESPONSE (signature) │
-      │◄───────────────────────────────────┤
-      │                                    │
-      │  5. VERIFY (public_key)            │
-      ├───────────────────────────────────►│
-      │                                    │
-      │  6. VERIFY_RESPONSE (trust_level)  │
-      │◄───────────────────────────────────┤
-      │                                    │
-      │  7. ESTABLISHED (trust)            │
-      ├───────────────────────────────────►│
-      │◄───────────────────────────────────┤
-4. Protocol Messages
-DISCOVER
-json
+
+## Trust Bootstrap Methods
+
+### 1. Whitelist
+
+Pre-configured list of trusted agents.
+
+**Format:**
+```json
 {
-  "type": "DISCOVER",
-  "sender_id": "agent-123",
-  "payload": {
-    "public_key": "base64_encoded_pubkey",
-    "capabilities": ["analyze", "report"],
-    "trust_level_required": "full",
-    "challenge": "base64_nonce"
-  }
+    "whitelist": [
+        {
+            "did": "did:vireo:agent:trusted-agent-1",
+            "public_key": "0123456789abcdef...",
+            "trust_level": 100,
+            "added_at": 1234567890
+        }
+    ]
 }
-DISCOVER_RESPONSE
-json
-{
-  "type": "DISCOVER_RESPONSE",
-  "sender_id": "agent-456",
-  "recipient_id": "agent-123",
-  "payload": {
-    "public_key": "base64_encoded_pubkey",
-    "capabilities": ["process", "verify"],
-    "trust_level": "partial"
-  }
-}
-CHALLENGE
-json
-{
-  "type": "CHALLENGE",
-  "sender_id": "agent-123",
-  "recipient_id": "agent-456",
-  "payload": {
-    "nonce": "base64_nonce",
-    "timestamp": "2026-01-15T10:30:00Z",
-    "requires_verification": true
-  }
-}
-CHALLENGE_RESPONSE
-json
-{
-  "type": "CHALLENGE_RESPONSE",
-  "sender_id": "agent-456",
-  "recipient_id": "agent-123",
-  "payload": {
-    "nonce": "base64_nonce",
-    "signature": "base64_signature",
-    "public_key": "base64_pubkey"
-  }
-}
-VERIFY
-json
-{
-  "type": "VERIFY",
-  "sender_id": "agent-123",
-  "recipient_id": "agent-456",
-  "payload": {
-    "public_key": "base64_pubkey",
-    "challenge": "base64_challenge",
-    "response": "base64_response"
-  }
-}
-VERIFY_RESPONSE
-json
-{
-  "type": "VERIFY_RESPONSE",
-  "sender_id": "agent-456",
-  "recipient_id": "agent-123",
-  "payload": {
-    "verified": true,
-    "trust_level": "full",
-    "expires_at": "2026-02-15T10:30:00Z"
-  }
-}
-ESTABLISHED
-json
-{
-  "type": "ESTABLISHED",
-  "sender_id": "agent-123",
-  "recipient_id": "agent-456",
-  "payload": {
-    "trust_level": "full",
-    "session_id": "session-789",
-    "encryption_key": "base64_key"
-  }
-}
-5. Verification Logic
-Challenge-Response Verification
+Usage:
+
+System administrators configure initial whitelist
+
+Whitelisted agents are automatically trusted
+
+Can be updated via governance
+
+2. Ed25519 Cryptographic Identity
+Each agent has a unique Ed25519 key pair.
+
+Key Generation:
+
 python
-def verify_challenge_response(
-    agent_id: str,
-    public_key: bytes,
-    nonce: bytes,
-    signature: bytes,
-    timestamp: str
-) -> bool:
-    # 1. Check timestamp (max 5 minutes old)
-    if is_timestamp_expired(timestamp, max_age=300):
-        return False
-    
-    # 2. Verify nonce not reused
-    if is_nonce_used(nonce):
-        return False
-    
-    # 3. Verify signature
-    message = agent_id.encode() + nonce + timestamp.encode()
-    if not verify_signature(public_key, signature, message):
-        return False
-    
-    # 4. Mark nonce as used
-    mark_nonce_used(nonce)
-    
-    return True
-Public Key Verification
+from nacl.signing import SigningKey
+
+signing_key = SigningKey.generate()
+private_key = signing_key.encode()
+public_key = signing_key.verify_key.encode()
+Identity Verification:
+
 python
-def verify_public_key(agent_id: str, public_key: bytes) -> bool:
-    # 1. Check against known registry
-    if is_public_key_known(agent_id, public_key):
-        return True
-    
-    # 2. Check against certificate authority
-    if verify_with_ca(agent_id, public_key):
-        return True
-    
-    # 3. Check via trust chain
-    if verify_trust_chain(agent_id, public_key):
-        return True
-    
-    return False
-6. Trust Storage
-Redis Schema
-redis
-# Store agent identity
-HSET agent:{agent_id} {
-    "public_key": "base64_pubkey",
-    "capabilities": "analyze,report",
-    "trust_level": "full",
-    "created_at": "2026-01-15T10:30:00Z",
-    "last_seen": "2026-01-15T10:30:00Z"
-}
+def verify_identity(did, message, signature, public_key):
+    return verify_signature(message, signature, public_key)
+3. DIDs (Decentralized Identifiers)
+Agents use DIDs for self-sovereign identity.
 
-# Store trust relationships
-HSET trust:{agent_id}:{peer_id} {
-    "trust_level": "full",
-    "established_at": "2026-01-15T10:30:00Z",
-    "expires_at": "2026-02-15T10:30:00Z"
-}
+DID Format:
 
-# Store used nonces (prevent replay)
-SADD used_nonces:{agent_id} {nonce}
-EXPIRE used_nonces:{agent_id} 3600
-7. Trust Revocation
-Revocation Triggers
-Key Compromise — Private key exposed
+text
+did:vireo:agent:{agent_id}
+DID Document:
 
-Agent Misbehavior — Violation of protocol
-
-Expiration — Trust level expired
-
-Manual — Human operator revokes
-
-Revocation Flow
 json
 {
-  "type": "REVOKE",
-  "sender_id": "agent-123",
-  "recipient_id": "agent-456",
-  "payload": {
-    "reason": "key_compromised",
-    "public_key": "base64_old_pubkey",
-    "new_public_key": "base64_new_pubkey"
-  }
+    "@context": "https://www.w3.org/ns/did/v1",
+    "id": "did:vireo:agent:alice",
+    "verificationMethod": [
+        {
+            "id": "did:vireo:agent:alice#key-1",
+            "type": "Ed25519VerificationKey2020",
+            "controller": "did:vireo:agent:alice",
+            "publicKeyMultibase": "z123..."
+        }
+    ],
+    "authentication": ["did:vireo:agent:alice#key-1"],
+    "service": [
+        {
+            "id": "did:vireo:agent:alice#endpoint",
+            "type": "VireoAgentEndpoint",
+            "serviceEndpoint": "https://agent-alice.example.com"
+        }
+    ]
 }
-8. Security Considerations
-Attack Vectors
-Attack	Mitigation
-Replay Attack	Nonce + timestamp validation
-MITM Attack	Challenge-response + signatures
-Identity Spoofing	Public key verification
-Key Compromise	Key rotation + revocation
-Man-in-the-Middle	TLS + signatures
+4. Reputation-Based Trust
+Dynamic trust based on agent behavior.
+
+Reputation Factors:
+
+Successful transactions (increases trust)
+
+Failed transactions (decreases trust)
+
+Disputes (decreases trust)
+
+Time since last interaction (decay)
+
+Trust Score Calculation:
+
+python
+trust_score = base_score + success_bonus - failure_penalty - dispute_penalty
+Trust Bootstrap Process
+Phase 1: Discovery
+text
+┌─────────┐         ┌─────────┐
+│ Agent A │         │ Agent B │
+└────┬────┘         └────┬────┘
+     │                   │
+     │ 1. QUERY_AGENTS   │
+     │──────────────────►│
+     │                   │
+     │ 2. AGENT_INFO     │
+     │◄──────────────────│
+     │   (DID, pub_key)  │
+     │                   │
+     │ 3. VERIFY         │
+     │──────────────────►│
+     │   (challenge)     │
+     │                   │
+     │ 4. VERIFY_RESPONSE│
+     │◄──────────────────│
+     │   (signed)        │
+     │                   │
+     │ 5. TRUST_ESTABLISHED│
+     │──────────────────►│
+     │                   │
+Phase 2: Verification
+vireo
+fn verify_agent(did: string, challenge: bytes, signature: bytes) -> bool {
+    let public_key = get_public_key(did)
+    return verify_signature(challenge, signature, public_key)
+}
+Phase 3: Trust Establishment
+vireo
+fn establish_trust(did: string) -> bool {
+    // Check whitelist
+    if is_whitelisted(did) {
+        return true
+    }
+    
+    // Verify signature
+    let challenge = generate_challenge()
+    let response = request_verification(did, challenge)
+    
+    if verify_agent(did, challenge, response.signature) {
+        // Start reputation tracking
+        reputation[did] = 50  // Neutral trust
+        return true
+    }
+    
+    return false
+}
+Security Considerations
+Attack Vectors and Mitigations
+Attack Vector	Mitigation
+Man-in-the-Middle	Ed25519 signatures, TLS
+Replay Attacks	Nonces, timestamps
+Identity Spoofing	DIDs, cryptographic verification
+Sybil Attacks	Reputation system, whitelist
+Key Compromise	Key rotation, revocation
 Best Practices
-Use TLS for all communication
+Regular Key Rotation
 
-Rotate keys regularly (every 30 days)
+Rotate keys periodically (e.g., every 30 days)
 
-Validate all signatures before trust
+Use key rotation messages signed by old key
 
-Monitor for suspicious activity
+Secure Key Storage
 
-Implement rate limiting for trust requests
+Use hardware security modules (HSMs)
 
-Store keys securely (HSM or secure enclave)
+Encrypt private keys at rest
 
-9. Implementation Example
+Limit key access
+
+Challenge-Response Verification
+
+Always verify identity with challenge-response
+
+Use fresh random challenges
+
+Include timestamps
+
+Rate Limiting
+
+Limit trust bootstrap attempts
+
+Prevent brute force attacks
+
+Implementation Reference
+Python Implementation
 python
-class TrustBootstrapProtocol:
-    def __init__(self, agent_id: str, private_key: bytes, public_key: bytes):
-        self.agent_id = agent_id
-        self.private_key = private_key
-        self.public_key = public_key
-        self.trusted_peers = {}
-        self.nonce_cache = set()
+class TrustBootstrap:
+    def __init__(self):
+        self.whitelist = {}
+        self.reputation = {}
+        self.challenges = {}
     
-    def send_discover(self, peer_id: str) -> dict:
-        return {
-            "type": "DISCOVER",
-            "sender_id": self.agent_id,
-            "payload": {
-                "public_key": base64.b64encode(self.public_key).decode(),
-                "capabilities": ["analyze", "report"]
-            }
-        }
+    def add_whitelist(self, did, public_key):
+        self.whitelist[did] = public_key
     
-    def receive_discover(self, message: dict) -> dict:
-        peer_id = message["sender_id"]
-        peer_pubkey = base64.b64decode(message["payload"]["public_key"])
-        
-        # Generate challenge
-        nonce = generate_nonce()
-        
-        return {
-            "type": "CHALLENGE",
-            "sender_id": self.agent_id,
-            "recipient_id": peer_id,
-            "payload": {
-                "nonce": base64.b64encode(nonce).decode(),
-                "timestamp": get_iso_timestamp()
-            }
-        }
+    def remove_whitelist(self, did):
+        del self.whitelist[did]
     
-    def receive_challenge(self, message: dict) -> dict:
-        nonce = base64.b64decode(message["payload"]["nonce"])
-        timestamp = message["payload"]["timestamp"]
-        
-        # Sign nonce
-        message_to_sign = nonce + timestamp.encode()
-        signature = self.private_key.sign(message_to_sign)
-        
-        return {
-            "type": "CHALLENGE_RESPONSE",
-            "sender_id": self.agent_id,
-            "recipient_id": message["sender_id"],
-            "payload": {
-                "nonce": base64.b64encode(nonce).decode(),
-                "signature": base64.b64encode(signature).decode(),
-                "public_key": base64.b64encode(self.public_key).decode()
-            }
-        }
+    def is_whitelisted(self, did):
+        return did in self.whitelist
     
-    def receive_challenge_response(self, message: dict) -> bool:
-        peer_id = message["sender_id"]
-        nonce = base64.b64decode(message["payload"]["nonce"])
-        signature = base64.b64decode(message["payload"]["signature"])
-        peer_pubkey = base64.b64decode(message["payload"]["public_key"])
-        
-        # Verify signature
-        message_to_verify = nonce + get_iso_timestamp().encode()
-        if not verify_signature(peer_pubkey, signature, message_to_verify):
+    def bootstrap_trust(self, did, public_key):
+        if self.is_whitelisted(did):
+            self.reputation[did] = 100
+            return True
+        return False
+    
+    def verify_identity(self, did, message, signature):
+        if did not in self.reputation:
             return False
-        
-        # Mark as trusted
-        self.trusted_peers[peer_id] = {
-            "public_key": peer_pubkey,
-            "trust_level": "full",
-            "established_at": get_iso_timestamp()
+        return verify_signature(message, signature, self.whitelist.get(did))
+Rust Implementation
+rust
+pub struct TrustBootstrap {
+    whitelist: HashMap<String, [u8; 32]>,
+    reputation: HashMap<String, u64>,
+}
+
+impl TrustBootstrap {
+    pub fn new() -> Self {
+        Self {
+            whitelist: HashMap::new(),
+            reputation: HashMap::new(),
         }
-        
-        return True
+    }
     
-    def get_trust_level(self, peer_id: str) -> str:
-        if peer_id not in self.trusted_peers:
-            return "none"
-        return self.trusted_peers[peer_id]["trust_level"]
-10. Future Extensions
-Certificate Authority — Centralized trust root
-
-Trust Delegation — Delegate trust to other agents
-
-Reputation System — Dynamic trust based on behavior
-
-Zero-Knowledge Proofs — Privacy-preserving verification
-
-Decentralized Identity — DID/VC integration
+    pub fn add_whitelist(&mut self, did: String, public_key: [u8; 32]) {
+        self.whitelist.insert(did, public_key);
+    }
+    
+    pub fn is_whitelisted(&self, did: &str) -> bool {
+        self.whitelist.contains_key(did)
+    }
+    
+    pub fn bootstrap_trust(&mut self, did: &str, public_key: &[u8; 32]) -> bool {
+        if self.is_whitelisted(did) {
+            self.reputation.insert(did.to_string(), 100);
+            true
+        } else {
+            false
+        }
+    }
+}

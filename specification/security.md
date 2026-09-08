@@ -1,276 +1,475 @@
-# 🔐 Vireo Security Specification
+# Vireo Security Specification v3.0.0
 
-**Version:** 2.0.2
-**Last Updated:** 2026-09-03
+## Overview
 
----
+Vireo uses a layered security model to ensure secure AI-to-AI communication. This document defines the security architecture, cryptographic primitives, threat model, and best practices for secure deployment.
 
-## 1. Overview
+## Security Layers
+┌─────────────────────────────────────────────────────────────┐
+│ SECURITY LAYERS │
+├─────────────────────────────────────────────────────────────┤
+│ │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ Layer 4: Application Security │ │
+│ │ (Contracts, verification, reputation) │ │
+│ └─────────────────────────────────────────────────────┘ │
+│ │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ Layer 3: Protocol Security │ │
+│ │ (State machine, timeouts, idempotency) │ │
+│ └─────────────────────────────────────────────────────┘ │
+│ │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ Layer 2: Cryptographic Security │ │
+│ │ (Ed25519, BLAKE2b, DIDs, nonces) │ │
+│ └─────────────────────────────────────────────────────┘ │
+│ │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ Layer 1: Infrastructure Security │ │
+│ │ (TLS, network isolation, HSM) │ │
+│ └─────────────────────────────────────────────────────┘ │
+│ │
+└─────────────────────────────────────────────────────────────┘
 
-Vireo is designed with security as a first-class concern. This document specifies the security model, cryptographic requirements, and trust mechanisms for all Vireo-compatible implementations.
+text
 
-### 1.1 Core Principles
+## Layer 1: Infrastructure Security
 
-| Principle | Description |
-|-----------|-------------|
-| **Zero Trust** | No implicit trust between agents |
-| **Cryptographic Verification** | All actions are verifiable |
-| **Defense in Depth** | Multiple layers of security |
-| **Least Privilege** | Agents have minimal required permissions |
-| **Auditability** | All actions are logged and auditable |
+### Network Security
+- **TLS 1.3** for all network communication
+- **Mutual TLS** for agent authentication
+- **Network isolation** between agents
+- **Firewall rules** limiting access
 
-### 1.2 RFC 2119 Keywords
+### Key Storage
+- **Hardware Security Modules (HSM)** for production
+- **Secure enclaves** for sensitive operations
+- **Encrypted storage** for keys at rest
+- **Access controls** limiting key exposure
 
-| Keyword | Meaning |
-|---------|---------|
-| **MUST** | Absolute requirement |
-| **MUST NOT** | Absolute prohibition |
-| **SHOULD** | Recommended |
-| **SHOULD NOT** | Not recommended |
-| **MAY** | Optional |
+### Deployment Security
+- **Container isolation** (Docker, Kubernetes)
+- **Least privilege** principle
+- **Security scanning** of dependencies
+- **Regular security updates**
 
----
+## Layer 2: Cryptographic Security
 
-## 2. Cryptographic Requirements
+### Ed25519 Signatures
 
-### 2.1 Ed25519 Signatures
+| Property | Value |
+|----------|-------|
+| Algorithm | Ed25519 (Edwards-curve Digital Signature Algorithm) |
+| Key Size | 32 bytes private, 32 bytes public |
+| Signature Size | 64 bytes |
+| Security Level | 128-bit (equivalent to AES-128) |
+| Performance | Fast signing and verification |
 
-All Vireo messages **MUST** be signed with Ed25519 (RFC 8032).
-
-| Parameter | Requirement |
-|-----------|-------------|
-| **Algorithm** | Ed25519 |
-| **Private Key Size** | 32 bytes |
-| **Public Key Size** | 32 bytes (64 hex chars) |
-| **Signature Size** | 64 bytes (128 hex chars) |
-| **Signing** | Deterministic (no randomness required) |
-
-**Key Validation:**
-
+#### Key Generation
 ```python
-def validate_public_key(public_key_hex: str) -> bool:
-    """Validate Ed25519 public key."""
-    if len(public_key_hex) != 64:
-        return False
+from nacl.signing import SigningKey
+
+def generate_keypair():
+    signing_key = SigningKey.generate()
+    private_key = signing_key.encode()
+    public_key = signing_key.verify_key.encode()
+    return private_key, public_key
+Signing
+python
+def sign_message(message, private_key):
+    signing_key = SigningKey(private_key)
+    return signing_key.sign(message).signature
+Verification
+python
+def verify_signature(message, signature, public_key):
+    verify_key = VerifyKey(public_key)
     try:
-        bytes.fromhex(public_key_hex)
+        verify_key.verify(message, signature)
         return True
-    except ValueError:
+    except BadSignatureError:
         return False
-2.2 Canonical Serialization
-Messages MUST be serialized canonically before signing:
+BLAKE2b Hashing
+Property	Value
+Algorithm	BLAKE2b
+Output Size	32 bytes (configurable)
+Security Level	256-bit
+Performance	Faster than SHA-3, competitive with SHA-256
+python
+from hashlib import blake2b
 
-JSON: Sort keys alphabetically
+def blake2b_hash(data):
+    return blake2b(data, digest_size=32).digest()
+DIDs (Decentralized Identifiers)
+Format: did:vireo:agent:{agent_id}
 
-Exclude: signature field
+Validation Rules:
 
-Encoding: UTF-8
+Must start with did:vireo:agent:
+
+Agent ID must be alphanumeric + _, -
+
+Maximum length: 255 characters
 
 python
-def canonical_serialize(data: dict) -> bytes:
-    """Serialize data for signing."""
-    sorted_data = {k: data[k] for k in sorted(data.keys()) if k != "signature"}
-    return json.dumps(sorted_data, separators=(",", ":"), sort_keys=True).encode("utf-8")
-3. Trust Bootstrap Protocol
-3.1 Protocol Flow
+import re
+
+DID_PATTERN = re.compile(r'^did:vireo:agent:[a-zA-Z0-9_-]+$')
+
+def validate_did(did):
+    return bool(DID_PATTERN.match(did))
+Nonces
+Property	Value
+Size	16 bytes (128 bits)
+Generation	Cryptographically secure random
+Purpose	Replay attack protection
+TTL	5 minutes (configurable)
+python
+import secrets
+
+def generate_nonce():
+    return secrets.token_bytes(16)
+Key Rotation
+Frequency: Every 30 days (recommended)
+
+Process:
+
+Generate new key pair
+
+Sign rotation message with old key
+
+Verify with old key
+
+Publish new public key
+
+Replace old key with new key
+
+python
+def rotate_key(old_private, old_public):
+    # Generate new key pair
+    new_private, new_public = generate_keypair()
+    
+    # Sign rotation message with old key
+    rotation_msg = f"key_rotation:{new_public.hex()}".encode()
+    signature = sign_message(rotation_msg, old_private)
+    
+    # Verify with old key
+    assert verify_signature(rotation_msg, signature, old_public)
+    
+    return new_private, new_public
+Layer 3: Protocol Security
+State Machine Security
+Valid Transitions:
+
 text
-Agent A                                    Agent B
-   │                                          │
-   │ 1. HELLO (DID_A, public_key_A)           │
-   │──────────────────────────────────────────>│
-   │                                          │
-   │ 2. HELLO_ACK (DID_B, public_key_B)       │
-   │<──────────────────────────────────────────│
-   │                                          │
-   │ 3. CHALLENGE (nonce_A)                   │
-   │──────────────────────────────────────────>│
-   │                                          │
-   │ 4. CHALLENGE_RESP (signature_B)          │
-   │<──────────────────────────────────────────│
-   │                                          │
-   │ 5. VERIFY (success/fail)                 │
-   │──────────────────────────────────────────>│
-3.2 Whitelist
-Agents MAY maintain a whitelist of trusted DIDs:
+DISCOVER → PROPOSE → NEGOTIATE → COMMIT → EXECUTE → VERIFY → DONE
+                    ↓            ↓           ↓        ↓
+                   REJECT       REJECT     TIMEOUT  ESCALATE
+Invalid Transitions:
+
+DISCOVER → DONE
+
+PROPOSE → EXECUTE
+
+COMMIT → VERIFY
+
+VERIFY → RUNNING
+
+TERMINAL → ANY (no transitions from terminal states)
+
+Timeout Protection
+State	Timeout	Action
+DISCOVER	30s	Abort discovery
+PROPOSE	60s	Reject proposal
+NEGOTIATE	120s	Timeout negotiation
+COMMIT	30s	Reject commitment
+EXECUTE	300s	Timeout execution
+VERIFY	60s	Escalate verification
+ESCALATE	600s	Force resolution
+Replay Protection
+Mechanisms:
+
+Nonce: Unique 16-byte random value per message
+
+Timestamp: ±5 minutes window
+
+Cache: Recent nonces stored with TTL
+
+Deduplication: Duplicate messages rejected
 
 python
-whitelist: Dict[str, bytes] = {
-    "agent-vision": b"public_key_bytes",
-    "agent-training": b"public_key_bytes"
-}
-3.3 Challenge-Response
-MUST include:
-
-Nonce: 32 bytes (64 hex chars) generated securely
-
-Timestamp: ISO 8601 UTC
-
-Signature: Ed25519 signature of nonce + timestamp
-
-python
-def verify_challenge(nonce: str, timestamp: str, signature: bytes, public_key: bytes) -> bool:
-    message = (nonce + timestamp).encode("utf-8")
-    return ed25519_verify(public_key, signature, message)
-4. Authentication & Authorization
-4.1 Authentication Flow
-text
-Identity → Authentication → Authorization → Capability Verification → Execution
-4.2 Capability-Based Authorization
-Agents MUST declare their capabilities:
-
-vireo
-agent Vision {
-    capability image_analysis
-    capability object_detection
-}
-4.3 Contract-Based Authorization
-Contracts define resource limits and permissions:
-
-vireo
-contract Agreement {
-    max_tokens: Int = 1000
-    timeout_sec: Int = 30
-    allowed_actions: List[String] = ["train_model", "predict"]
-}
-5. Key Management
-5.1 Key Rotation
-MUST support key rotation:
-
-python
-def rotate_key(agent_id: str, old_public_key_hex: str, new_public_key_hex: str, signature_hex: str) -> bool:
-    # Verify signature from old key
-    # Update whitelist with new key
-    pass
-5.2 Key Revocation
-MUST support key revocation:
-
-python
-def revoke_key(agent_id: str) -> bool:
-    # Remove agent from whitelist
-    pass
-5.3 Key Storage
-SHOULD use secure key storage:
-
-Environment	Recommended Storage
-Development	.env files (encrypted)
-Production	HSM / KMS
-Cloud	AWS KMS / Azure Key Vault
-6. Attack Mitigation
-Attack	Mitigation	Requirement
-Identity Spoofing	Ed25519 signatures + DID verification	MUST
-Replay Attacks	Nonce + timestamp validation	MUST
-Message Tampering	Signatures	MUST
-Capability Forgery	Whitelist + verification	MUST
-Resource Exhaustion	Contract limits	MUST
-Injection Attacks	AST validation	MUST
-Denial of Service	Rate limiting	SHOULD
-Compromised LLM	Sandboxing	SHOULD
-7. Audit Logging
-7.1 Required Fields
-Each audit log entry MUST include:
-
-Field	Description
-timestamp	ISO 8601 timestamp
-conversation_id	Conversation identifier
-agent_id	Agent identifier
-intent	Message intent
-contract	Contract details (if applicable)
-signature	Message signature
-result	Execution result
-verified	Verification status
-7.2 Audit Log Format
-json
-{
-  "timestamp": "2026-09-03T12:00:00Z",
-  "conversation_id": "conv-1234",
-  "agent_id": "agent-vision",
-  "intent": "PROPOSE",
-  "contract": { "max_tokens": 1000 },
-  "signature": "a1b2c3d4...",
-  "result": { "status": "success" },
-  "verified": true
-}
-7.3 Log Retention
-Environment	Retention Period
-Development	30 days
-Production	90 days
-Compliance	7 years
-8. Incident Response
-8.1 Incident Types
-Type	Severity	Response
-Key compromise	🔴 Critical	Immediate rotation, notify all
-Contract violation	🔴 High	Escalate, review contract
-Authentication failure	🟠 Medium	Investigate source
-Suspicious activity	🟡 Low	Monitor, log
-8.2 Response Process
-python
-def handle_incident(incident_type: str, details: dict):
-    # 1. Log incident
-    log_incident(incident_type, details)
+class NonceManager:
+    def __init__(self, ttl_seconds=300):
+        self.nonces = set()
+        self.ttl_seconds = ttl_seconds
     
-    # 2. Assess severity
-    severity = assess_severity(incident_type)
+    def is_replay(self, nonce, sender):
+        key = f"{sender}:{nonce.hex()}"
+        if key in self.nonces:
+            return True
+        self.nonces.add(key)
+        self._cleanup()
+        return False
     
-    # 3. Take action
-    if severity == "critical":
-        revoke_all_trust()
-        rotate_keys()
-    elif severity == "high":
-        create_escalation(incident_type, details)
-    else:
-        monitor_incident(incident_type, details)
+    def _cleanup(self):
+        # Remove expired nonces
+        pass
+Idempotency
+Key: {proposal_id}:{intent}
+
+Purpose: Prevent duplicate processing
+
+python
+class IdempotencyManager:
+    def __init__(self):
+        self.processed = set()
     
-    # 4. Notify affected parties
-    notify_parties(incident_type, severity)
-9. Compliance
-9.1 GDPR
-Data minimization: Collect only necessary data
+    def is_processed(self, proposal_id, intent):
+        key = f"{proposal_id}:{intent.value}"
+        return key in self.processed
+    
+    def mark_processed(self, proposal_id, intent):
+        key = f"{proposal_id}:{intent.value}"
+        self.processed.add(key)
+Sandboxing (3-Level)
+Level 1: Validation
+Signature verification
 
-Right to deletion: Support agent deletion
+Timestamp validation
 
-Encryption: All personal data encrypted
+Nonce validation
 
-Audit trails: All access logged
+DID format validation
 
-9.2 EU AI Act
-Transparency: All decisions explainable
+Intent validation
 
-Human oversight: Override mechanisms
+Payload hash validation
 
-Risk assessment: Regular security reviews
+Level 2: WASM
+Isolated memory
 
-Documentation: Complete documentation required
+Resource limits (CPU, memory)
 
-10. Conformance Tests
-All Vireo-compatible implementations MUST pass these security tests:
+No system access
 
-Test ID	Description	Requirement
-T-SEC-001	Ed25519 signature verification	MUST
-T-SEC-002	Trust Bootstrap Protocol	MUST
-T-SEC-003	Contract validation	MUST
-T-SEC-004	Replay attack protection	MUST
-T-SEC-005	Key rotation	SHOULD
-T-SEC-006	Message tampering detection	MUST
-T-SEC-007	Nonce validation	MUST
-T-SEC-008	Capability verification	MUST
-📄 Full conformance suite →
+Deterministic execution
 
-11. Future Enhancements
-Feature	Description	Target Version
-Zero-Knowledge Proofs	Privacy-preserving verification	v3.0.0
-Post-Quantum Cryptography	Quantum-resistant algorithms	v3.0.0
-Hardware Security Modules	Secure key storage	v2.2.0
-Formal Verification	Mathematical proof of security	v3.0.0
-WASM Sandboxing	Secure execution environment	v2.2.0
-12. References
-Ed25519 RFC 8032
+Pre-compiled modules
 
-DID Core
+Level 3: Docker
+OS-level isolation
 
-JSON Schema
+Network isolation
 
-Vireo Protocol
+CPU/Memory limits
 
-Vireo Conformance Tests
+Read-only filesystem
 
-🌿 Vireo — The World's First AI-to-AI Communication Language. 🚀
+Capability dropping
+
+Layer 4: Application Security
+Contract Security
+Validation:
+
+Syntax validation (grammar)
+
+Semantic validation (types, references)
+
+Cryptographic validation (signatures)
+
+Execution validation (sandbox)
+
+Verification:
+
+Result verification
+
+Condition checking
+
+Penalty enforcement
+
+python
+def validate_contract(contract):
+    # Syntax validation
+    if not contract.name:
+        return False
+    
+    # Semantic validation
+    if contract.terms.get("max_tokens", 0) < 0:
+        return False
+    
+    # Cryptographic validation
+    if not contract.signature:
+        return False
+    
+    return True
+Reputation System
+Base Score: 50 (neutral)
+
+Adjustments:
+
+Event	Score Change
+Successful transaction	+5
+Failed transaction	-10
+Fraud detection	-50
+Dispute resolution	-20
+Time decay	-1 per day
+Trust Levels:
+
+Level	Score Range	Trust
+High	80-100	Fully trusted
+Medium	50-79	Neutral
+Low	20-49	Suspicious
+Zero	0-19	Untrusted
+Trust Bootstrap
+Methods:
+
+Whitelist: Pre-configured trusted agents
+
+Verification: Challenge-response
+
+DIDs: Self-sovereign identity
+
+Reputation: Dynamic trust
+
+python
+class TrustBootstrap:
+    def __init__(self):
+        self.whitelist = set()
+        self.reputation = {}
+    
+    def bootstrap(self, did, public_key):
+        if did in self.whitelist:
+            self.reputation[did] = 100
+            return True
+        return False
+    
+    def verify_challenge(self, did, challenge, signature):
+        public_key = self.get_public_key(did)
+        return verify_signature(challenge, signature, public_key)
+Threat Model
+Attack Vectors and Mitigations
+Attack	Description	Mitigation	Severity
+Replay	Replaying valid messages	Nonce + timestamp	High
+Spoofing	Impersonating another agent	Ed25519 signatures	Critical
+MITM	Man-in-the-middle attack	Signatures + TLS	High
+DoS	Denial of service	Rate limiting	Medium
+Injection	Injecting malicious code	Sandbox (3-level)	Critical
+Timing	Timing attacks	Constant-time comparisons	Medium
+Side-Channel	Side-channel attacks	Secure key storage	High
+Sybil	Creating fake identities	Reputation + whitelist	Medium
+Elevation	Privilege escalation	Least privilege	High
+Data Exfiltration	Stealing data	Encryption + isolation	Critical
+Threat Response
+Detect — Identify the attack
+
+Contain — Limit the impact
+
+Eradicate — Remove the threat
+
+Recover — Restore normal operation
+
+Learn — Improve security
+
+Security Best Practices
+1. Key Management
+✅ Store private keys in HSMs
+
+✅ Rotate keys regularly (30 days)
+
+✅ Use secure key generation
+
+✅ Never share private keys
+
+✅ Use key revocation
+
+2. Message Validation
+✅ Always verify signatures
+
+✅ Validate timestamps
+
+✅ Check nonces
+
+✅ Validate message structure
+
+✅ Verify DIDs
+
+3. Communication Security
+✅ Use TLS for network communication
+
+✅ Validate message sizes
+
+✅ Rate limit requests
+
+✅ Use mutual TLS
+
+4. Sandboxing
+✅ Always use at least Level 1
+
+✅ Use Level 2 for untrusted code
+
+✅ Use Level 3 for production
+
+✅ Limit resources
+
+5. Monitoring
+✅ Log all security events
+
+✅ Monitor for anomalies
+
+✅ Track reputation changes
+
+✅ Alert on suspicious activity
+
+✅ Regular audits
+
+Security Audit Checklist
+Cryptographic
+□ Ed25519 implementation reviewed
+□ BLAKE2b implementation reviewed
+□ Nonce generation reviewed
+□ Key rotation reviewed
+□ DIDs implementation reviewed
+Protocol
+□ State machine reviewed
+□ Timeout handling reviewed
+□ Replay protection reviewed
+□ Idempotency reviewed
+□ Sandbox implementation reviewed
+Network
+□ TLS configuration reviewed
+□ Network isolation reviewed
+□ Rate limiting reviewed
+□ Firewall rules reviewed
+Application
+□ Contract validation reviewed
+□ Reputation system reviewed
+□ Trust bootstrap reviewed
+□ Error handling reviewed
+Compliance
+GDPR Compliance
+Data minimization
+
+Right to be forgotten
+
+Data portability
+
+Security measures
+
+EU AI Act Compliance
+Risk assessment
+
+Transparency
+
+Human oversight
+
+Robustness
+
+Industry Standards
+NIST Cybersecurity Framework
+
+ISO 27001
+
+SOC 2 Type II
+
+FedRAMP
+
+Vireo — The World's First AI-to-AI Communication Language 🌿
