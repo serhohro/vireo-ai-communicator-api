@@ -1,0 +1,28 @@
+{
+  "filename": "execute_v3_0.bin",
+  "size": 263,
+  "hash": "323ef46561bff2565da899e3ac1b02778318496e47d91b024f4c43ca616e7321",
+  "data": {
+    "version": "3.0.0",
+    "type": "execute",
+    "id": "msg_1234567892",
+    "sender": "did:vireo:alice",
+    "recipient": "did:vireo:bob",
+    "timestamp": 1700000002,
+    "nonce": "n_abcdef125",
+    "payload": {
+      "task_id": "task_001",
+      "data": "dataset.csv",
+      "parameters": {
+        "analysis_type": "statistical",
+        "confidence": 0.95
+      },
+      "context": {
+        "workflow_id": "wf_abc123",
+        "step": 3
+      }
+    }
+  },
+  "generated": "2026-09-05T22:50:57.023183",
+  "version": "3.0.0"
+}

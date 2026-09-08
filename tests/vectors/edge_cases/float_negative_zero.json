@@ -1,0 +1,24 @@
+{
+  "filename": "edge_cases/float_negative_zero.bin",
+  "size": 173,
+  "hash": "5da25b8a5cf72c07b0d41fe56ee72c661acd52701548405b4d63a7ed6dd579d4",
+  "data": {
+    "version": "3.0.0",
+    "type": "test",
+    "payload": {
+      "positive_zero": 0.0,
+      "negative_zero": -0.0,
+      "infinity": Infinity,
+      "negative_infinity": -Infinity,
+      "nan": NaN,
+      "values": [
+        0.0,
+        -0.0,
+        1.0,
+        -1.0
+      ]
+    }
+  },
+  "generated": "2026-09-05T22:50:57.030178",
+  "version": "3.0.0"
+}

@@ -1,0 +1,29 @@
+{
+  "version": "3.0.0",
+  "generated": "2026-09-05T22:50:57.044179",
+  "total_vectors": 6,
+  "total_edge_cases": 13,
+  "description": "Vireo v3.0.0 Test Vectors",
+  "vectors": [
+    "propose_v3_0.bin",
+    "commit_v3_0.bin",
+    "execute_v3_0.bin",
+    "verify_v3_0.bin",
+    "escalate_v3_0.bin",
+    "done_v3_0.bin"
+  ],
+  "edge_cases": [
+    "edge_cases/unicode_nfc.bin",
+    "edge_cases/float_negative_zero.bin",
+    "edge_cases/big_int.bin",
+    "edge_cases/duplicate_keys.bin",
+    "edge_cases/malformed.bin",
+    "edge_cases/malformed_v2.bin",
+    "edge_cases/malformed_v3.bin",
+    "edge_cases/malformed_v4.bin",
+    "edge_cases/malformed_v5.bin",
+    "edge_cases/malformed_v6.bin",
+    "edge_cases/malformed_v7.bin",
+    "edge_cases/malformed_v8.bin"
+  ]
+}

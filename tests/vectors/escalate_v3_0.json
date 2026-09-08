@@ -1,0 +1,26 @@
+{
+  "filename": "escalate_v3_0.bin",
+  "size": 275,
+  "hash": "1e857729665d7a643a25e3b189751489ac9431b1b50d15b1851e9bab9a4a3a91",
+  "data": {
+    "version": "3.0.0",
+    "type": "escalate",
+    "id": "msg_1234567894",
+    "sender": "did:vireo:alice",
+    "recipient": "did:vireo:bob",
+    "timestamp": 1700000004,
+    "nonce": "n_abcdef127",
+    "payload": {
+      "reason": "Quality below agreement",
+      "evidence": [
+        "incorrect_data",
+        "delayed_response"
+      ],
+      "resolution": "partial_refund",
+      "amount": 25,
+      "arbitrator": "did:vireo:arbitrator"
+    }
+  },
+  "generated": "2026-09-05T22:50:57.025181",
+  "version": "3.0.0"
+}

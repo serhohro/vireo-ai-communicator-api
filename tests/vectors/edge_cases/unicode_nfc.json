@@ -1,0 +1,18 @@
+{
+  "filename": "edge_cases/unicode_nfc.bin",
+  "size": 120,
+  "hash": "ea69d5648823880b623c19b93c70f18027601bf8d525014a77b5023fed0c3d71",
+  "data": {
+    "version": "3.0.0",
+    "type": "test",
+    "payload": {
+      "text": "Caf\u00e9 r\u00e9sum\u00e9 na\u00efve",
+      "unicode": "\u4f60\u597d\u4e16\u754c\ud83c\udf0d",
+      "emoji": "\ud83d\ude80\ud83c\udf3f\ud83d\udcac",
+      "nfc": "\u00e9",
+      "nfd": "e\u0301"
+    }
+  },
+  "generated": "2026-09-05T22:50:57.027180",
+  "version": "3.0.0"
+}

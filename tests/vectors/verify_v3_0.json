@@ -1,0 +1,28 @@
+{
+  "filename": "verify_v3_0.bin",
+  "size": 272,
+  "hash": "30a6c209443c21905ed439330b1e538fdc67c7eb403b841280fe77b952d983c5",
+  "data": {
+    "version": "3.0.0",
+    "type": "verify",
+    "id": "msg_1234567893",
+    "sender": "did:vireo:bob",
+    "recipient": "did:vireo:alice",
+    "timestamp": 1700000003,
+    "nonce": "n_abcdef126",
+    "payload": {
+      "result": "analysis_complete",
+      "metrics": {
+        "processing_time": 45.2,
+        "memory_used": 2.3,
+        "accuracy": 0.97
+      },
+      "evidence": [
+        "data_validation",
+        "model_validation"
+      ]
+    }
+  },
+  "generated": "2026-09-05T22:50:57.024179",
+  "version": "3.0.0"
+}
