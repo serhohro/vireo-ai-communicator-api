@@ -1,234 +1,90 @@
-# api/routes.py
-"""Vireo API routes."""
+"""
+Vireo API Routes v3.1 — full endpoint registration.
+"""
 
-import json
-from flask import Blueprint, request, jsonify
-from .auth import AuthManager, require_auth, require_api_key, get_auth_manager
+from .server import (
+    # UI
+    home, web_interface, docs, api_docs, health,
 
-# Create blueprint
-router = Blueprint('api', __name__, url_prefix='/api')
+    # Agents
+    register_agent, list_agents, agent_status, add_capability,
 
-# Auth manager
-_auth_manager = None
+    # Contracts
+    propose_contract, execute_contract, verify_contract,
 
-def get_auth_manager():
-    global _auth_manager
-    if _auth_manager is None:
-        _auth_manager = AuthManager()
-    return _auth_manager
+    # Wire
+    send_message, protocol_version,
 
+    # DID
+    create_did, verify_did, get_did_doc,
 
-# ============================================================
-# AUTH ENDPOINTS
-# ============================================================
+    # Trust
+    establish_trust, trust_challenge, trust_respond,
 
-@router.route('/auth/api-key', methods=['POST'])
-def create_api_key():
-    """Create a new API key."""
-    data = request.get_json() or {}
-    agent_id = data.get('agent_id')
-    did = data.get('did', '')
-    
-    if not agent_id:
-        return jsonify({'error': 'agent_id required'}), 400
-    
-    manager = get_auth_manager()
-    result = manager.create_api_key(agent_id, did)
-    return jsonify(result)
+    # Providers
+    list_providers,
+
+    # LLM
+    chat, auto_negotiate,
+
+    # Crypto
+    generate_keys, sign_message, verify_signature, test_trust,
+
+    # Metrics
+    metrics,
+)
 
 
-@router.route('/auth/api-key/verify', methods=['POST'])
-def verify_api_key():
-    """Verify an API key."""
-    data = request.get_json() or {}
-    api_key = data.get('api_key')
-    
-    if not api_key:
-        return jsonify({'error': 'api_key required'}), 400
-    
-    manager = get_auth_manager()
-    result = manager.verify_api_key(api_key)
-    
-    if result:
-        return jsonify({'valid': True, 'agent_id': result['agent_id']})
-    return jsonify({'valid': False}), 401
+def register_routes(app):
+    """Register all Vireo routes on the Flask app."""
+
+    # UI
+    app.add_url_rule("/", "home", home, methods=["GET"])
+    app.add_url_rule("/web", "web_interface", web_interface, methods=["GET"])
+    app.add_url_rule("/docs", "docs", docs, methods=["GET"])
+    app.add_url_rule("/api/docs", "api_docs", api_docs, methods=["GET"])
+    app.add_url_rule("/api/health", "health", health, methods=["GET"])
+
+    # Agents
+    app.add_url_rule("/api/v3/agent/register", "register_agent", register_agent, methods=["POST"])
+    app.add_url_rule("/api/v3/agents", "list_agents", list_agents, methods=["GET"])
+    app.add_url_rule("/api/v3/agent/<agent_id>/status", "agent_status", agent_status, methods=["GET"])
+    app.add_url_rule("/api/v3/agent/<agent_id>/capability", "add_capability", add_capability, methods=["POST"])
+
+    # Contracts
+    app.add_url_rule("/api/v3/propose", "propose_contract", propose_contract, methods=["POST"])
+    app.add_url_rule("/api/v3/execute", "execute_contract", execute_contract, methods=["POST"])
+    app.add_url_rule("/api/v3/verify", "verify_contract", verify_contract, methods=["POST"])
+
+    # Wire
+    app.add_url_rule("/api/v3/message", "send_message", send_message, methods=["POST"])
+    app.add_url_rule("/api/v3/protocol/version", "protocol_version", protocol_version, methods=["GET"])
+
+    # DID
+    app.add_url_rule("/api/v3/did/create", "create_did", create_did, methods=["POST"])
+    app.add_url_rule("/api/v3/did/verify", "verify_did", verify_did, methods=["POST"])
+    app.add_url_rule("/api/v3/did/<path:did>", "get_did_doc", get_did_doc, methods=["GET"])
+
+    # Trust
+    app.add_url_rule("/api/v3/trust/establish", "establish_trust", establish_trust, methods=["POST"])
+    app.add_url_rule("/api/v3/trust/challenge", "trust_challenge", trust_challenge, methods=["POST"])
+    app.add_url_rule("/api/v3/trust/respond", "trust_respond", trust_respond, methods=["POST"])
+
+    # Providers
+    app.add_url_rule("/api/providers", "list_providers", list_providers, methods=["GET"])
+
+    # LLM
+    app.add_url_rule("/api/chat", "chat", chat, methods=["POST"])
+    app.add_url_rule("/api/llm/agent/<agent_id>/auto_negotiate", "auto_negotiate", auto_negotiate, methods=["POST"])
+
+    # Crypto
+    app.add_url_rule("/api/crypto/generate_keys", "generate_keys", generate_keys, methods=["POST"])
+    app.add_url_rule("/api/crypto/sign", "sign_message", sign_message, methods=["POST"])
+    app.add_url_rule("/api/crypto/verify", "verify_signature", verify_signature, methods=["POST"])
+    app.add_url_rule("/api/crypto/test_trust", "test_trust", test_trust, methods=["POST"])
+
+    # Metrics
+    app.add_url_rule("/api/v3/metrics", "metrics", metrics, methods=["GET"])
 
 
-@router.route('/auth/api-key/<agent_id>', methods=['GET'])
-@require_api_key
-def list_api_keys(agent_id):
-    """List API keys for an agent."""
-    manager = get_auth_manager()
-    keys = manager.list_api_keys(agent_id)
-    return jsonify({'keys': keys})
-
-
-@router.route('/auth/api-key', methods=['DELETE'])
-def revoke_api_key():
-    """Revoke an API key."""
-    data = request.get_json() or {}
-    api_key = data.get('api_key')
-    
-    if not api_key:
-        return jsonify({'error': 'api_key required'}), 400
-    
-    manager = get_auth_manager()
-    success = manager.revoke_api_key(api_key)
-    return jsonify({'success': success})
-
-
-# ============================================================
-# V3.0.0 ENDPOINTS (MOCK)
-# ============================================================
-
-@router.route('/v3/protocol/version', methods=['GET'])
-def protocol_version():
-    """Get protocol version."""
-    return jsonify({
-        'version': '3.0.0',
-        'protocol': 'Open Wire v3.0.0',
-        'wire_format': 'Protobuf + FlatBuffers',
-        'features': [
-            'binary_serialization',
-            'canonical_hashing',
-            'ed25519_signatures'
-        ]
-    })
-
-
-@router.route('/v3/agent/register', methods=['POST'])
-def register_agent():
-    """Register an agent."""
-    data = request.get_json() or {}
-    agent_id = data.get('id')
-    
-    if not agent_id:
-        return jsonify({'error': 'id required'}), 400
-    
-    return jsonify({
-        'success': True,
-        'agent': {
-            'id': agent_id,
-            'name': data.get('name', agent_id),
-            'status': 'registered',
-            'registered_at': '2026-09-06T10:30:00Z'
-        }
-    })
-
-
-@router.route('/v3/agents', methods=['GET'])
-def list_agents():
-    """List all agents."""
-    return jsonify({
-        'success': True,
-        'agents': {},
-        'total': 0
-    })
-
-
-@router.route('/v3/agent/<agent_id>/status', methods=['GET'])
-def agent_status(agent_id):
-    """Get agent status."""
-    return jsonify({
-        'success': True,
-        'agent': {
-            'id': agent_id,
-            'status': 'registered'
-        }
-    })
-
-
-@router.route('/v3/propose', methods=['POST'])
-def propose_contract():
-    """Create a contract proposal."""
-    data = request.get_json() or {}
-    contract_id = data.get('contract_id', 'contract-1')
-    
-    return jsonify({
-        'success': True,
-        'contract': {
-            'id': contract_id,
-            'parties': data.get('parties', []),
-            'terms': data.get('terms', {}),
-            'status': 'proposed',
-            'created_at': '2026-09-06T10:30:00Z'
-        }
-    })
-
-
-@router.route('/v3/execute', methods=['POST'])
-def execute_contract():
-    """Execute a contract."""
-    data = request.get_json() or {}
-    contract_id = data.get('contract_id')
-    
-    return jsonify({
-        'success': True,
-        'execution_id': f'exec-{contract_id}',
-        'result': {
-            'status': 'executed',
-            'output': 'Contract executed successfully'
-        }
-    })
-
-
-@router.route('/v3/verify', methods=['POST'])
-def verify_contract():
-    """Verify a contract."""
-    data = request.get_json() or {}
-    contract_id = data.get('contract_id')
-    
-    return jsonify({
-        'success': True,
-        'verification_id': f'ver-{contract_id}',
-        'verified': True
-    })
-
-
-@router.route('/v3/did/create', methods=['POST'])
-def create_did():
-    """Create a DID."""
-    data = request.get_json() or {}
-    name = data.get('name', 'agent')
-    
-    return jsonify({
-        'success': True,
-        'did': f'did:vireo:{name}-123',
-        'public_key': 'mock_public_key_12345',
-        'created_at': '2026-09-06T10:30:00Z'
-    })
-
-
-@router.route('/v3/did/verify', methods=['POST'])
-def verify_did():
-    """Verify a DID."""
-    data = request.get_json() or {}
-    did = data.get('did')
-    
-    return jsonify({
-        'success': True,
-        'did': did,
-        'verified': True
-    })
-
-
-@router.route('/v3/metrics', methods=['GET'])
-def get_metrics():
-    """Get metrics."""
-    return jsonify({
-        'success': True,
-        'agents': 0,
-        'contracts': 0,
-        'version': '3.0.0',
-        'uptime': '0h 0m 0s'
-    })
-
-
-@router.route('/health', methods=['GET'])
-def health():
-    """Health check."""
-    return jsonify({
-        'status': 'healthy',
-        'version': '3.0.0',
-        'protocol': 'Open Wire v3.0.0'
-    })
+__all__ = ["register_routes"]

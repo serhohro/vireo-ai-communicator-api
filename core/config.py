@@ -1,76 +1,48 @@
-# core/config.py
-"""Vireo core configuration."""
+"""
+Vireo Core Configuration v3.1
+"""
 
 import os
 from pathlib import Path
-from typing import Optional, Dict, Any
-from dataclasses import dataclass, field
 
-@dataclass
+
 class Config:
-    """Vireo configuration."""
-    
-    # Server
-    port: int = 5000
-    debug: bool = True
-    secret_key: str = "vireo-v3-secret-key"
-    
-    # Database
-    redis_url: str = "redis://localhost:6379"
-    
-    # Security
-    auth_secret_key: str = "vireo-auth-secret-key"
-    jwt_secret: str = "vireo-jwt-secret"
-    jwt_algorithm: str = "HS256"
-    jwt_expires_minutes: int = 60
-    
-    # LLM Providers
-    mistral_api_key: Optional[str] = None
-    openai_api_key: Optional[str] = None
-    gemini_api_key: Optional[str] = None
-    anthropic_api_key: Optional[str] = None
-    
-    # Features
-    enable_wasm: bool = True
-    enable_rust: bool = False
-    enable_formal_verification: bool = True
-    enable_mcp: bool = True
-    enable_websocket: bool = True
-    
     # Paths
-    models_dir: str = "models/"
-    keys_dir: str = "keys/"
-    
-    def get(self, key: str, default: Any = None) -> Any:
-        """Get configuration value by key."""
-        return getattr(self, key, default)
-    
-    @classmethod
-    def from_env(cls) -> "Config":
-        """Create config from environment variables."""
-        return cls(
-            port=int(os.getenv("PORT", 5000)),
-            debug=os.getenv("DEBUG", "True").lower() == "true",
-            secret_key=os.getenv("SECRET_KEY", "vireo-v3-secret-key"),
-            redis_url=os.getenv("REDIS_URL", "redis://localhost:6379"),
-            auth_secret_key=os.getenv("AUTH_SECRET_KEY", "vireo-auth-secret-key"),
-            jwt_secret=os.getenv("JWT_SECRET", "vireo-jwt-secret"),
-            mistral_api_key=os.getenv("MISTRAL_API_KEY"),
-            openai_api_key=os.getenv("OPENAI_API_KEY"),
-            gemini_api_key=os.getenv("GEMINI_API_KEY"),
-            anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
-        )
+    BASE_DIR = Path(__file__).resolve().parent.parent
+    NONCE_DB_PATH = os.getenv("VIREO_NONCE_DB", str(BASE_DIR / "nonces.db"))
+    DID_REGISTRY_PATH = os.getenv("VIREO_DID_REGISTRY", str(BASE_DIR / "did_registry.json"))
 
-_config: Optional[Config] = None
+    # Wire
+    WIRE_MAGIC = b"VIRE"
+    WIRE_VERSION = 0x0301
+    MAX_PAYLOAD_SIZE = 16 * 1024 * 1024   # 16 MB
 
-def get_config() -> Config:
-    """Get configuration instance."""
-    global _config
-    if _config is None:
-        _config = Config.from_env()
-    return _config
+    # Nonce
+    NONCE_TTL_SEC = 24 * 3600             # 24h
+    MAX_CLOCK_SKEW_MS = 5 * 60 * 1000     # ±5 min
+    NONCE_BYTES = 16
 
-def reload_config():
-    """Reload configuration."""
-    global _config
-    _config = Config.from_env()
+    # Crypto
+    HASH_DIGEST_SIZE = 32                 # BLAKE2b-256
+    ED25519_SIG_BYTES = 64
+
+    # Server
+    HOST = os.getenv("VIREO_HOST", "0.0.0.0")
+    PORT = int(os.getenv("VIREO_PORT", "5000"))
+
+    # LLM
+    OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
+    MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY", "")
+    ALEPH_ALPHA_API_KEY = os.getenv("ALEPH_ALPHA_API_KEY", "")
+    COHERE_API_KEY = os.getenv("COHERE_API_KEY", "")
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+    ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+    QWEN_API_KEY = os.getenv("QWEN_API_KEY", "")
+    DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
+
+    # Compliance
+    COMPLIANCE_MODE = os.getenv("VIREO_COMPLIANCE_MODE", "strict")  # strict | dev
+
+
+config = Config()

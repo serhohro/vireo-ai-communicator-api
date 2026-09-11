@@ -1,198 +1,132 @@
-"""Protocol State Machine for Vireo v2.0.1"""
+"""
+Vireo State Machine v3.1.
 
-from enum import Enum, auto
-from typing import Optional, List, Callable, Dict, Any
-from dataclasses import dataclass, field
-import logging
-from datetime import datetime, timedelta
+Lifecycle:
+    DISCOVER → PROPOSE → NEGOTIATE → COMMIT → EXECUTE → VERIFY → DONE
+                  ↓          ↓           ↓         ↓         ↓
+              REJECTED   REJECTED   CANCELLED  FAILED   ESCALATED
+                  ↓          ↓                                ↓
+              TIMEOUT    TIMEOUT                     NEGOTIATE / DONE
+"""
 
-logger = logging.getLogger(__name__)
+from enum import Enum
 
 
 class ProtocolState(Enum):
-    """Vireo protocol states"""
-    DISCOVER = "discover"
-    PROPOSE = "propose"
-    NEGOTIATE = "negotiate"
-    COMMIT = "commit"
-    EXECUTE = "execute"
-    VERIFY = "verify"
-    DONE = "done"
-    
-    # Error states
-    REJECTED = "rejected"
-    CANCELLED = "cancelled"
-    FAILED = "failed"
-    ESCALATED = "escalated"
-    TIMEOUT = "timeout"
+    DISCOVER  = "DISCOVER"
+    PROPOSE   = "PROPOSE"
+    NEGOTIATE = "NEGOTIATE"
+    COMMIT    = "COMMIT"
+    EXECUTE   = "EXECUTE"
+    VERIFY    = "VERIFY"
+    DONE      = "DONE"
+    REJECTED  = "REJECTED"
+    ESCALATED = "ESCALATED"
+    CANCELLED = "CANCELLED"
+    FAILED    = "FAILED"
+    TIMEOUT   = "TIMEOUT"
 
 
-class ProtocolEvent(Enum):
-    """Protocol events"""
-    DISCOVER = auto()
-    PROPOSE = auto()
-    ACCEPT = auto()
-    REJECT = auto()
-    COMMIT = auto()
-    EXECUTE = auto()
-    VERIFY = auto()
-    ESCALATE = auto()
-    DONE = auto()
-    TIMEOUT = auto()
-    CANCEL = auto()
+TERMINAL_STATES = frozenset({
+    ProtocolState.DONE,
+    ProtocolState.REJECTED,
+    ProtocolState.CANCELLED,
+    ProtocolState.FAILED,
+    ProtocolState.TIMEOUT,
+})
 
 
-@dataclass
-class StateTransition:
-    """State transition definition"""
-    from_state: ProtocolState
-    to_state: ProtocolState
-    event: ProtocolEvent
-    condition: Optional[Callable[[Dict], bool]] = None
+class IllegalTransitionError(Exception):
+    def __init__(self, current: ProtocolState, attempted: ProtocolState):
+        super().__init__(f"Illegal transition: {current.value} → {attempted.value}")
+        self.current = current
+        self.attempted = attempted
 
 
-class StateMachine:
-    """Protocol state machine"""
-    
-    _transitions: List[StateTransition] = []
-    
-    @classmethod
-    def _init_transitions(cls):
-        if cls._transitions:
-            return
-        
-        # Define transitions
-        transitions = [
-            # Normal flow
-            StateTransition(ProtocolState.DISCOVER, ProtocolState.PROPOSE, ProtocolEvent.DISCOVER),
-            StateTransition(ProtocolState.PROPOSE, ProtocolState.NEGOTIATE, ProtocolEvent.ACCEPT),
-            StateTransition(ProtocolState.NEGOTIATE, ProtocolState.COMMIT, ProtocolEvent.COMMIT),
-            StateTransition(ProtocolState.COMMIT, ProtocolState.EXECUTE, ProtocolEvent.EXECUTE),
-            StateTransition(ProtocolState.EXECUTE, ProtocolState.VERIFY, ProtocolEvent.VERIFY),
-            StateTransition(ProtocolState.VERIFY, ProtocolState.DONE, ProtocolEvent.DONE),
-            
-            # Error transitions
-            StateTransition(ProtocolState.PROPOSE, ProtocolState.REJECTED, ProtocolEvent.REJECT),
-            StateTransition(ProtocolState.NEGOTIATE, ProtocolState.REJECTED, ProtocolEvent.REJECT),
-            StateTransition(ProtocolState.COMMIT, ProtocolState.CANCELLED, ProtocolEvent.CANCEL),
-            StateTransition(ProtocolState.EXECUTE, ProtocolState.FAILED, ProtocolEvent.TIMEOUT),
-            StateTransition(ProtocolState.VERIFY, ProtocolState.ESCALATED, ProtocolEvent.ESCALATE),
-            
-            # Timeout transitions
-            StateTransition(ProtocolState.PROPOSE, ProtocolState.TIMEOUT, ProtocolEvent.TIMEOUT),
-            StateTransition(ProtocolState.NEGOTIATE, ProtocolState.TIMEOUT, ProtocolEvent.TIMEOUT),
-            StateTransition(ProtocolState.COMMIT, ProtocolState.TIMEOUT, ProtocolEvent.TIMEOUT),
-            StateTransition(ProtocolState.EXECUTE, ProtocolState.TIMEOUT, ProtocolEvent.TIMEOUT),
-        ]
-        
-        cls._transitions = transitions
-    
-    def __init__(self, initial_state: ProtocolState = ProtocolState.DISCOVER):
-        self._init_transitions()
-        self.state = initial_state
-        self.history: List[StateTransition] = []
-        self._timers: Dict[str, datetime] = {}
-        self.context: Dict[str, Any] = {}
-        self._logger = logging.getLogger(f"{__name__}.StateMachine")
-    
-    def can_transition(self, event: ProtocolEvent, context: Optional[Dict] = None) -> bool:
-        """Check if transition is valid"""
-        context = context or {}
-        for transition in self._transitions:
-            if (transition.from_state == self.state and 
-                transition.event == event):
-                if transition.condition:
-                    if transition.condition(context):
-                        return True
-                else:
-                    return True
-        return False
-    
-    def transition(self, event: ProtocolEvent, context: Optional[Dict] = None) -> bool:
-        """Execute a transition"""
-        context = context or {}
-        
-        if not self.can_transition(event, context):
-            self._logger.warning(
-                f"Invalid transition: {self.state.value} --{event}--> ?"
-            )
-            return False
-        
-        # Find transition
-        for transition in self._transitions:
-            if (transition.from_state == self.state and 
-                transition.event == event):
-                old_state = self.state
-                self.state = transition.to_state
-                self.history.append(transition)
-                self.context.update(context)
-                self._logger.info(
-                    f"Transition: {old_state.value} --{event}--> {self.state.value}"
-                )
-                return True
-        
-        return False
-    
-    def is_terminal(self) -> bool:
-        """Check if state is terminal"""
-        return self.state in [
+class VireoStateMachine:
+    """
+    Guard that physically forbids illegal state transitions.
+
+    Usage:
+        sm = VireoStateMachine()
+        sm.transition(ProtocolState.PROPOSE)   # OK
+        sm.transition(ProtocolState.DONE)      # raises IllegalTransitionError
+    """
+
+    VALID_TRANSITIONS = {
+        ProtocolState.DISCOVER: {
+            ProtocolState.DISCOVER,
+            ProtocolState.PROPOSE,
+        },
+        ProtocolState.PROPOSE: {
+            ProtocolState.NEGOTIATE,
+            ProtocolState.REJECTED,
+            ProtocolState.TIMEOUT,
+        },
+        ProtocolState.NEGOTIATE: {
+            ProtocolState.PROPOSE,
+            ProtocolState.COMMIT,
+            ProtocolState.REJECTED,
+            ProtocolState.TIMEOUT,
+        },
+        ProtocolState.COMMIT: {
+            ProtocolState.EXECUTE,
+            ProtocolState.CANCELLED,
+        },
+        ProtocolState.EXECUTE: {
+            ProtocolState.VERIFY,
+            ProtocolState.FAILED,
+        },
+        ProtocolState.VERIFY: {
             ProtocolState.DONE,
-            ProtocolState.REJECTED,
-            ProtocolState.CANCELLED,
-            ProtocolState.FAILED,
+            ProtocolState.NEGOTIATE,
             ProtocolState.ESCALATED,
-            ProtocolState.TIMEOUT
-        ]
-    
-    def is_error(self) -> bool:
-        """Check if state is error"""
-        return self.state in [
-            ProtocolState.REJECTED,
-            ProtocolState.CANCELLED,
-            ProtocolState.FAILED,
-            ProtocolState.ESCALATED,
-            ProtocolState.TIMEOUT
-        ]
-    
-    def start_timer(self, name: str, timeout_sec: int) -> None:
-        """Start a timer"""
-        self._timers[name] = datetime.now() + timedelta(seconds=timeout_sec)
-    
-    def check_timer(self, name: str) -> bool:
-        """Check if timer has expired"""
-        if name not in self._timers:
-            return False
-        return datetime.now() > self._timers[name]
-    
-    def cancel_timer(self, name: str) -> None:
-        """Cancel a timer"""
-        if name in self._timers:
-            del self._timers[name]
-    
+        },
+        ProtocolState.ESCALATED: {
+            ProtocolState.NEGOTIATE,
+            ProtocolState.DONE,
+        },
+        ProtocolState.DONE:      frozenset(),
+        ProtocolState.REJECTED:  frozenset(),
+        ProtocolState.CANCELLED: frozenset(),
+        ProtocolState.FAILED:    frozenset(),
+        ProtocolState.TIMEOUT:   frozenset(),
+    }
+
+    def __init__(self, initial: ProtocolState = ProtocolState.DISCOVER):
+        self._state = initial
+        self._history: list[ProtocolState] = [initial]
+
+    @property
+    def state(self) -> ProtocolState:
+        return self._state
+
+    @property
+    def history(self) -> list[ProtocolState]:
+        return list(self._history)
+
+    @property
+    def is_terminal(self) -> bool:
+        return self._state in TERMINAL_STATES
+
+    def can_transition(self, next_state: ProtocolState) -> bool:
+        return next_state in self.VALID_TRANSITIONS[self._state]
+
+    def transition(self, next_state: ProtocolState) -> None:
+        if not isinstance(next_state, ProtocolState):
+            raise TypeError(f"Expected ProtocolState, got {type(next_state)}")
+        if next_state not in self.VALID_TRANSITIONS[self._state]:
+            raise IllegalTransitionError(self._state, next_state)
+        self._state = next_state
+        self._history.append(next_state)
+
     def reset(self) -> None:
-        """Reset state machine"""
-        self.state = ProtocolState.DISCOVER
-        self.history = []
-        self.context = {}
-        self._timers = {}
-    
-    def to_dict(self) -> Dict[str, Any]:
-        """Export to dict"""
+        self._state = ProtocolState.DISCOVER
+        self._history = [ProtocolState.DISCOVER]
+
+    def to_dict(self) -> dict:
         return {
-            "state": self.state.value,
-            "history": [t.to_state.value for t in self.history[-10:]],
-            "context": self.context,
-            "is_terminal": self.is_terminal(),
-            "is_error": self.is_error()
+            "state": self._state.value,
+            "is_terminal": self.is_terminal,
+            "history": [s.value for s in self._history],
         }
-
-
-# Valid state transitions for reference
-VALID_TRANSITIONS = {
-    ProtocolState.DISCOVER: [ProtocolEvent.DISCOVER],
-    ProtocolState.PROPOSE: [ProtocolEvent.ACCEPT, ProtocolEvent.REJECT, ProtocolEvent.TIMEOUT],
-    ProtocolState.NEGOTIATE: [ProtocolEvent.COMMIT, ProtocolEvent.REJECT, ProtocolEvent.TIMEOUT],
-    ProtocolState.COMMIT: [ProtocolEvent.EXECUTE, ProtocolEvent.CANCEL, ProtocolEvent.TIMEOUT],
-    ProtocolState.EXECUTE: [ProtocolEvent.VERIFY, ProtocolEvent.TIMEOUT],
-    ProtocolState.VERIFY: [ProtocolEvent.DONE, ProtocolEvent.ESCALATE],
-}

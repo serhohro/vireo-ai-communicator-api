@@ -1,701 +1,178 @@
-openapi: 3.0.3
+openapi: 3.1.0
+
 info:
-  title: Vireo AI API
+  title: Vireo API
+  version: 3.1.0
   description: |
-    API for AI-to-AI communication, negotiation, and coordination.
-    
-    ## Features
-    - Agent management
-    - Real-time messaging via WebSocket
-    - Smart contracts
-    - Multi-agent negotiation
-    - Trust and reputation
-    - GPU acceleration
-    - WASM runtime
-    
-    ## Authentication
-    API key or JWT token required for most endpoints.
-  version: 3.0.0
+    **Vireo** — an experimental programming language and protocol for
+    AI-agent communication, negotiation and coordination.
+
+    Vireo provides the control plane for AI-to-AI interaction:
+    - LLMs provide intelligence.
+    - Vireo provides structure, execution, verification and interoperability.
+
+    ## Cryptography
+    - **Signature:** Ed25519 (RFC 8032)
+    - **Hash:** BLAKE2b-256 (RFC 7693)
+    - **Canonical form:** RFC 8785 JCS
+    - **DID:** `did:vireo:<base64url(BLAKE2b-256("agent:name"))>`
+
+    ## Wire Format
+    96-byte Big-Endian header + RFC 8785 JCS payload.
+
+    ## Status
+    ⚠️ **Proof-of-concept.** Do not use in production without a security audit.
   contact:
-    name: Vireo Team
-    url: https://vireo.ai
-    email: team@vireo.ai
+    name: Serhii
+    url: https://github.com/serhohro/vireo-ai-communicator-4
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
 
 servers:
-  - url: https://api.vireo.ai/api/v1
-    description: Production server
-  - url: http://localhost:8000/api/v1
-    description: Development server
+  - url: http://localhost:5000
+    description: Local development
+  - url: https://api.vireo.example
+    description: Production (example)
 
 tags:
-  - name: agents
-    description: Agent management
-  - name: messages
-    description: Message communication
-  - name: contracts
-    description: Smart contracts
-  - name: negotiation
-    description: Multi-agent negotiation
-  - name: trust
-    description: Trust and reputation
-  - name: system
-    description: System information
+  - name: UI
+    description: Home, web interface, docs, health
+  - name: Agents
+    description: Agent registration and management
+  - name: Contracts
+    description: Contract proposal, execution, verification
+  - name: Wire
+    description: Binary wire protocol and message exchange
+  - name: DID
+    description: Decentralized identifiers
+  - name: Trust
+    description: Trust bootstrap (challenge-response)
+  - name: Crypto
+    description: Key generation, signing, verification
+  - name: Providers
+    description: LLM provider registry
+  - name: LLM
+    description: Chat and autonomous negotiation
+  - name: Metrics
+    description: Runtime metrics
 
-components:
-  securitySchemes:
-    ApiKeyAuth:
-      type: apiKey
-      in: header
-      name: X-API-Key
-      description: API key authentication
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-      description: JWT token authentication
-
-  schemas:
-    Agent:
-      type: object
-      required:
-        - agent_id
-        - name
-        - version
-      properties:
-        agent_id:
-          type: string
-          description: Unique agent identifier
-          example: "agent_abc123"
-        did:
-          type: string
-          description: Decentralized identifier
-          example: "did:vireo:agent_abc123"
-        name:
-          type: string
-          description: Agent name
-          maxLength: 100
-          example: "MyAgent"
-        version:
-          type: string
-          description: Agent version
-          example: "1.0.0"
-        capabilities:
-          type: array
-          items:
-            type: string
-          description: List of agent capabilities
-          example: ["text-generation", "code-analysis"]
-        description:
-          type: string
-          description: Agent description
-          example: "AI agent for code analysis"
-        status:
-          type: string
-          enum: [idle, active, busy, offline]
-          description: Agent status
-          example: "active"
-        created_at:
-          type: string
-          format: date-time
-          description: Creation timestamp
-        updated_at:
-          type: string
-          format: date-time
-          description: Last update timestamp
-
-    Message:
-      type: object
-      required:
-        - id
-        - type
-        - sender
-        - recipient
-      properties:
-        id:
-          type: string
-          description: Message ID
-          example: "msg_abc123"
-        type:
-          type: string
-          description: Message type
-          enum: [propose, commit, execute, verify, escalate, done, error]
-          example: "propose"
-        sender:
-          type: string
-          description: Sender agent ID
-          example: "agent_abc123"
-        recipient:
-          type: string
-          description: Recipient agent ID
-          example: "agent_def456"
-        payload:
-          type: object
-          description: Message payload
-          example: {"task": "analyze_code", "language": "python"}
-        timestamp:
-          type: string
-          format: date-time
-          description: Message timestamp
-        signature:
-          type: string
-          description: Message signature (hex)
-          example: "abc123def456..."
-        protocol_version:
-          type: string
-          description: Protocol version
-          example: "3.0.0"
-
-    Contract:
-      type: object
-      required:
-        - contract_id
-        - terms
-        - parties
-      properties:
-        contract_id:
-          type: string
-          description: Contract ID
-          example: "ctr_abc123"
-        terms:
-          type: object
-          description: Contract terms
-          example: {"price": 100, "deadline": "2024-12-31"}
-        parties:
-          type: array
-          items:
-            type: string
-          description: Contract parties
-          example: ["agent_abc123", "agent_def456"]
-        status:
-          type: string
-          enum: [pending, active, completed, terminated, expired]
-          description: Contract status
-          example: "active"
-        created_at:
-          type: string
-          format: date-time
-          description: Creation timestamp
-        expires_at:
-          type: string
-          format: date-time
-          description: Expiration timestamp
-        signatures:
-          type: object
-          additionalProperties:
-            type: string
-          description: Party signatures
-          example: {"agent_abc123": "sig_abc..."}
-
-    Negotiation:
-      type: object
-      required:
-        - negotiation_id
-        - task
-        - parties
-      properties:
-        negotiation_id:
-          type: string
-          description: Negotiation ID
-          example: "neg_abc123"
-        task:
-          type: string
-          description: Task being negotiated
-          example: "data_analysis"
-        requirements:
-          type: object
-          description: Task requirements
-          example: {"capabilities": ["analysis"], "time_limit": "1h"}
-        current_offer:
-          type: object
-          description: Current offer
-        round:
-          type: integer
-          description: Current round
-          example: 3
-        parties:
-          type: array
-          items:
-            type: string
-          description: Participating agents
-        status:
-          type: string
-          enum: [active, accepted, rejected, timeout]
-          description: Negotiation status
-        history:
-          type: array
-          items:
-            type: object
-            properties:
-              round:
-                type: integer              offer:
-                type: object
-              party:
-                type: string
-              timestamp:
-                type: string
-                format: date-time
-
-    Error:
-      type: object
-      required:
-        - error
-      properties:
-        error:
-          type: string
-          description: Error message
-        detail:
-          type: string
-          description: Detailed error information
-        status_code:
-          type: integer
-          description: HTTP status code
-
-  responses:
-    Unauthorized:
-      description: Authentication required
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/Error"
-          example:
-            error: "Not authenticated"
-            status_code: 401
-    Forbidden:
-      description: Insufficient permissions
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/Error"
-          example:
-            error: "Permission denied"
-            status_code: 403
-    NotFound:
-      description: Resource not found
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/Error"
-          example:
-            error: "Agent not found"
-            status_code: 404
-    RateLimited:
-      description: Rate limit exceeded
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/Error"
-          example:
-            error: "Rate limit exceeded"
-            detail: "Too many requests per minute"
-            retry_after: 60
-
-security:
-  - ApiKeyAuth: []
-  - BearerAuth: []
+# ═══════════════════════════════════════════════════════════════
+# PATHS
+# ═══════════════════════════════════════════════════════════════
 
 paths:
-  # Agent endpoints
-  /agents:
+  # ─────────────────────────────────────────────────────────────
+  # UI
+  # ─────────────────────────────────────────────────────────────
+  /:
+    get:
+      tags: [UI]
+      summary: Home
+      description: Returns basic server info and links.
+      operationId: home
+      responses:
+        "200":
+          description: Server info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HomeResponse"
+
+  /web:
+    get:
+      tags: [UI]
+      summary: Web interface
+      description: Returns the HTML web UI (if available).
+      operationId: webInterface
+      responses:
+        "200":
+          description: HTML page
+          content:
+            text/html:
+              schema:
+                type: string
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /docs:
+    get:
+      tags: [UI]
+      summary: API docs
+      description: Returns a JSON overview of all endpoints.
+      operationId: docs
+      responses:
+        "200":
+          description: Endpoint catalog
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/health:
+    get:
+      tags: [UI]
+      summary: Health check
+      operationId: health
+      responses:
+        "200":
+          description: Health status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  # ─────────────────────────────────────────────────────────────
+  # AGENTS
+  # ─────────────────────────────────────────────────────────────
+  /api/v3/agent/register:
     post:
-      tags: [agents]
-      summary: Create a new agent
-      description: Register a new AI agent in the system
+      tags: [Agents]
+      summary: Register a new agent
+      description: |
+        Registers an agent. If no public key is provided, generates a
+        fresh Ed25519 keypair. The private key is returned **once**.
+      operationId: registerAgent
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Agent"
+              $ref: "#/components/schemas/RegisterAgentRequest"
+            examples:
+              minimal:
+                summary: Minimal registration
+                value:
+                  id: agent-alice
+              with_name:
+                summary: With name
+                value:
+                  id: agent-alice
+                  name: "agent:alice"
       responses:
-        201:
-          description: Agent created successfully
+        "201":
+          description: Agent registered
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Agent"
-        400:
-          description: Invalid request
+                $ref: "#/components/schemas/RegisterAgentResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          description: Agent already registered
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-        401:
-          $ref: "#/components/responses/Unauthorized"
 
+  /api/v3/agents:
     get:
-      tags: [agents]
-      summary: List all agents
-      parameters:
-        - name: status
-          in: query
-          schema:
-            type: string
-            enum: [idle, active, busy, offline]
-          description: Filter by status
-        - name: capability
-          in: query
-          schema:
-            type: string
-          description: Filter by capability
-        - name: skip
-          in: query
-          schema:
-            type: integer
-            default: 0
-          description: Number of records to skip
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 20
-            maximum: 100
-          description: Number of records to return
+      tags: [Agents]
+      summary: List agents
+      operationId: listAgents
       responses:
-        200:
-          description: List of agents
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Agent"
-        401:
-          $ref: "#/components/responses/Unauthorized"
-
-  /agents/{agent_id}:
-    get:
-      tags: [agents]
-      summary: Get agent details
-      parameters:
-        - name: agent_id
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Agent ID
-      responses:
-        200:
-          description: Agent details
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Agent"
-        404:
-          $ref: "#/components/responses/NotFound"
-        401:
-          $ref: "#/components/responses/Unauthorized"
-
-    delete:
-      tags: [agents]
-      summary: Delete agent
-      parameters:
-        - name: agent_id
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Agent ID
-      responses:
-        204:
-          description: Agent deleted
-        404:
-          $ref: "#/components/responses/NotFound"
-        401:
-          $ref: "#/components/responses/Unauthorized"
-
-  # Message endpoints
-  /messages:
-    post:
-      tags: [messages]
-      summary: Send a message
-      description: Send a message to another agent
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - type
-                - recipient
-                - payload
-              properties:
-                type:
-                  type: string
-                  enum: [propose, commit, execute, verify, escalate, done]
-                recipient:
-                  type: string
-                payload:
-                  type: object
-                sender:
-                  type: string
-                protocol_version:
-                  type: string
-                  default: "3.0.0"
-      responses:
-        200:
-          description: Message sent
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Message"
-        400:
-          description: Invalid message
-        401:
-          $ref: "#/components/responses/Unauthorized"
-
-  /messages/{message_id}:
-    get:
-      tags: [messages]
-      summary: Get message
-      parameters:
-        - name: message_id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Message details
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Message"
-        404:
-          $ref: "#/components/responses/NotFound"
-
-  /agents/{agent_id}/messages:
-    get:
-      tags: [messages]
-      summary: Get agent messages
-      parameters:
-        - name: agent_id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 20
-          description: Number of messages to return
-        - name: before
-          in: query
-          schema:
-            type: string
-            format: date-time
-          description: Get messages before this timestamp
-      responses:
-        200:
-          description: List of messages
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Message"
-
-  # Contract endpoints
-  /contracts:
-    post:
-      tags: [contracts]
-      summary: Create contract
-      description: Create a new smart contract between agents
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - terms
-                - parties
-              properties:
-                terms:
-                  type: object
-                parties:
-                  type: array
-                  items:
-                    type: string
-                duration_days:
-                  type: integer
-                  default: 30
-                  minimum: 1
-                  maximum: 365
-                escrow_enabled:
-                  type: boolean
-                  default: true
-      responses:
-        201:
-          description: Contract created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Contract"
-        401:
-          $ref: "#/components/responses/Unauthorized"
-
-  /contracts/{contract_id}:
-    get:
-      tags: [contracts]
-      summary: Get contract
-      parameters:
-        - name: contract_id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Contract details
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Contract"
-
-  /contracts/{contract_id}/sign:
-    post:
-      tags: [contracts]
-      summary: Sign contract
-      description: Sign a contract as a party
-      parameters:
-        - name: contract_id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Contract signed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Contract"
-        403:
-          description: Not authorized to sign
-        404:
-          $ref: "#/components/responses/NotFound"
-
-  # Negotiation endpoints
-  /negotiations:
-    post:
-      tags: [negotiation]
-      summary: Start negotiation
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - task
-                - requirements
-                - initial_offer
-              properties:
-                task:
-                  type: string
-                requirements:
-                  type: object
-                initial_offer:
-                  type: object
-                max_rounds:
-                  type: integer
-                  default: 5
-                  minimum: 1
-                  maximum: 20
-      responses:
-        201:
-          description: Negotiation started
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Negotiation"
-
-  /negotiations/{negotiation_id}/offer:
-    post:
-      tags: [negotiation]
-      summary: Submit offer
-      parameters:
-        - name: negotiation_id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              description: Offer terms
-      responses:
-        200:
-          description: Offer submitted
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Negotiation"
-
-  # Trust endpoints
-  /trust/{agent_id}:
-    get:
-      tags: [trust]
-      summary: Get trust score
-      parameters:
-        - name: agent_id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Trust score
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  agent_id:
-                    type: string
-                  trust_score:
-                    type: number
-                    minimum: 0
-                    maximum: 1
-                  timestamp:
-                    type: string
-                    format: date-time
-
-  /discover:
-    get:
-      tags: [trust]
-      summary: Discover agents
-      parameters:
-        - name: capability
-          in: query
-          schema:
-            type: string
-          description: Filter by capability
-        - name: min_trust
-          in: query
-          schema:
-            type: number
-            minimum: 0
-            maximum: 1
-            default: 0.5
-          description: Minimum trust score
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 20
-            maximum: 100
-      responses:
-        200:
-          description: Discovered agents
+        "200":
+          description: List of registered agents
           content:
             application/json:
               schema:
@@ -704,109 +181,1195 @@ paths:
                   agents:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        agent_id:
-                          type: string
-                        name:
-                          type: string
-                        capabilities:
-                          type: array
-                          items:
-                            type: string
-                        trust_score:
-                          type: number
-                        status:
-                          type: string
-                  total:
+                      $ref: "#/components/schemas/Agent"
+                  count:
                     type: integer
-                  timestamp:
-                    type: string
-                    format: date-time
 
-  # System endpoints
-  /system/status:
+  /api/v3/agent/{agent_id}/status:
     get:
-      tags: [system]
-      summary: System status
-      responses:
-        200:
-          description: System status
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  version:
-                    type: string
-                    example: "3.0.0"
-                  status:
-                    type: string
-                    example: "operational"
-                  timestamp:
-                    type: string
-                    format: date-time
-                  features:
-                    type: object
-                    properties:
-                      websocket:
-                        type: boolean
-                      grpc:
-                        type: boolean
-                      wasm:
-                        type: boolean
-                      gpu:
-                        type: boolean
-
-  /system/health:
-    get:
-      tags: [system]
-      summary: System health
-      description: Public health check endpoint
-      responses:
-        200:
-          description: System healthy
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: "healthy"
-                  version:
-                    type: string
-                    example: "3.0.0"
-                  timestamp:
-                    type: string
-                    format: date-time
-
-  # WebSocket endpoint
-  /ws:
-    get:
-      tags: [websocket]
-      summary: WebSocket endpoint
-      description: |
-        Real-time communication via WebSocket.
-        
-        Requires authentication via query parameters:
-        - `token`: JWT token
-        - `api_key`: API key
+      tags: [Agents]
+      summary: Get agent status
+      operationId: agentStatus
       parameters:
-        - name: token
-          in: query
-          schema:
-            type: string
-          description: JWT token for authentication
-        - name: api_key
-          in: query
-          schema:
-            type: string
-          description: API key for authentication
+        - $ref: "#/components/parameters/AgentId"
       responses:
-        101:
-          description: WebSocket upgrade successful
-        4001:
-          description: Authentication required
-        4002:
-          description: Invalid authentication
+        "200":
+          description: Agent status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentStatusResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/v3/agent/{agent_id}/capability:
+    post:
+      tags: [Agents]
+      summary: Add capability
+      operationId: addCapability
+      parameters:
+        - $ref: "#/components/parameters/AgentId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [capability]
+              properties:
+                capability:
+                  type: string
+                  example: translate
+      responses:
+        "200":
+          description: Capability added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  agent_id:
+                    type: string
+                  capabilities:
+                    type: array
+                    items:
+                      type: string
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ─────────────────────────────────────────────────────────────
+  # CONTRACTS
+  # ─────────────────────────────────────────────────────────────
+  /api/v3/propose:
+    post:
+      tags: [Contracts]
+      summary: Propose a contract
+      operationId: proposeContract
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProposeContractRequest"
+            examples:
+              simple:
+                summary: Simple contract
+                value:
+                  contract_id: c1
+                  parties: [agent-1, agent-2]
+                  terms:
+                    max_tokens: 1000
+                    timeout_sec: 30
+      responses:
+        "201":
+          description: Contract proposed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          description: Contract already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/v3/execute:
+    post:
+      tags: [Contracts]
+      summary: Execute a contract
+      description: |
+        Transitions PROPOSE → NEGOTIATE → COMMIT → EXECUTE.
+        Illegal transitions return 409.
+      operationId: executeContract
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [contract_id]
+              properties:
+                contract_id:
+                  type: string
+                executor:
+                  type: string
+                result:
+                  type: object
+                  additionalProperties: true
+      responses:
+        "200":
+          description: Contract executed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExecuteResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /api/v3/verify:
+    post:
+      tags: [Contracts]
+      summary: Verify a contract
+      description: |
+        Real verification with evidence:
+        1. Contract must be in EXECUTE state.
+        2. Evidence must exist.
+        3. Terms are evaluated (max_tokens, timeout_sec, result_hash).
+        4. Transition to VERIFY → DONE or VERIFY → ESCALATED.
+      operationId: verifyContract
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [contract_id]
+              properties:
+                contract_id:
+                  type: string
+      responses:
+        "200":
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VerifyResponse"
+        "400":
+          description: No evidence to verify
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  # ─────────────────────────────────────────────────────────────
+  # WIRE
+  # ─────────────────────────────────────────────────────────────
+  /api/v3/message:
+    post:
+      tags: [Wire]
+      summary: Send a wire message
+      description: |
+        Accepts two content types:
+        - `application/octet-stream` → binary Vireo wire bytes
+        - `application/json` → `{envelope, signature, sender_did}`
+
+        In both cases, nonce replay protection is enforced.
+      operationId: sendMessage
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+              description: Canonical Vireo wire bytes (96B header + RFC 8785 payload)
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JsonWireMessage"
+      responses:
+        "200":
+          description: Message received and verified
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WireMessageResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /api/v3/protocol/version:
+    get:
+      tags: [Wire]
+      summary: Protocol version
+      operationId: protocolVersion
+      responses:
+        "200":
+          description: Version info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProtocolVersion"
+
+  # ─────────────────────────────────────────────────────────────
+  # DID
+  # ─────────────────────────────────────────────────────────────
+  /api/v3/did/create:
+    post:
+      tags: [DID]
+      summary: Create a DID
+      operationId: createDid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  example: "agent:alice"
+                public_key_hex:
+                  type: string
+                  description: Optional. If omitted, a keypair is generated.
+                endpoint:
+                  type: string
+      responses:
+        "201":
+          description: DID created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DidCreateResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /api/v3/did/verify:
+    post:
+      tags: [DID]
+      summary: Verify a DID
+      description: |
+        - If only `did` given → existence check.
+        - If `message` + `signature` given → cryptographic verification.
+      operationId: verifyDid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [did]
+              properties:
+                did:
+                  type: string
+                message:
+                  type: string
+                signature:
+                  type: string
+      responses:
+        "200":
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DidVerifyResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/v3/did/{did}:
+    get:
+      tags: [DID]
+      summary: Get DID document
+      operationId: getDidDoc
+      parameters:
+        - name: did
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "did:vireo:z6MkqRYqQiSgvZQdnBytw86Qbs2ZWUkGv22od935YF4s8M7V"
+      responses:
+        "200":
+          description: DID document
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DidDocument"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ─────────────────────────────────────────────────────────────
+  # TRUST
+  # ─────────────────────────────────────────────────────────────
+  /api/v3/trust/establish:
+    post:
+      tags: [Trust]
+      summary: Establish trust (create challenge)
+      operationId: establishTrust
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [initiator_did, responder_did]
+              properties:
+                initiator_did:
+                  type: string
+                responder_did:
+                  type: string
+      responses:
+        "200":
+          description: Challenge created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrustChallengeResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /api/v3/trust/challenge:
+    post:
+      tags: [Trust]
+      summary: Alias for /trust/establish
+      operationId: trustChallenge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [initiator_did, responder_did]
+              properties:
+                initiator_did:
+                  type: string
+                responder_did:
+                  type: string
+      responses:
+        "200":
+          description: Challenge created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrustChallengeResponse"
+
+  /api/v3/trust/respond:
+    post:
+      tags: [Trust]
+      summary: Respond to trust challenge
+      operationId: trustRespond
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [challenge_hex, responder_did, signature]
+              properties:
+                challenge_hex:
+                  type: string
+                responder_did:
+                  type: string
+                signature:
+                  type: string
+      responses:
+        "200":
+          description: Trust established
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrustRespondResponse"
+        "401":
+          description: Signature invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ─────────────────────────────────────────────────────────────
+  # CRYPTO
+  # ─────────────────────────────────────────────────────────────
+  /api/crypto/generate_keys:
+    post:
+      tags: [Crypto]
+      summary: Generate Ed25519 keypair
+      operationId: generateKeys
+      responses:
+        "200":
+          description: New keypair
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KeypairResponse"
+
+  /api/crypto/sign:
+    post:
+      tags: [Crypto]
+      summary: Sign a message
+      description: |
+        Signs a message with a provided private key.
+        **Does NOT generate a new keypair.**
+      operationId: signMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [private_key_hex, message]
+              properties:
+                private_key_hex:
+                  type: string
+                message:
+                  type: string
+                  description: UTF-8 or hex string
+      responses:
+        "200":
+          description: Signed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /api/crypto/verify:
+    post:
+      tags: [Crypto]
+      summary: Verify an Ed25519 signature
+      operationId: verifySignature
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [public_key_hex, message, signature]
+              properties:
+                public_key_hex:
+                  type: string
+                message:
+                  type: string
+                signature:
+                  type: string
+      responses:
+        "200":
+          description: Signature valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VerifySignatureResponse"
+        "401":
+          description: Signature invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VerifySignatureResponse"
+
+  /api/crypto/test_trust:
+    post:
+      tags: [Crypto]
+      summary: Full challenge-response round-trip
+      operationId: testTrust
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [initiator_did, responder_did, responder_private_key_hex]
+              properties:
+                initiator_did:
+                  type: string
+                responder_did:
+                  type: string
+                responder_private_key_hex:
+                  type: string
+      responses:
+        "200":
+          description: Trust result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrustRespondResponse"
+
+  # ─────────────────────────────────────────────────────────────
+  # PROVIDERS
+  # ─────────────────────────────────────────────────────────────
+  /api/providers:
+    get:
+      tags: [Providers]
+      summary: List LLM providers
+      operationId: listProviders
+      responses:
+        "200":
+          description: Provider list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  providers:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Provider"
+                  count:
+                    type: integer
+
+  # ─────────────────────────────────────────────────────────────
+  # LLM
+  # ─────────────────────────────────────────────────────────────
+  /api/chat:
+    post:
+      tags: [LLM]
+      summary: Chat with an LLM
+      description: |
+        If the provider key is not configured, returns `{"status": "mock"}`.
+        If configured, attempts a real call.
+      operationId: chat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                model:
+                  type: string
+                  default: ollama
+                  enum: [ollama, mistral, aleph_alpha, cohere, qwen, openai, claude, gemini, deepseek]
+                message:
+                  type: string
+      responses:
+        "200":
+          description: Chat response (may be mock)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /api/llm/agent/{agent_id}/auto_negotiate:
+    post:
+      tags: [LLM]
+      summary: Autonomous negotiation
+      description: |
+        Real negotiation flow with state machine:
+        DISCOVER → PROPOSE → (NEGOTIATE → COMMIT) | REJECTED
+      operationId: autoNegotiate
+      parameters:
+        - $ref: "#/components/parameters/AgentId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [recipient, task]
+              properties:
+                recipient:
+                  type: string
+                task:
+                  type: string
+                terms:
+                  type: object
+                  additionalProperties: true
+                  example:
+                    max_tokens: 1000
+                    timeout_sec: 30
+                    cost_usd: 1.0
+      responses:
+        "200":
+          description: Negotiation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NegotiationResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  # ─────────────────────────────────────────────────────────────
+  # METRICS
+  # ─────────────────────────────────────────────────────────────
+  /api/v3/metrics:
+    get:
+      tags: [Metrics]
+      summary: Runtime metrics
+      operationId: metrics
+      responses:
+        "200":
+          description: Metrics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MetricsResponse"
+
+# ═══════════════════════════════════════════════════════════════
+# COMPONENTS
+# ═══════════════════════════════════════════════════════════════
+
+components:
+
+  parameters:
+    AgentId:
+      name: agent_id
+      in: path
+      required: true
+      schema:
+        type: string
+      example: agent-alice
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    Unauthorized:
+      description: Unauthorized (signature invalid)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    Conflict:
+      description: Illegal state transition or replay detected
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+  schemas:
+
+    # ── Core ──────────────────────────────────────────────────
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+
+    HomeResponse:
+      type: object
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        wire_version:
+          type: string
+        status:
+          type: string
+        docs:
+          type: string
+        web:
+          type: string
+        api:
+          type: string
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+        version:
+          type: string
+          example: "3.1"
+        wire_version:
+          type: string
+          example: "0x301"
+        uptime_sec:
+          type: integer
+        agents:
+          type: integer
+        contracts:
+          type: integer
+        sessions:
+          type: integer
+
+    ProtocolVersion:
+      type: object
+      properties:
+        protocol:
+          type: string
+          example: "3.1"
+        wire:
+          type: string
+          example: "0x301"
+        wire_format:
+          type: string
+          example: "Vireo Canonical Binary (RFC 8785 payload + 96B header)"
+        hash:
+          type: string
+          example: "BLAKE2b-256"
+        signature:
+          type: string
+          example: "Ed25519"
+        header_size_bytes:
+          type: integer
+          example: 96
+
+    # ── Agents ────────────────────────────────────────────────
+    RegisterAgentRequest:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+          example: agent-alice
+        name:
+          type: string
+          example: "agent:alice"
+        did:
+          type: string
+        public_key_hex:
+          type: string
+        endpoint:
+          type: string
+
+    RegisterAgentResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: registered
+        agent_id:
+          type: string
+        did:
+          type: string
+        public_key_hex:
+          type: string
+        private_key_hex:
+          type: string
+          description: Returned ONCE. Store securely.
+        warning:
+          type: string
+
+    Agent:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        did:
+          type: string
+        public_key_hex:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        registered_at:
+          type: integer
+          description: Unix milliseconds
+
+    AgentStatusResponse:
+      type: object
+      properties:
+        agent:
+          $ref: "#/components/schemas/Agent"
+        state:
+          type: string
+          enum:
+            - DISCOVER
+            - PROPOSE
+            - NEGOTIATE
+            - COMMIT
+            - EXECUTE
+            - VERIFY
+            - DONE
+            - REJECTED
+            - ESCALATED
+            - CANCELLED
+            - FAILED
+            - TIMEOUT
+        is_terminal:
+          type: boolean
+
+    # ── Contracts ─────────────────────────────────────────────
+    ProposeContractRequest:
+      type: object
+      required: [contract_id, parties]
+      properties:
+        contract_id:
+          type: string
+        parties:
+          type: array
+          minItems: 2
+          items:
+            type: string
+        terms:
+          type: object
+          additionalProperties: true
+          example:
+            max_tokens: 1000
+            timeout_sec: 30
+
+    ContractResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: proposed
+        contract:
+          $ref: "#/components/schemas/Contract"
+
+    Contract:
+      type: object
+      properties:
+        contract_id:
+          type: string
+        parties:
+          type: array
+          items:
+            type: string
+        terms:
+          type: object
+          additionalProperties: true
+        state:
+          type: string
+        created_at:
+          type: integer
+        evidence:
+          type: object
+          nullable: true
+        verification:
+          type: object
+          nullable: true
+
+    ExecuteResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: executed
+        contract_id:
+          type: string
+        state:
+          type: string
+          example: EXECUTE
+        evidence:
+          type: object
+          properties:
+            executed_at:
+              type: integer
+            executor:
+              type: string
+            result_hash:
+              type: string
+            output:
+              type: object
+
+    VerifyResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        verified:
+          type: boolean
+        contract_id:
+          type: string
+        state:
+          type: string
+          example: DONE
+        checks:
+          type: array
+          items:
+            type: object
+            properties:
+              check:
+                type: string
+              expected:
+                nullable: true
+              actual:
+                nullable: true
+              passed:
+                type: boolean
+
+    # ── Wire ──────────────────────────────────────────────────
+    JsonWireMessage:
+      type: object
+      required: [envelope, signature, sender_did]
+      properties:
+        envelope:
+          type: object
+          required: [intent, timestamp_ms, nonce, sender_did_hash, recipient_did_hash, payload]
+          properties:
+            intent:
+              type: string
+              enum:
+                - DISCOVER
+                - PROPOSE
+                - NEGOTIATE
+                - COMMIT
+                - REJECT
+                - EXECUTE
+                - VERIFY
+                - DONE
+                - ESCALATED
+                - CANCELLED
+                - FAILED
+                - TIMEOUT
+            timestamp_ms:
+              type: integer
+              format: int64
+            nonce:
+              type: string
+              description: hex-encoded 16 bytes
+            sender_did_hash:
+              type: string
+              description: hex-encoded 32 bytes
+            recipient_did_hash:
+              type: string
+              description: hex-encoded 32 bytes
+            payload:
+              type: object
+              additionalProperties: true
+        signature:
+          type: string
+          description: hex-encoded 64 bytes (Ed25519)
+        sender_did:
+          type: string
+
+    WireMessageResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: received
+        intent:
+          type: string
+        timestamp_ms:
+          type: integer
+        payload:
+          type: object
+        sender_did:
+          type: string
+
+    # ── DID ───────────────────────────────────────────────────
+    DidCreateResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: created
+        did:
+          type: string
+        public_key_hex:
+          type: string
+        private_key_hex:
+          type: string
+
+    DidVerifyResponse:
+      type: object
+      properties:
+        verified:
+          type: boolean
+        did:
+          type: string
+        public_key_hex:
+          type: string
+        error:
+          type: string
+          nullable: true
+        note:
+          type: string
+
+    DidDocument:
+      type: object
+      properties:
+        did:
+          type: string
+        publicKeys:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              type:
+                type: string
+                example: Ed25519VerificationKey2020
+              publicKeyHex:
+                type: string
+        service:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              type:
+                type: string
+              serviceEndpoint:
+                type: string
+        registered_at:
+          type: integer
+
+    # ── Trust ─────────────────────────────────────────────────
+    TrustChallengeResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: challenge_created
+        challenge:
+          type: object
+          properties:
+            challenge_hex:
+              type: string
+            initiator_did:
+              type: string
+            responder_did:
+              type: string
+        next:
+          type: string
+
+    TrustRespondResponse:
+      type: object
+      properties:
+        trusted:
+          type: boolean
+        initiator_did:
+          type: string
+        responder_did:
+          type: string
+        error:
+          type: string
+          nullable: true
+
+    # ── Crypto ────────────────────────────────────────────────
+    KeypairResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+        private_key_hex:
+          type: string
+        public_key_hex:
+          type: string
+        warning:
+          type: string
+
+    SignResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: signed
+        signature:
+          type: string
+        hash:
+          type: string
+
+    VerifySignatureResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        error:
+          type: string
+          nullable: true
+        message:
+          type: string
+
+    # ── Providers ─────────────────────────────────────────────
+    Provider:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        country:
+          type: string
+        requires_key:
+          type: boolean
+        configured:
+          type: boolean
+        callable:
+          type: boolean
+
+    # ── LLM ───────────────────────────────────────────────────
+    ChatResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok, mock, error]
+        model:
+          type: string
+        response:
+          type: string
+        note:
+          type: string
+        error:
+          type: string
+
+    NegotiationResponse:
+      type: object
+      properties:
+        session_id:
+          type: string
+        initiator:
+          type: string
+        recipient:
+          type: string
+        task:
+          type: string
+        terms:
+          type: object
+          additionalProperties: true
+        decision:
+          type: string
+          enum: [commit, reject]
+        reason:
+          type: string
+        final_state:
+          type: string
+        history:
+          type: array
+          items:
+            type: string
+
+    # ── Metrics ───────────────────────────────────────────────
+    MetricsResponse:
+      type: object
+      properties:
+        uptime_sec:
+          type: integer
+        agents:
+          type: integer
+        contracts:
+          type: integer
+        sessions:
+          type: integer
+        nonces_stored:
+          type: integer
+        version:
+          type: string
+        wire_version:
+          type: string
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []

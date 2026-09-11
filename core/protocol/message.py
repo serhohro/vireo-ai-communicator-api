@@ -1,184 +1,86 @@
-"""Message definition for Vireo v2.0.1"""
+"""
+Vireo Message v3.1 — high-level envelope + signature wrapper.
+"""
 
-from enum import Enum
 from dataclasses import dataclass, field
-from typing import Optional, Dict, Any
-from datetime import datetime
-import uuid
-import json
+from typing import Any, Optional
+import time
+import os
 
-
-class MessageType(Enum):
-    """Message types"""
-    DISCOVER = "discover"
-    DISCOVER_RESPONSE = "discover_response"
-    PROPOSAL = "proposal"
-    ACCEPT = "accept"
-    REJECT = "reject"
-    COMMIT = "commit"
-    EXECUTE = "execute"
-    EXECUTION_RESULT = "execution_result"
-    VERIFY = "verify"
-    VERIFICATION_RESULT = "verification_result"
-    ESCALATE = "escalate"
-    DONE = "done"
-    ERROR = "error"
+from core.crypto.canonical import canonical_wire_bytes, parse_wire_bytes
+from core.crypto.ed25519 import sign_vireo_message, verify_vireo_message
+from core.crypto.hashing import did_hash
 
 
 @dataclass
-class Message:
-    """Vireo protocol message"""
-    
-    version: str = "2.0.1"
-    type: MessageType = MessageType.DISCOVER
-    message_id: Optional[str] = None
-    timestamp: Optional[str] = None
-    sender_id: Optional[str] = None
-    recipient_id: Optional[str] = None
-    payload: Dict[str, Any] = field(default_factory=dict)
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    signature: Optional[str] = None
-    
-    def __post_init__(self):
-        if self.message_id is None:
-            self.message_id = str(uuid.uuid4())
-        if self.timestamp is None:
-            self.timestamp = datetime.utcnow().isoformat() + "Z"
-    
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dict"""
+class VireoMessage:
+    intent: str
+    payload: dict[str, Any]
+    sender_did: str
+    recipient_did: str
+    timestamp_ms: int = field(default_factory=lambda: int(time.time() * 1000))
+    nonce: bytes = field(default_factory=lambda: os.urandom(16))
+    signature_hex: Optional[str] = None
+
+    @property
+    def envelope(self) -> dict:
         return {
-            "version": self.version,
-            "type": self.type.value if isinstance(self.type, MessageType) else self.type,
-            "message_id": self.message_id,
-            "timestamp": self.timestamp,
-            "sender_id": self.sender_id,
-            "recipient_id": self.recipient_id,
+            "intent": self.intent,
+            "timestamp_ms": self.timestamp_ms,
+            "nonce": self.nonce,
+            "sender_did_hash": did_hash(self.sender_did),
+            "recipient_did_hash": did_hash(self.recipient_did),
             "payload": self.payload,
-            "metadata": self.metadata,
-            "signature": self.signature
         }
-    
-    def to_json(self) -> str:
-        """Convert to JSON"""
-        return json.dumps(self.to_dict())
-    
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Message':
-        """Create from dict"""
-        if "type" in data and isinstance(data["type"], str):
-            data["type"] = MessageType(data["type"])
-        return cls(**data)
-    
-    @classmethod
-    def from_json(cls, json_str: str) -> 'Message':
-        """Create from JSON"""
-        data = json.loads(json_str)
-        if "type" in data and isinstance(data["type"], str):
-            data["type"] = MessageType(data["type"])
-        return cls(**data)
-    
-    def sign(self, key_manager) -> 'Message':
-        """Sign the message"""
-        import hashlib
-        import base64
-        
-        # Create canonical payload
-        canonical = json.dumps(self.to_dict(), sort_keys=True, separators=(',', ':'))
-        
-        # Hash
-        digest = hashlib.sha256(canonical.encode()).digest()
-        
-        # Sign
-        signature = key_manager.sign(digest)
-        self.signature = base64.b64encode(signature).decode()
+
+    def canonical_bytes(self) -> bytes:
+        return canonical_wire_bytes(self.envelope)
+
+    def sign(self, private_key_hex: str) -> "VireoMessage":
+        self.signature_hex = sign_vireo_message(
+            private_key_hex, self.canonical_bytes()
+        )
         return self
-    
-    def verify(self, public_key: bytes) -> bool:
-        """Verify message signature"""
-        if self.signature is None:
-            return False
-        
-        import hashlib
-        import base64
-        
-        # Create canonical payload
-        canonical = json.dumps(self.to_dict(), sort_keys=True, separators=(',', ':'))
-        digest = hashlib.sha256(canonical.encode()).digest()
-        
-        # Decode signature
-        try:
-            signature_bytes = base64.b64decode(self.signature)
-            from cryptography.hazmat.primitives import ed25519
-            public_key_obj = ed25519.Ed25519PublicKey.from_public_bytes(public_key)
-            public_key_obj.verify(signature_bytes, digest)
-            return True
-        except Exception:
-            return False
-    
+
+    def to_wire(self) -> bytes:
+        return self.canonical_bytes()
+
+    def to_dict(self) -> dict:
+        return {
+            "envelope": {
+                "intent": self.intent,
+                "timestamp_ms": self.timestamp_ms,
+                "nonce": self.nonce.hex(),
+                "sender_did_hash": did_hash(self.sender_did).hex(),
+                "recipient_did_hash": did_hash(self.recipient_did).hex(),
+                "payload": self.payload,
+            },
+            "signature": self.signature_hex,
+            "sender_did": self.sender_did,
+            "recipient_did": self.recipient_did,
+        }
+
     @classmethod
-    def create_discover(cls, sender_id: str, capabilities_required: list) -> 'Message':
+    def from_wire(cls, data: bytes) -> "VireoMessage":
+        env = parse_wire_bytes(data)
         return cls(
-            type=MessageType.DISCOVER,
-            sender_id=sender_id,
-            payload={
-                "capabilities_required": capabilities_required
-            }
+            intent=env["intent"],
+            payload=env["payload"],
+            sender_did="",         # unknown until signature resolved
+            recipient_did="",
+            timestamp_ms=env["timestamp_ms"],
+            nonce=env["nonce"],
         )
-    
+
     @classmethod
-    def create_proposal(cls, sender_id: str, recipient_id: str, contract: dict) -> 'Message':
+    def from_dict(cls, d: dict) -> "VireoMessage":
+        env = d["envelope"]
         return cls(
-            type=MessageType.PROPOSAL,
-            sender_id=sender_id,
-            recipient_id=recipient_id,
-            payload={
-                "contract": contract
-            }
-        )
-    
-    @classmethod
-    def create_accept(cls, sender_id: str, recipient_id: str, proposal_id: str) -> 'Message':
-        return cls(
-            type=MessageType.ACCEPT,
-            sender_id=sender_id,
-            recipient_id=recipient_id,
-            payload={
-                "proposal_id": proposal_id
-            }
-        )
-    
-    @classmethod
-    def create_commit(cls, sender_id: str, recipient_id: str, contract_id: str, signatures: dict) -> 'Message':
-        return cls(
-            type=MessageType.COMMIT,
-            sender_id=sender_id,
-            recipient_id=recipient_id,
-            payload={
-                "contract_id": contract_id,
-                "signatures": signatures
-            }
-        )
-    
-    @classmethod
-    def create_verify(cls, sender_id: str, recipient_id: str, contract_id: str) -> 'Message':
-        return cls(
-            type=MessageType.VERIFY,
-            sender_id=sender_id,
-            recipient_id=recipient_id,
-            payload={
-                "contract_id": contract_id
-            }
-        )
-    
-    @classmethod
-    def create_escalate(cls, sender_id: str, recipient_id: str, contract_id: str, reason: str) -> 'Message':
-        return cls(
-            type=MessageType.ESCALATE,
-            sender_id=sender_id,
-            recipient_id=recipient_id,
-            payload={
-                "contract_id": contract_id,
-                "reason": reason
-            }
+            intent=env["intent"],
+            payload=env["payload"],
+            sender_did=d.get("sender_did", ""),
+            recipient_did=d.get("recipient_did", ""),
+            timestamp_ms=env["timestamp_ms"],
+            nonce=bytes.fromhex(env["nonce"]) if isinstance(env["nonce"], str) else env["nonce"],
+            signature_hex=d.get("signature"),
         )
