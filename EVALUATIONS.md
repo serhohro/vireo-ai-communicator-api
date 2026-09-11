@@ -1,46 +1,54 @@
-markdown
-# 🧠 Independent AI Evaluations of Vireo
+# Evaluations
 
-Vireo has been reviewed by leading AI models. Their feedback helped shape the architecture and roadmap.
+AI model reviews of Vireo.
 
----
+## v3.0.0 Reviews
 
-## 📊 Summary
+| Model | Focus | File |
+|-------|-------|------|
+| ChatGPT | Control plane architecture | [ChatGPT.md](evaluations/ChatGPT.md) |
+| Gemini | Wire format, WASM | [Gemini.md](evaluations/Gemini.md) |
+| Kimi | Critical fixes (10 found) | [Kimi.md](evaluations/Kimi.md) |
+| Mistral | EU independence | [Mistral.md](evaluations/Mistral.md) |
+| Perplexity | Standardization | [Perplexity.md](evaluations/Perplexity.md) |
+| Qwen | Trust layer | [Qwen.md](evaluations/Qwen.md) |
 
-| Model          | Key Focus                        | Verdict                      |
-|-------         |-----------|---------             |
-| **ChatGPT**    | Control plane, VERIFY, contracts | "Vireo should be the control  
-                                                                          plane"   |
-| **Perplexity** | Specification, RFC, governance   | "Real chance to become a 
-                                                                    standard"      |
-| **Gemini**     | WASM, wire spec, MCP Server      | "Remarkably clean 
-                                                                   architecture"   |
-| **Mistral**    | EU LLM, JIT, GPU, ONNX           | "Paradigm shift"             |
-| **Qwen**       | Decouple ML, RFC, trust demo     | "Addresses a fundamental gap"|
-| **Kimi**       | VERIFY/ESCALATE, Trust Bootstrap | "Impressive ambition with 
-                                                                    genuine depth" |
----
+## v3.1 Reviews (compliance audit + spec)
 
-## 🔑 Key Takeaways
+| Model | Focus |
+|-------|-------|
+| ChatGPT | Compliance audit (gaps in v3.0.0) |
+| Qwen | Envelope vs payload boundary |
+| Gemini | Wire format spec (RFC 8785 + 96B header) |
+| Mistral | Crypto + EU compliance |
 
-- **VERIFY and ESCALATE** states added based on Kimi's review
-- **Trust Bootstrap Protocol** planned for v1.5.0
-- **Core + Extensions** architecture adopted
-- **European LLM support** prioritized
+## Key Insights
 
----
+- **Qwen:** "Let PyTorch handle the tensors; let Vireo handle the trust."
+- **ChatGPT:** "LLMs provide intelligence. Vireo provides structure, execution, verification and interoperability."
+- **Kimi:** "The real challenge isn't signing - it's key discovery and trust bootstrapping."
+- **Perplexity:** "Standards are born from open specifications, not single repositories."
+- **Claude:** "Change the code, then tell me, in that order."
+- **Gemini:** "WASM compilation and Open Wire Specification are the two most impactful investments."
+- **Mistral:** "Vireo is the only solution that combines language, runtime, protocol and ecosystem in a single system."
 
-## 📂 Full Evaluations
+## Assessment Summary
 
-Detailed reviews are available in the [`evaluations/`](evaluations/) folder:
+| Area | ChatGPT | Kimi |
+|------|---------|------|
+| Idea | 9.5/10 | 9.5/10 |
+| Architecture | 8.5/10 | 9/10 |
+| Uniqueness | - | 8.5/10 |
+| Production readiness | 5.5/10 | ~6/10 |
+| Standardization potential | 6-9/10 | 7/10 |
 
-- [ChatGPT](evaluations/ChatGPT.md)
-- [Perplexity](evaluations/Perplexity.md)
-- [Gemini](evaluations/Gemini.md)
-- [Mistral](evaluations/Mistral.md)
-- [Qwen](evaluations/Qwen.md)
-- [Kimi](evaluations/Kimi.md)
+## v3.1 Fixes (from audit)
 
----
+- Real Ed25519 verification (was mock `valid: True`)
+- Real state machine enforcement (was documented only)
+- Real contract verification with evidence (was `verified: True`)
+- Real nonce replay protection (was absent)
+- Honest LLM provider status (was fake responses)
+- Removed "10x faster" overclaim (measured: 0.42x-0.90x)
 
-🌿 **Vireo — The World's First AI-to-AI Communication Language.** 🚀
+See [CHANGELOG.md](CHANGELOG.md) for full list.

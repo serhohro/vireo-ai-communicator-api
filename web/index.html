@@ -1,319 +1,868 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vireo AI - Agent Platform</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vireo v3.1 - AI-to-AI Communication</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0c29;
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header {
+            text-align: center;
+            padding: 30px 20px 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .header h1 {
+            font-size: 2.8em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #48bb78, #9f7aea);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header h1 span {
+            font-size: 0.4em;
+            color: #718096;
+            -webkit-text-fill-color: #718096;
+        }
+        .header .subtitle {
+            color: #a0aec0;
+            font-size: 1.1em;
+            margin-top: 5px;
+            letter-spacing: 1px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .header .badge-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .header .badge-row .badge {
+            display: inline-block;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 0.7em;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .badge.green { background: rgba(72, 187, 120, 0.2); color: #48bb78; border: 1px solid #48bb78; }
+        .badge.purple { background: rgba(159, 122, 234, 0.2); color: #9f7aea; border: 1px solid #9f7aea; }
+        .badge.orange { background: rgba(237, 137, 54, 0.2); color: #ed8936; border: 1px solid #ed8936; }
+        .badge.blue { background: rgba(99, 179, 237, 0.2); color: #63b3ed; border: 1px solid #63b3ed; }
+        .badge.red { background: rgba(252, 129, 129, 0.2); color: #fc8181; border: 1px solid #fc8181; }
+        .status-bar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px 25px;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .status-item {
+            font-size: 0.9em;
+            color: #a0aec0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .status-item .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse-dot 2s infinite;
+        }
+        .dot.green { background: #48bb78; }
+        .dot.blue { background: #63b3ed; }
+        .dot.orange { background: #ed8936; }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .nav-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 25px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .nav-tab {
+            padding: 10px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #cbd5e0;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .nav-tab:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+        .nav-tab.active {
+            background: linear-gradient(135deg, rgba(72, 187, 120, 0.3), rgba(159, 122, 234, 0.3));
+            color: #ffffff;
+            border-color: rgba(72, 187, 120, 0.5);
+            box-shadow: 0 0 30px rgba(72, 187, 120, 0.15);
+        }
+        .nav-tab .v3-badge {
+            font-size: 0.5em;
+            background: #ed8936;
+            color: #0f0c29;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-left: 4px;
+            font-weight: 700;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .card {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 14px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: border-color 0.3s ease;
+        }
+        .card:hover { border-color: rgba(255, 255, 255, 0.12); }
+        .card h3 { color: #9f7aea; margin-bottom: 12px; font-size: 1.2em; }
+        .card h3 .icon { margin-right: 8px; }
+        .card .label {
+            color: #a0aec0;
+            font-size: 0.85em;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .card input, .card textarea, .card select {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: #e2e8f0;
+            font-size: 0.95em;
+            transition: border-color 0.3s ease;
+            font-family: inherit;
+        }
+        .card input:focus, .card textarea:focus, .card select:focus {
+            outline: none;
+            border-color: #48bb78;
+        }
+        .card input option, .card select option {
+            background: #1a1a2e;
+            color: #e2e8f0;
+        }
+        .card textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        .card .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .card .row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            margin-right: 8px;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-green { background: #48bb78; color: #0f0c29; }
+        .btn-green:hover { background: #38a169; }
+        .btn-orange { background: #ed8936; color: #0f0c29; }
+        .btn-orange:hover { background: #dd6b20; }
+        .btn-purple { background: #9f7aea; color: #0f0c29; }
+        .btn-purple:hover { background: #805ad5; }
+        .btn-blue { background: #63b3ed; color: #0f0c29; }
+        .btn-blue:hover { background: #4299e1; }
+        .btn-red { background: #fc8181; color: #0f0c29; }
+        .btn-red:hover { background: #f56565; }
+        .btn-sm { padding: 5px 14px; font-size: 0.8em; }
+        .result-box {
+            margin-top: 15px;
+            padding: 15px 18px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 4px solid #48bb78;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.85em;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 400px;
+            overflow-y: auto;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+        .result-box.error { border-left-color: #fc8181; }
+        .result-box.warning { border-left-color: #ed8936; }
+        .result-box.success { border-left-color: #48bb78; }
+        .result-box.info { border-left-color: #63b3ed; }
+        .footer {
+            text-align: center;
+            padding: 30px 20px 20px;
+            margin-top: 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            color: #718096;
+            font-size: 0.9em;
+        }
+        .footer a { color: #48bb78; text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+        .footer .quote {
+            margin-top: 10px;
+            font-size: 0.8em;
+            color: #4a5568;
+            font-style: italic;
+        }
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2em; }
+            .card .row { grid-template-columns: 1fr; }
+            .card .row-3 { grid-template-columns: 1fr; }
+            .nav-tab { padding: 6px 12px; font-size: 0.75em; }
+            .status-bar { gap: 6px 12px; font-size: 0.75em; }
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.03); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
+    </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-brand">
-                <span class="brand-icon">🌿</span>
-                <span class="brand-text">Vireo</span>
-                <span class="brand-version">v3.0</span>
+    <div class="container">
+
+        <header class="header">
+            <h1>🌿 Vireo <span>v3.1</span></h1>
+            <p class="subtitle">The world's first AI-to-AI communication language with built-in Ed25519, DIDs, and contract lifecycle</p>
+            <p class="subtitle" style="font-size:0.8em; color:#718096;">
+                Wire 0x0301 · Ed25519 + BLAKE2b-256 · RFC 8785 JCS · DIDs · Contract Lifecycle
+            </p>
+            <div class="badge-row">
+                <span class="badge green">✅ Ed25519</span>
+                <span class="badge purple">🔐 DIDs</span>
+                <span class="badge blue">📜 Contract Lifecycle</span>
+                <span class="badge orange">🌐 RFC 8785 JCS</span>
+                <span class="badge green">🇪🇺 EU Providers</span>
             </div>
-            <div class="nav-links">
-                <a href="#dashboard" class="nav-link active" data-page="dashboard">Dashboard</a>
-                <a href="#agents" class="nav-link" data-page="agents">Agents</a>
-                <a href="#messages" class="nav-link" data-page="messages">Messages</a>
-                <a href="#contracts" class="nav-link" data-page="contracts">Contracts</a>
-                <a href="#settings" class="nav-link" data-page="settings">Settings</a>
-            </div>
-            <div class="nav-actions">
-                <div class="connection-status" id="connectionStatus">
-                    <span class="status-dot disconnected"></span>
-                    <span class="status-text">Disconnected</span>
+            <p style="margin-top:12px; color:#ed8936; font-size:0.85em; font-weight:600;">
+                Proof-of-concept - not production-ready
+            </p>
+        </header>
+
+        <div class="status-bar">
+            <span class="status-item"><span class="dot green"></span> Server: <span id="server-status">Checking...</span></span>
+            <span class="status-item">🌐 Wire: 0x0301</span>
+            <span class="status-item">🔐 Ed25519 + BLAKE2b-256</span>
+            <span class="status-item">✅ 32/32 conformance tests</span>
+            <span class="status-item"><span class="badge green">v3.1</span></span>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" data-tab="autonomous">🤖 Autonomous</button>
+            <button class="nav-tab" data-tab="agents">🧠 Agents</button>
+            <button class="nav-tab" data-tab="contracts">📜 Contracts</button>
+            <button class="nav-tab" data-tab="wire">🌐 Open Wire <span class="v3-badge">v3.1</span></button>
+            <button class="nav-tab" data-tab="did">🔐 DIDs <span class="v3-badge">v3.1</span></button>
+            <button class="nav-tab" data-tab="wasm">⚡ WASM <span class="v3-badge" style="background:#ed8936;">v3.2</span></button>
+            <button class="nav-tab" data-tab="rust">🦀 Rust <span class="v3-badge" style="background:#ed8936;">v3.2</span></button>
+            <button class="nav-tab" data-tab="mcp">🔌 MCP <span class="v3-badge" style="background:#ed8936;">v3.2</span></button>
+            <button class="nav-tab" data-tab="providers">📡 Providers</button>
+            <button class="nav-tab" data-tab="chat">💬 Chat</button>
+            <button class="nav-tab" data-tab="docs">📚 Docs</button>
+            <button class="nav-tab" data-tab="security">🔐 Security</button>
+        </div>
+
+        <div id="tab-autonomous" class="tab-content active">
+            <div class="card">
+                <h3><span class="icon">🤖</span> Autonomous AI-to-AI Communication <span style="font-size:0.5em; color:#48bb78;">v3.1</span></h3>
+                <p style="color:#a0aec0; margin-bottom:15px;">
+                    Two AI agents negotiate and execute tasks autonomously.
+                    State machine + Ed25519 + nonce replay protection enforced.
+                </p>
+                <div class="row">
+                    <div>
+                        <label class="label">🤖 Agent (Proposer)</label>
+                        <input type="text" id="auto-agent-a" value="agent-vision" />
+                    </div>
+                    <div>
+                        <label class="label">🤖 Agent (Executor)</label>
+                        <input type="text" id="auto-agent-b" value="agent-training" />
+                    </div>
                 </div>
-                <button class="btn btn-primary btn-sm" id="connectBtn">Connect</button>
+                <div style="margin-top:12px;">
+                    <label class="label">📡 LLM Provider</label>
+                    <select id="auto-provider">
+                        <optgroup label="🇪🇺 European Providers">
+                            <option value="mistral">🔥 Mistral AI (France)</option>
+                            <option value="aleph_alpha">🇩🇪 Aleph Alpha (Germany)</option>
+                            <option value="cohere">🇨🇭 Cohere (Switzerland)</option>
+                        </optgroup>
+                        <optgroup label="🌍 Global Providers">
+                            <option value="ollama">🦙 Ollama (local)</option>
+                            <option value="qwen">🐉 Qwen AI</option>
+                            <option value="deepseek">🧠 DeepSeek</option>
+                            <option value="openai">🤖 OpenAI GPT</option>
+                            <option value="claude">🧠 Anthropic Claude</option>
+                            <option value="gemini">🌟 Google Gemini</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div style="margin-top:12px;">
+                    <label class="label">📝 Task Description</label>
+                    <textarea id="auto-task" rows="2">Create a neural network for MNIST classification with 2 layers</textarea>
+                </div>
+                <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+                    <button class="btn btn-green" onclick="startAutonomous()">🚀 Start Negotiation</button>
+                </div>
+                <div id="auto-result" class="result-box info" style="margin-top:15px;">
+                    🤖 Ready for autonomous AI-to-AI communication.
+                </div>
             </div>
         </div>
-    </nav>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Dashboard Page -->
-        <section id="page-dashboard" class="page active">
-            <div class="page-header">
-                <h1>Dashboard</h1>
-                <p>Overview of your Vireo AI ecosystem</p>
-            </div>
-
-            <!-- Stats Cards -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon">🤖</div>
-                    <div class="stat-info">
-                        <span class="stat-value" id="agentCount">0</span>
-                        <span class="stat-label">Active Agents</span>
+        <div id="tab-agents" class="tab-content">
+            <div class="card">
+                <h3><span class="icon">🧠</span> Agents Management <span style="font-size:0.5em; color:#63b3ed;">v3.1</span></h3>
+                <p style="color:#a0aec0; margin-bottom:15px;">Each agent gets a real Ed25519 keypair and DID.</p>
+                <div class="row">
+                    <div>
+                        <label class="label">🤖 Agent 1</label>
+                        <input type="text" id="agent1-id" value="agent-alice" />
+                        <button class="btn btn-green btn-sm" onclick="registerAgentV3('agent1')" style="margin-top:6px;">📝 Register</button>
                     </div>
-                    <div class="stat-change positive">+12%</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">💬</div>
-                    <div class="stat-info">
-                        <span class="stat-value" id="messageCount">0</span>
-                        <span class="stat-label">Messages Processed</span>
-                    </div>
-                    <div class="stat-change positive">+8%</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">📄</div>
-                    <div class="stat-info">
-                        <span class="stat-value" id="contractCount">0</span>
-                        <span class="stat-label">Active Contracts</span>
-                    </div>
-                    <div class="stat-change neutral">0%</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">⚡</div>
-                    <div class="stat-info">
-                        <span class="stat-value" id="uptimeDisplay">0s</span>
-                        <span class="stat-label">System Uptime</span>
-                    </div>
-                    <div class="stat-change positive">↑</div>
-                </div>
-            </div>
-
-            <!-- Activity Chart -->
-            <div class="chart-container">
-                <div class="chart-header">
-                    <h3>Activity Overview</h3>
-                    <div class="chart-controls">
-                        <button class="chart-btn active" data-period="1h">1H</button>
-                        <button class="chart-btn" data-period="24h">24H</button>
-                        <button class="chart-btn" data-period="7d">7D</button>
-                        <button class="chart-btn" data-period="30d">30D</button>
+                    <div>
+                        <label class="label">🤖 Agent 2</label>
+                        <input type="text" id="agent2-id" value="agent-bob" />
+                        <button class="btn btn-green btn-sm" onclick="registerAgentV3('agent2')" style="margin-top:6px;">📝 Register</button>
                     </div>
                 </div>
-                <div class="chart-wrapper">
-                    <canvas id="activityChart"></canvas>
+                <div style="margin-top:15px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                    <button class="btn btn-blue" onclick="listAgentsV3()">📋 List Agents</button>
+                    <input type="text" id="status-agent-id" placeholder="Agent ID" style="flex:1; min-width:150px;" />
+                    <button class="btn btn-purple" onclick="getAgentStatusV3()">🔍 Get Status</button>
                 </div>
-            </div>
-
-            <!-- Recent Activity -->
-            <div class="recent-activity">
-                <h3>Recent Activity</h3>
-                <div class="activity-list" id="activityList">
-                    <div class="activity-empty">No recent activity</div>
+                <div id="agents-result" class="result-box info" style="margin-top:15px;">
+                    📋 Agents ready. Register agents to start.
                 </div>
-            </div>
-        </section>
-
-        <!-- Agents Page -->
-        <section id="page-agents" class="page">
-            <div class="page-header">
-                <h1>Agents</h1>
-                <button class="btn btn-primary" id="createAgentBtn">+ New Agent</button>
-            </div>
-
-            <!-- Agent Filters -->
-            <div class="filter-bar">
-                <input type="text" class="filter-input" placeholder="Search agents..." id="agentSearch">
-                <select class="filter-select" id="agentStatusFilter">
-                    <option value="all">All Status</option>
-                    <option value="active">Active</option>
-                    <option value="idle">Idle</option>
-                    <option value="busy">Busy</option>
-                    <option value="offline">Offline</option>
-                </select>
-                <select class="filter-select" id="agentCapabilityFilter">
-                    <option value="all">All Capabilities</option>
-                    <option value="text-generation">Text Generation</option>
-                    <option value="code-analysis">Code Analysis</option>
-                    <option value="image-processing">Image Processing</option>
-                    <option value="data-analysis">Data Analysis</option>
-                    <option value="negotiation">Negotiation</option>
-                </select>
-            </div>
-
-            <!-- Agent Grid -->
-            <div class="agent-grid" id="agentGrid">
-                <!-- Agents rendered by JavaScript -->
-            </div>
-        </section>
-
-        <!-- Messages Page -->
-        <section id="page-messages" class="page">
-            <div class="page-header">
-                <h1>Messages</h1>
-                <div class="header-actions">
-                    <button class="btn btn-outline" id="clearMessagesBtn">Clear All</button>
-                </div>
-            </div>
-
-            <!-- Message Filters -->
-            <div class="filter-bar">
-                <input type="text" class="filter-input" placeholder="Search messages..." id="messageSearch">
-                <select class="filter-select" id="messageTypeFilter">
-                    <option value="all">All Types</option>
-                    <option value="propose">Propose</option>
-                    <option value="commit">Commit</option>
-                    <option value="execute">Execute</option>
-                    <option value="verify">Verify</option>
-                    <option value="escalate">Escalate</option>
-                    <option value="done">Done</option>
-                    <option value="error">Error</option>
-                </select>
-            </div>
-
-            <!-- Message List -->
-            <div class="message-list" id="messageList">
-                <div class="message-empty">No messages</div>
-            </div>
-        </section>
-
-        <!-- Contracts Page -->
-        <section id="page-contracts" class="page">
-            <div class="page-header">
-                <h1>Contracts</h1>
-                <button class="btn btn-primary" id="createContractBtn">+ New Contract</button>
-            </div>
-
-            <!-- Contract Stats -->
-            <div class="contract-stats">
-                <div class="contract-stat">
-                    <span class="stat-value" id="contractTotal">0</span>
-                    <span class="stat-label">Total</span>
-                </div>
-                <div class="contract-stat">
-                    <span class="stat-value" id="contractActive">0</span>
-                    <span class="stat-label">Active</span>
-                </div>
-                <div class="contract-stat">
-                    <span class="stat-value" id="contractPending">0</span>
-                    <span class="stat-label">Pending</span>
-                </div>
-                <div class="contract-stat">
-                    <span class="stat-value" id="contractCompleted">0</span>
-                    <span class="stat-label">Completed</span>
-                </div>
-            </div>
-
-            <!-- Contract List -->
-            <div class="contract-list" id="contractList">
-                <div class="contract-empty">No contracts</div>
-            </div>
-        </section>
-
-        <!-- Settings Page -->
-        <section id="page-settings" class="page">
-            <div class="page-header">
-                <h1>Settings</h1>
-                <p>Configure your Vireo instance</p>
-            </div>
-
-            <div class="settings-grid">
-                <!-- General Settings -->
-                <div class="settings-card">
-                    <h3>General</h3>
-                    <div class="settings-item">
-                        <label>Instance Name</label>
-                        <input type="text" id="instanceName" value="Vireo AI Platform">
-                    </div>
-                    <div class="settings-item">
-                        <label>API URL</label>
-                        <input type="text" id="apiUrl" value="http://localhost:8000/api/v1">
-                    </div>
-                    <div class="settings-item">
-                        <label>WebSocket URL</label>
-                        <input type="text" id="wsUrl" value="ws://localhost:8000/ws">
-                    </div>
-                </div>
-
-                <!-- Authentication -->
-                <div class="settings-card">
-                    <h3>Authentication</h3>
-                    <div class="settings-item">
-                        <label>API Key</label>
-                        <div class="input-with-action">
-                            <input type="password" id="apiKey" placeholder="Enter your API key">
-                            <button class="btn btn-sm btn-outline" id="showApiKeyBtn">Show</button>
-                        </div>
-                    </div>
-                    <div class="settings-item">
-                        <label>JWT Token</label>
-                        <div class="input-with-action">
-                            <input type="password" id="jwtToken" placeholder="Enter JWT token">
-                            <button class="btn btn-sm btn-outline" id="showJwtBtn">Show</button>
-                        </div>
-                    </div>
-                    <button class="btn btn-primary" id="saveAuthBtn">Save Authentication</button>
-                </div>
-
-                <!-- System Settings -->
-                <div class="settings-card">
-                    <h3>System</h3>
-                    <div class="settings-item">
-                        <label>Log Level</label>
-                        <select id="logLevel">
-                            <option value="debug">Debug</option>
-                            <option value="info" selected>Info</option>
-                            <option value="warning">Warning</option>
-                            <option value="error">Error</option>
-                        </select>
-                    </div>
-                    <div class="settings-item">
-                        <label>Theme</label>
-                        <select id="themeSelect">
-                            <option value="light">Light</option>
-                            <option value="dark">Dark</option>
-                            <option value="auto" selected>Auto</option>
-                        </select>
-                    </div>
-                    <div class="settings-item">
-                        <label>Auto-refresh</label>
-                        <div class="toggle-group">
-                            <input type="checkbox" id="autoRefresh" checked>
-                            <label for="autoRefresh">Enable auto-refresh (5s)</label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- About -->
-                <div class="settings-card">
-                    <h3>About</h3>
-                    <div class="about-info">
-                        <p><strong>Vireo v3.0.0</strong></p>
-                        <p>The World's First AI-to-AI Communication Language</p>
-                        <div class="about-links">
-                            <a href="https://github.com/vireo-ai" target="_blank">GitHub</a>
-                            <a href="https://docs.vireo.ai" target="_blank">Documentation</a>
-                            <a href="https://discord.gg/vireo-ai" target="_blank">Discord</a>
-                        </div>
-                        <div class="about-version">
-                            <span>Built with ❤️ by Serhii (serhohro)</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Modal Container -->
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal" id="modal">
-            <div class="modal-header">
-                <h2 id="modalTitle">Modal</h2>
-                <button class="modal-close" id="modalClose">&times;</button>
-            </div>
-            <div class="modal-body" id="modalBody">
-                <!-- Modal content rendered by JavaScript -->
-            </div>
-            <div class="modal-footer" id="modalFooter">
-                <button class="btn btn-outline" id="modalCancel">Cancel</button>
-                <button class="btn btn-primary" id="modalConfirm">Confirm</button>
             </div>
         </div>
+
+        <div id="tab-contracts" class="tab-content">
+            <div class="card">
+                <h3><span class="icon">📜</span> Contracts v3.1</h3>
+                <p style="color:#a0aec0; margin-bottom:15px;">
+                    Create, execute, and verify contracts between agents.
+                    State machine enforced: PROPOSE &rarr; NEGOTIATE &rarr; COMMIT &rarr; EXECUTE &rarr; VERIFY &rarr; DONE.
+                </p>
+                <div style="background:rgba(255,255,255,0.03); border-radius:10px; padding:18px; margin-bottom:18px;">
+                    <h4 style="color:#48bb78; margin:0 0 12px 0;">Create Contract</h4>
+                    <div class="row-3">
+                        <div>
+                            <label class="label">Contract ID</label>
+                            <input type="text" id="contract-id" value="c1" />
+                        </div>
+                        <div>
+                            <label class="label">Parties (comma)</label>
+                            <input type="text" id="contract-parties" value="agent-alice, agent-bob" />
+                        </div>
+                        <div>
+                            <label class="label">Max Tokens</label>
+                            <input type="number" id="contract-max-tokens" value="1000" />
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+                        <button class="btn btn-green" onclick="createContractV3()">📝 Propose</button>
+                    </div>
+                    <div id="contract-create-result" class="result-box info" style="margin-top:12px;"></div>
+                </div>
+                <div style="background:rgba(255,255,255,0.03); border-radius:10px; padding:18px;">
+                    <h4 style="color:#ed8936; margin:0 0 12px 0;">Execute &amp; Verify</h4>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <input type="text" id="execute-contract-id" placeholder="Contract ID" style="flex:1; min-width:200px;" value="c1" />
+                        <button class="btn btn-orange" onclick="executeContractV3()">▶️ Execute</button>
+                        <button class="btn btn-purple" onclick="verifyContractV3()">🔍 Verify</button>
+                    </div>
+                    <div id="contract-execute-result" class="result-box info" style="margin-top:12px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-wire" class="tab-content">
+            <div class="card">
+                <h3><span class="icon">🌐</span> Open Wire Protocol <span style="font-size:0.5em; color:#63b3ed;">v3.1</span></h3>
+                <p style="color:#a0aec0; margin-bottom:15px;">
+                    Canonical binary protocol. 96-byte header + RFC 8785 JCS payload.
+                    Measured: <strong style="color:#48bb78;">up to 2.58x smaller</strong> than JSON for small messages.
+                    Serialization is 0.42x-0.90x slower than raw JSON, because canonicalization + BLAKE2b hashing are performed.
+                </p>
+                <button class="btn btn-purple" onclick="getWireVersion()">📡 Get Protocol Version</button>
+                <div id="wire-result" class="result-box info" style="margin-top:15px;">
+                    🌐 Open Wire Protocol ready.
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-did" class="tab-content">
+            <div class="card">
+                <h3><span class="icon">🔐</span> DIDs &amp; Trust Bootstrap <span style="font-size:0.5em; color:#9f7aea;">v3.1</span></h3>
+                <p style="color:#a0aec0; margin-bottom:15px;">
+                    Decentralized Identifiers. Format: <code>did:vireo:&lt;base64url(BLAKE2b-256("agent:name"))&gt;</code>.
+                    Ed25519 challenge-response trust bootstrap.
+                </p>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <input type="text" id="did-name" value="agent-alice" style="flex:1;" />
+                    <button class="btn btn-green" onclick="createDID()">🔑 Create DID</button>
+                </div>
+                <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+                    <input type="text" id="did-verify-id" placeholder="DID to verify" style="flex:1;" />
+                    <button class="btn btn-purple" onclick="verifyDID()">🔍 Verify DID</button>
+                </div>
+                <div id="did-result" class="result-box info" style="margin-top:15px;">
+                    🔐 DIDs ready.
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-wasm" class="tab-content">
+            <div class="card">
+                <h3><span class="icon">⚡</span> WASM Runtime <span style="font-size:0.5em; color:#ed8936;">planned v3.2</span></h3>
+                <p style="color:#ed8936; margin-bottom:15px;">
+                    <strong>NOT IMPLEMENTED IN v3.1.</strong> WASM runtime is planned for v3.2. See ROADMAP.md.
+                </p>
+                <div id="wasm-result" class="result-box warning" style="margin-top:15px;">
+                    ⚠️ This feature is planned for v3.2.
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-rust" class="tab-content">
+            <div class="card">
+                <h3><span class="icon">🦀</span> Rust SDK <span style="font-size:0.5em; color:#ed8936;">planned v3.2</span></h3>
+                <p style="color:#ed8936; margin-bottom:15px;">
+                    <strong>NOT IMPLEMENTED IN v3.1.</strong> Rust SDK is planned for v3.2. See ROADMAP.md.
+                </p>
+                <div id="rust-result" class="result-box warning" style="margin-top:15px;">
+                    ⚠️ This feature is planned for v3.2.
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-mcp" class="tab-content">
+            <div class="card">
+                <h3><span class="icon">🔌</span> MCP Integration <span style="font-size:0.5em; color:#ed8936;">planned v3.2</span></h3>
+                <p style="color:#ed8936; margin-bottom:15px;">
+                    <strong>NOT IMPLEMENTED IN v3.1.</strong> MCP integration is planned for v3.2. See ROADMAP.md.
+                </p>
+                <div id="mcp-result" class="result-box warning" style="margin-top:15px;">
+                    ⚠️ This feature is planned for v3.2.
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-providers" class="tab-content">
+            <div class="card">
+                <h3><span class="icon">📡</span> LLM Providers <span style="font-size:0.5em; color:#48bb78;">🇪🇺 EU &amp; Global</span></h3>
+                <p style="color:#a0aec0; margin-bottom:15px;">
+                    Provider adapters are available. Real calls require API keys (see .env.example).
+                    <br><span style="color:#48bb78;">🇪🇺 European:</span> Mistral AI (FR), Aleph Alpha (DE), Cohere (CH)
+                    <br><span style="color:#63b3ed;">🌍 Global:</span> OpenAI, Claude, Gemini, Qwen, DeepSeek
+                </p>
+                <button class="btn btn-blue" onclick="listProvidersV3()">📡 List Providers</button>
+                <div id="providers-result" class="result-box info" style="margin-top:15px;">
+                    📡 Click to see available LLM providers.
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-chat" class="tab-content">
+            <div class="card">
+                <h3><span class="icon">💬</span> AI Chat</h3>
+                <label class="label">📝 Message</label>
+                <input type="text" id="chat-message" value="What is Vireo v3.1?" />
+                <label class="label" style="margin-top:10px;">🤖 Model</label>
+                <input type="text" id="chat-model" value="ollama" />
+                <button class="btn btn-green" onclick="sendChat()" style="margin-top:12px;">💬 Send</button>
+                <div id="chat-result" class="result-box info" style="margin-top:15px;">
+                    💬 Send a message. If provider key is not configured, an honest mock response is returned.
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-docs" class="tab-content">
+            <div class="card">
+                <h3><span class="icon">📚</span> Documentation</h3>
+                <p style="color:#a0aec0; margin-bottom:15px;">Vireo v3.1 API Documentation and Guides.</p>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                    <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:10px; border-left:3px solid #48bb78;">
+                        <strong style="color:#48bb78;">📄 README</strong>
+                        <div style="color:#a0aec0; font-size:0.85em; margin-top:5px;">Project overview and quick start</div>
+                        <a href="https://github.com/serhohro/vireo-ai-communicator-4" target="_blank" style="color:#48bb78; font-size:0.9em;">Open GitHub &rarr;</a>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:10px; border-left:3px solid #9f7aea;">
+                        <strong style="color:#9f7aea;">📡 API Docs</strong>
+                        <div style="color:#a0aec0; font-size:0.85em; margin-top:5px;">All API endpoints and methods</div>
+                        <a href="/docs" style="color:#9f7aea; font-size:0.9em;">Open /docs &rarr;</a>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:10px; border-left:3px solid #63b3ed;">
+                        <strong style="color:#63b3ed;">📋 Spec</strong>
+                        <div style="color:#a0aec0; font-size:0.85em; margin-top:5px;">WIRE_FORMAT_v3.1.md, CRYPTO_v3.1.md, COMPLIANCE.md</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:10px; border-left:3px solid #ed8936;">
+                        <strong style="color:#ed8936;">📊 Benchmarks</strong>
+                        <div style="color:#a0aec0; font-size:0.85em; margin-top:5px;">benches/wire_perf/RESULTS.md</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-security" class="tab-content">
+            <div class="card">
+                <h3><span class="icon">🔐</span> Security v3.1</h3>
+                <p style="color:#a0aec0; margin-bottom:15px;">Real Ed25519 cryptography. No mocks.</p>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <button class="btn btn-green" onclick="generateKeys()">🔑 Generate Keys</button>
+                    <button class="btn btn-orange" onclick="signMessageV3()">✍️ Sign Message</button>
+                    <button class="btn btn-purple" onclick="verifySignature()">✅ Verify Signature</button>
+                </div>
+                <div id="security-result" class="result-box info" style="margin-top:15px;">
+                    🔐 Security tools ready.
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>
+                <strong>Vireo v3.1</strong> - The world's first AI-to-AI communication language with built-in Ed25519, DIDs, and contract lifecycle
+            </p>
+            <p style="margin-top:5px;">
+                <a href="https://github.com/serhohro/vireo-ai-communicator-4" target="_blank">GitHub</a> ·
+                <a href="/docs">📚 Documentation</a> ·
+                <span style="color:#48bb78;">🇪🇺 EU Providers</span> ·
+                <span style="color:#63b3ed;">🔐 Ed25519</span> ·
+                <span style="color:#9f7aea;">📜 Contract Lifecycle</span>
+            </p>
+            <p class="quote">
+                "Let PyTorch handle the tensors; let Vireo handle the trust." - Qwen
+            </p>
+        </footer>
+
     </div>
 
-    <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
+    <script>
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+            });
+        });
 
-    <script src="app.js"></script>
+        const BASE_URL = window.location.origin;
+
+        function showResult(elementId, message, type = 'info') {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+            el.className = `result-box ${type}`;
+            el.textContent = `${icons[type] || 'ℹ️'} ${message}`;
+        }
+
+        async function apiCall(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }
+                });
+                return await response.json();
+            } catch (e) {
+                return { error: e.message };
+            }
+        }
+
+        async function checkServerStatus() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                document.getElementById('server-status').textContent = data.version || 'Running';
+            } catch (e) {
+                document.getElementById('server-status').textContent = 'Offline';
+            }
+        }
+
+        async function startAutonomous() {
+            const agentA = document.getElementById('auto-agent-a').value.trim();
+            const agentB = document.getElementById('auto-agent-b').value.trim();
+            const task = document.getElementById('auto-task').value.trim();
+            const provider = document.getElementById('auto-provider').value;
+
+            if (!agentA || !agentB || !task) {
+                showResult('auto-result', 'Please fill all fields.', 'warning');
+                return;
+            }
+
+            showResult('auto-result', '🚀 Starting autonomous negotiation...', 'info');
+
+            try {
+                await apiCall('/api/v3/agent/register', {
+                    method: 'POST',
+                    body: JSON.stringify({ id: agentA, name: agentA })
+                });
+                await apiCall('/api/v3/agent/register', {
+                    method: 'POST',
+                    body: JSON.stringify({ id: agentB, name: agentB })
+                });
+
+                const data = await apiCall(`/api/llm/agent/${agentA}/auto_negotiate`, {
+                    method: 'POST',
+                    body: JSON.stringify({ recipient: agentB, task, provider })
+                });
+
+                let output = '✅ Autonomous negotiation complete!\n\n';
+                output += JSON.stringify(data, null, 2);
+                showResult('auto-result', output, 'success');
+            } catch (e) {
+                showResult('auto-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function registerAgentV3(prefix) {
+            const id = document.getElementById(prefix + '-id').value.trim();
+            if (!id) return showResult('agents-result', 'Please enter Agent ID.', 'warning');
+            try {
+                const data = await apiCall('/api/v3/agent/register', {
+                    method: 'POST',
+                    body: JSON.stringify({ id, name: id })
+                });
+                showResult('agents-result',
+                    data.agent_id ? `✅ Agent ${data.agent_id} registered!\nDID: ${data.did}` : `❌ ${data.error}`,
+                    data.agent_id ? 'success' : 'error');
+            } catch (e) {
+                showResult('agents-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function listAgentsV3() {
+            try {
+                const data = await apiCall('/api/v3/agents');
+                showResult('agents-result', JSON.stringify(data, null, 2), 'info');
+            } catch (e) {
+                showResult('agents-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function getAgentStatusV3() {
+            const id = document.getElementById('status-agent-id').value.trim();
+            if (!id) return showResult('agents-result', 'Please enter Agent ID.', 'warning');
+            try {
+                const data = await apiCall(`/api/v3/agent/${id}/status`);
+                showResult('agents-result', JSON.stringify(data, null, 2), 'info');
+            } catch (e) {
+                showResult('agents-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function createContractV3() {
+            const id = document.getElementById('contract-id').value.trim();
+            const parties = document.getElementById('contract-parties').value.split(',').map(s => s.trim()).filter(Boolean);
+            const maxTokens = parseInt(document.getElementById('contract-max-tokens').value);
+            if (!id) return showResult('contract-create-result', 'Enter Contract ID', 'warning');
+            if (parties.length < 2) return showResult('contract-create-result', 'Need at least 2 parties', 'warning');
+
+            try {
+                const data = await apiCall('/api/v3/propose', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        contract_id: id,
+                        parties,
+                        terms: { max_tokens: maxTokens, timeout_sec: 30 }
+                    })
+                });
+                if (data.contract) {
+                    document.getElementById('execute-contract-id').value = id;
+                }
+                showResult('contract-create-result', JSON.stringify(data, null, 2), data.contract ? 'success' : 'error');
+            } catch (e) {
+                showResult('contract-create-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function executeContractV3() {
+            const contractId = document.getElementById('execute-contract-id').value.trim();
+            if (!contractId) return showResult('contract-execute-result', 'Enter Contract ID', 'warning');
+            try {
+                const data = await apiCall('/api/v3/execute', {
+                    method: 'POST',
+                    body: JSON.stringify({ contract_id: contractId, result: { tokens_used: 500 } })
+                });
+                showResult('contract-execute-result', JSON.stringify(data, null, 2), data.evidence ? 'success' : 'error');
+            } catch (e) {
+                showResult('contract-execute-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function verifyContractV3() {
+            const contractId = document.getElementById('execute-contract-id').value.trim();
+            if (!contractId) return showResult('contract-execute-result', 'Enter Contract ID', 'warning');
+            try {
+                const data = await apiCall('/api/v3/verify', {
+                    method: 'POST',
+                    body: JSON.stringify({ contract_id: contractId })
+                });
+                showResult('contract-execute-result', JSON.stringify(data, null, 2), data.verified ? 'success' : 'error');
+            } catch (e) {
+                showResult('contract-execute-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function getWireVersion() {
+            try {
+                const data = await apiCall('/api/v3/protocol/version');
+                showResult('wire-result', JSON.stringify(data, null, 2), 'info');
+            } catch (e) {
+                showResult('wire-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function createDID() {
+            const name = document.getElementById('did-name').value.trim();
+            if (!name) return showResult('did-result', 'Please enter a name.', 'warning');
+            try {
+                const data = await apiCall('/api/v3/did/create', {
+                    method: 'POST',
+                    body: JSON.stringify({ name })
+                });
+                showResult('did-result', JSON.stringify(data, null, 2), data.did ? 'success' : 'error');
+            } catch (e) {
+                showResult('did-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function verifyDID() {
+            const did = document.getElementById('did-verify-id').value.trim();
+            if (!did) return showResult('did-result', 'Please enter a DID.', 'warning');
+            try {
+                const data = await apiCall('/api/v3/did/verify', {
+                    method: 'POST',
+                    body: JSON.stringify({ did })
+                });
+                showResult('did-result', JSON.stringify(data, null, 2), data.verified ? 'success' : 'error');
+            } catch (e) {
+                showResult('did-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function listProvidersV3() {
+            try {
+                const data = await apiCall('/api/providers');
+                let out = 'Providers: ' + data.count + '\n\n';
+                (data.providers || []).forEach(p => {
+                    out += (p.callable ? '[READY] ' : '[NO KEY] ') + p.id + ' (' + p.country + ') - ' + p.name + '\n';
+                });
+                showResult('providers-result', out, 'info');
+            } catch (e) {
+                showResult('providers-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function sendChat() {
+            const message = document.getElementById('chat-message').value.trim();
+            const model = document.getElementById('chat-model').value.trim();
+            if (!message) return showResult('chat-result', 'Enter a message.', 'warning');
+            try {
+                const data = await apiCall('/api/chat', {
+                    method: 'POST',
+                    body: JSON.stringify({ message, model })
+                });
+                showResult('chat-result', JSON.stringify(data, null, 2), 'info');
+            } catch (e) {
+                showResult('chat-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function generateKeys() {
+            try {
+                const data = await apiCall('/api/crypto/generate_keys', { method: 'POST' });
+                showResult('security-result', JSON.stringify(data, null, 2), 'success');
+            } catch (e) {
+                showResult('security-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function signMessageV3() {
+            const message = prompt('Enter message to sign:', 'Hello Vireo v3.1');
+            if (!message) return;
+            const priv = prompt('Paste private_key_hex:');
+            if (!priv) return;
+            try {
+                const data = await apiCall('/api/crypto/sign', {
+                    method: 'POST',
+                    body: JSON.stringify({ private_key_hex: priv, message })
+                });
+                showResult('security-result', JSON.stringify(data, null, 2), 'success');
+            } catch (e) {
+                showResult('security-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        async function verifySignature() {
+            const pub = prompt('Paste public_key_hex:');
+            if (!pub) return;
+            const message = prompt('Enter message:', 'Hello Vireo v3.1');
+            if (!message) return;
+            const sig = prompt('Paste signature_hex:');
+            if (!sig) return;
+            try {
+                const data = await apiCall('/api/crypto/verify', {
+                    method: 'POST',
+                    body: JSON.stringify({ public_key_hex: pub, message, signature: sig })
+                });
+                showResult('security-result', JSON.stringify(data, null, 2), data.valid ? 'success' : 'error');
+            } catch (e) {
+                showResult('security-result', `❌ Error: ${e.message}`, 'error');
+            }
+        }
+
+        checkServerStatus();
+        console.log('Vireo v3.1 Web Interface loaded.');
+        setInterval(checkServerStatus, 30000);
+    </script>
+
 </body>
 </html>

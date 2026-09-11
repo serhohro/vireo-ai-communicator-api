@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  vireo:
+    build: .
+    container_name: vireo-server
+    ports:
+      - "5000:5000"
+    environment:
+      - VIREO_HOST=0.0.0.0
+      - VIREO_PORT=5000
+      - VIREO_COMPLIANCE_MODE=strict
+    volumes:
+      - vireo-data:/data
+    restart: unless-stopped
+
+volumes:
+  vireo-data:

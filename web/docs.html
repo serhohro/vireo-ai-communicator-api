@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vireo v3.1 - API Documentation</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #0f0c29;
+    color: #e2e8f0;
+    min-height: 100vh;
+    padding: 20px;
+}
+.container { max-width: 1200px; margin: 0 auto; }
+.header {
+    text-align: center;
+    padding: 30px 20px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 16px;
+    margin-bottom: 25px;
+    border: 1px solid rgba(255,255,255,0.06);
+}
+.header h1 {
+    font-size: 2.5em;
+    background: linear-gradient(135deg, #48bb78, #9f7aea);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.header .subtitle { color: #a0aec0; margin-top: 8px; max-width: 800px; margin-left: auto; margin-right: auto; }
+.header .nav-links {
+    margin-top: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+.header .nav-links a {
+    padding: 6px 16px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.05);
+    color: #48bb78;
+    text-decoration: none;
+    font-size: 0.9em;
+    font-weight: 600;
+    border: 1px solid rgba(72,187,120,0.3);
+    transition: all 0.2s ease;
+}
+.header .nav-links a:hover {
+    background: rgba(72,187,120,0.15);
+    border-color: #48bb78;
+}
+.section {
+    background: rgba(255,255,255,0.04);
+    border-radius: 14px;
+    padding: 25px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255,255,255,0.06);
+}
+.section h2 {
+    color: #48bb78;
+    margin-bottom: 15px;
+    font-size: 1.4em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.section h2 .count {
+    font-size: 0.6em;
+    padding: 2px 10px;
+    border-radius: 10px;
+    background: rgba(72,187,120,0.15);
+    color: #48bb78;
+}
+.endpoint {
+    background: rgba(0,0,0,0.25);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    border-left: 3px solid #9f7aea;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 0.9em;
+    transition: background 0.2s ease;
+}
+.endpoint:hover { background: rgba(0,0,0,0.4); }
+.method {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 5px;
+    font-weight: 700;
+    font-size: 0.75em;
+    min-width: 55px;
+    text-align: center;
+    flex-shrink: 0;
+}
+.method.get { background: #4299e1; color: white; }
+.method.post { background: #48bb78; color: white; }
+.path { color: #e2e8f0; }
+.desc {
+    color: #718096;
+    font-size: 0.85em;
+    margin-left: auto;
+    font-family: 'Segoe UI', sans-serif;
+}
+.example {
+    background: rgba(0,0,0,0.4);
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 12px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 0.85em;
+    color: #48bb78;
+    white-space: pre-wrap;
+    line-height: 1.6;
+    border-left: 3px solid #48bb78;
+}
+.example .comment { color: #4a5568; }
+.footer {
+    text-align: center;
+    padding: 30px 20px;
+    margin-top: 40px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    color: #718096;
+    font-size: 0.9em;
+}
+.footer a { color: #48bb78; text-decoration: none; }
+.footer a:hover { text-decoration: underline; }
+@media (max-width: 768px) {
+    .endpoint { flex-wrap: wrap; }
+    .desc { margin-left: 0; width: 100%; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="header">
+    <h1>Vireo v3.1 - API Documentation</h1>
+    <p class="subtitle">The world's first AI-to-AI communication language with built-in Ed25519, DIDs, and contract lifecycle</p>
+    <div class="nav-links">
+        <a href="/web">Web UI</a>
+        <a href="/api/docs">JSON Spec</a>
+        <a href="/api/health">Health</a>
+        <a href="https://github.com/serhohro/vireo-ai-communicator-4" target="_blank">GitHub</a>
+    </div>
+</header>
+
+<div class="section">
+    <h2>UI <span class="count">5</span></h2>
+    <div class="endpoint"><span class="method get">GET</span><span class="path">/</span><span class="desc">API home</span></div>
+    <div class="endpoint"><span class="method get">GET</span><span class="path">/web</span><span class="desc">Web interface</span></div>
+    <div class="endpoint"><span class="method get">GET</span><span class="path">/docs</span><span class="desc">This page</span></div>
+    <div class="endpoint"><span class="method get">GET</span><span class="path">/api/docs</span><span class="desc">JSON API spec</span></div>
+    <div class="endpoint"><span class="method get">GET</span><span class="path">/api/health</span><span class="desc">Server health</span></div>
+</div>
+
+<div class="section">
+    <h2>Agents <span class="count">4</span></h2>
+    <div class="endpoint"><span class="method post">POST</span><span class="path">/api/v3/agent/register</span><span class="desc">Register agent (Ed25519 + DID)</span></div>
+    <div class="endpoint"><span class="method get">GET</span><span class="path">/api/v3/agents</span><span class="desc">List agents</span></div>
+    <div class="endpoint"><span class="method get">GET</span><span class="path">/api/v3/agent/&lt;id&gt;/status</span><span class="desc">Agent status</span></div>
+    <div class="endpoint"><span class="method post">POST</span><span class="path">/api/v3/agent/&lt;id&gt;/capability</span><span class="desc">Add capability</span></div>
+    <div class="example"><span class="comment"># Register agent</span>
+curl -X POST http://localhost:5000/api/v3/agent/register -H "Content-Type: application/json" -d "{\"id\": \"agent-alice\", \"name\": \"agent:alice\"}"</div>
+</div>
+
+<div class="section">
+    <h2>Contracts <span class="count">3</span></h2>
+    <div class="endpoint"><span class="method post">POST</span><span class="path">/api/v3/propose</span><span class="desc">Create contract</span></div>
+    <div class="endpoint"><span class="method post">POST</span><span class="path">/api/v3/execute</span><span class="desc">Execute contract</span></div>
+    <div class="endpoint"><span class="method post">POST</span><span class="path">/api/v3/verify</span><span class="desc">Verify with evidence</span></div>
+    <div class="example"><span class="comment"># Propose + execute + verify</span>
+curl -X POST http://localhost:5000/api/v3/propose -H "Content-Type: application/json" -d "{\"contract_id\": \"c1\", \"parties\": [\"agent-alice\", \"agent-bob\"], \"terms\": {\"max_tokens\": 1000}}"
+
+curl -X POST http://localhost:5000/api/v3/execute -H "Content-Type: application/json" -d "{\"contract_id\": \"c1\", \"result\": {\"tokens_used\": 500}}"
+
+curl -X POST http://localhost:5000/api/v3/verify -H "Content-Type: application/json" -d "{\"contract_id\": \"c1\"}"</div>
+</div>
+
+<div class="section">
+    <h2>Wire <span class="count">2</span></h2>
+    <div class="endpoint"><span class="method post">POST</span><span class="path">/api/v3/message</span><span class="desc">Send wire message (binary or JSON)</span></div>
+    <div class="endpoint"><span class="method get">GET</span><span class="path">/api/v3/protocol/version</span><span class="desc">Protocol spec</span></div>
+    <div class="example"><span class="comment"># Protocol version</span>
+curl http://localhost:5000/api/v3/protocol/version</div>
+</div>
+
+<div class="section">
+    <h2>DIDs <span class="count">3</span></h2>
+    <div class="endpoint"><span class="method post">POST</span><span class="path">/api/v3/did/create</span><span class="desc">Create DID</span></div>
+    <div class="endpoint"><span class="method post">POST</span><span class="path">/api/v3/did/verify</span><span class="desc">Verify DID</span></div>
+    <div class="endpoint"><span class="method get">GET</span><span class="path">/api/v3/did/&lt;did&gt;</span><span class="desc">DID document</span></div>
+</div>
+
+<div class="section">
+    <h2>Trust <span class="count">3</span></h2>
+    <div class="endpoint"><span class="method post">POST</span><span class="path">/api/v3/trust/establish</span><span class="desc">Create challenge</span></div>
+    <div class="endpoint"><span class="method post">POST</span><span class="path">/api/v3/trust/challenge</span><span class="desc">Alias for establish</span></div>
+    <div class="endpoint"><span class="method post">POST</span><span class="path">/api/v3/trust/respond</span><span class="desc">Respond with signature</span></div>
+</div>
+
+<div class="section">
+    <h2>Crypto <span class="count">4</span></h2>
+    <div class="endpoint"><span class="method post">POST</span><span class="path">/api/crypto/generate_keys</span><span class="desc">Generate Ed25519 keypair</span></div>
+    <div class="endpoint"><span class="method post">POST</span><span class="path">/api/crypto/sign</span><span class="desc">Sign message</span></div>
+    <div class="endpoint"><span class="method post">POST</span><span class="path">/api/crypto/verify</span><span class="desc">Verify signature (real Ed25519)</span></div>
+    <div class="endpoint"><span class="method post">POST</span><span class="path">/api/crypto/test_trust</span><span class="desc">Full challenge-response</span></div>
+    <div class="example"><span class="comment"># Generate keypair</span>
+curl -X POST http://localhost:5000/api/crypto/generate_keys
+
+<span class="comment"># Verify signature (returns 401 if invalid)</span>
+curl -X POST http://localhost:5000/api/crypto/verify -H "Content-Type: application/json" -d "{\"public_key_hex\": \"00\", \"message\": \"x\", \"signature\": \"00\"}"</div>
+</div>
+
+<div class="section">
+    <h2>LLM <span class="count">3</span></h2>
+    <div class="endpoint"><span class="method get">GET</span><span class="path">/api/providers</span><span class="desc">List LLM providers</span></div>
+    <div class="endpoint"><span class="method post">POST</span><span class="path">/api/chat</span><span class="desc">Chat (honest mock if no key)</span></div>
+    <div class="endpoint"><span class="method post">POST</span><span class="path">/api/llm/agent/&lt;id&gt;/auto_negotiate</span><span class="desc">Autonomous negotiation</span></div>
+    <div class="example"><span class="comment"># Providers (honest status)</span>
+curl http://localhost:5000/api/providers</div>
+</div>
+
+<div class="section">
+    <h2>Metrics <span class="count">1</span></h2>
+    <div class="endpoint"><span class="method get">GET</span><span class="path">/api/v3/metrics</span><span class="desc">Runtime metrics</span></div>
+    <div class="example">curl http://localhost:5000/api/v3/metrics</div>
+</div>
+
+<div class="section">
+    <h2>Cryptography</h2>
+    <p style="color:#a0aec0; line-height:1.8;">
+        <strong style="color:#48bb78;">Signature:</strong> Ed25519 (RFC 8032)<br>
+        <strong style="color:#48bb78;">Hash:</strong> BLAKE2b-256 (RFC 7693) - 1.53x faster than SHA-256<br>
+        <strong style="color:#48bb78;">Canonical form:</strong> RFC 8785 JCS<br>
+        <strong style="color:#48bb78;">Wire:</strong> 96-byte header + RFC 8785 JCS payload<br>
+        <strong style="color:#48bb78;">DID:</strong> did:vireo:&lt;base64url(BLAKE2b-256("agent:name"))&gt;
+    </p>
+</div>
+
+<div class="section">
+    <h2>Benchmarks (measured)</h2>
+    <p style="color:#a0aec0; line-height:1.8;">
+        <strong>Wire size:</strong> up to 2.58x smaller than JSON (small messages)<br>
+        <strong>BLAKE2b-256:</strong> 1.69 us (1K) vs SHA-256: 2.59 us<br>
+        <strong>Ed25519:</strong> sign 39.3 us, verify 66.4 us<br>
+        <strong>Serialization:</strong> 0.42x-0.90x slower than raw JSON (honest)
+    </p>
+    <p style="color:#ed8936; margin-top:12px; font-size:0.9em;">
+        Vireo trades raw speed for deterministic bytes - required for cross-language Ed25519 signatures.
+    </p>
+</div>
+
+<footer class="footer">
+    <p><strong>Vireo v3.1</strong> - Interoperability Release</p>
+    <p style="margin-top:8px;">
+        <a href="/web">Web UI</a> ·
+        <a href="/api/docs">JSON Spec</a> ·
+        <a href="https://github.com/serhohro/vireo-ai-communicator-4" target="_blank">GitHub</a>
+    </p>
+    <p style="margin-top:12px; font-size:0.8em; color:#4a5568; font-style:italic;">
+        "Let PyTorch handle the tensors; let Vireo handle the trust." - Qwen
+    </p>
+</footer>
+
+</div>
+</body>
+</html>

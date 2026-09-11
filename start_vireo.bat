@@ -1,12 +1,12 @@
 @echo off
-title Vireo AI Communicator v3.0.0
+title Vireo AI Communicator v3.1
 color 0A
 
 echo.
 echo ========================================
-echo  🌿 VIREO AI COMMUNICATOR v3.0.0
-echo  The World's First AI-to-AI Communication Language
-echo  — Open Wire Protocol · WASM · Rust · Formal Verification —
+echo   VIREO v3.1 - Interoperability Release
+echo   Experimental protocol for AI-to-AI
+echo   communication, negotiation, coordination
 echo ========================================
 echo.
 
@@ -24,30 +24,23 @@ echo [OK] Python found
 echo [2] Checking server file...
 if exist "api\server.py" (
     echo [OK] api/server.py found
-    set SERVER_FILE=api\server.py
-) else if exist "api_server.py" (
-    echo [OK] api_server.py found
-    set SERVER_FILE=api_server.py
-) else if exist "server.py" (
-    echo [OK] server.py found
-    set SERVER_FILE=server.py
 ) else (
-    echo [X] No server file found!
+    echo [X] api/server.py not found!
     pause
     exit /b
 )
 
 echo [3] Installing dependencies...
-pip install flask flask-cors flask-socketio python-socketio python-dotenv cryptography mistralai -q 2>nul
+pip install -r requirements.txt -q 2>nul
 echo [OK] Dependencies ready
 
-echo [4] Stopping old server...
+echo [4] Stopping old server (if any)...
 taskkill /F /IM python.exe 2>nul
 timeout /t 2 >nul
 echo [OK] Stopped
 
 echo [5] Starting server...
-start "Vireo v3.0.0 Server" python %SERVER_FILE%
+start "Vireo v3.1 Server" python -m api.server
 
 echo [6] Waiting for server...
 timeout /t 5 /nobreak >nul
@@ -61,13 +54,12 @@ echo.
 echo ========================================
 echo  [OK] SERVER RUNNING!
 echo ========================================
-echo  🌐 Web: http://localhost:5000/web
-echo  📚 Docs: http://localhost:5000/docs
-echo  📡 API: http://localhost:5000
-echo  🔐 Health: http://localhost:5000/api/health
+echo  Web:    http://localhost:5000/web
+echo  Docs:   http://localhost:5000/docs
+echo  API:    http://localhost:5000
+echo  Health: http://localhost:5000/api/health
 echo.
-echo  🚀 Vireo v3.0.0 — Open Wire Protocol · WASM · Rust
-echo  🔥 Mistral AI support added!
+echo  Vireo v3.1 - Wire: 0x0301 - Crypto: Ed25519 + BLAKE2b-256
 echo.
 echo  Close this window to stop server
 echo ========================================
