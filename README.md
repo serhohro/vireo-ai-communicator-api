@@ -24,28 +24,30 @@ No other system combines all four.
 - **Ed25519 built into the wire format** - every message is signed
 - **DIDs as first-class identity** - no central authority
 - **Contract lifecycle enforced** - DISCOVER -> PROPOSE -> NEGOTIATE -> COMMIT -> EXECUTE -> VERIFY -> DONE
-- **Deterministic bytes** - identical in Python, Rust, TypeScript
+- **Deterministic bytes** - identical in Python and Rust (TypeScript pending)
 
 ---
 
-## Status: v3.1 - Interoperability Release
+## Status: v3.2.0 — Rust SDK + Cross-Language Conformance
 
 | Component | Status |
 |-----------|--------|
-| Wire format (96B header + RFC 8785 JCS) | Implemented |
-| Ed25519 signing and verification | Implemented |
-| BLAKE2b-256 hashing | Implemented |
+| Wire format (96B header + RFC 8785 JCS) | Implemented (Python + Rust) |
+| Ed25519 signing and verification | Implemented (Python + Rust) |
+| BLAKE2b-256 hashing | Implemented (Python + Rust) |
 | State machine (12 states, enforced) | Implemented |
 | Nonce replay protection (SQLite) | Implemented |
 | DID generation + resolution | Implemented |
 | Trust bootstrap (challenge-response) | Implemented |
 | Contract-level verification | Implemented |
 | LLM provider adapters (9 providers) | Partial |
-| Cross-language conformance | v3.2 target |
-| WASM runtime | v3.2 target |
-| Semantic AST Pass | v3.2 target |
+| **Cross-language conformance (Python ↔ Rust)** | **Implemented (v3.2.0)** |
+| Rust SDK | Implemented (v3.2.0) |
+| TypeScript SDK | v3.3 target |
+| WASM runtime | v3.3 target |
+| Semantic AST Pass | v3.3 target |
 
-**Conformance:** 32 / 32 tests passed (Python 3.11.9)
+**Conformance:** 32 / 32 tests passed (Python 3.11.9) + 19 / 19 (Rust 1.98.1) + 1 / 1 cross-language vector
 
 **Benchmarks** (measured, not marketing):
 
@@ -63,24 +65,22 @@ No other system combines all four.
 ---
 
 ## Architecture
-
-```
-LLM          = Reasoning Engine
-Vireo        = Control Plane
-A2A          = Agent Transport / Discovery
-MCP          = Tool / Context Interface
+LLM = Reasoning Engine
+Vireo = Control Plane
+A2A = Agent Transport / Discovery
+MCP = Tool / Context Interface
 HTTP/WS/gRPC = Transport
-```
+
+text
 
 ### Lifecycle
-
-```
 DISCOVER -> PROPOSE -> NEGOTIATE -> COMMIT -> EXECUTE -> VERIFY -> DONE
-              |          |           |         |         |
-          REJECTED   REJECTED   CANCELLED  FAILED   ESCALATED
-              |          |                             |
-          TIMEOUT    TIMEOUT                   NEGOTIATE / DONE
-```
+| | | | |
+REJECTED REJECTED CANCELLED FAILED ESCALATED
+| | |
+TIMEOUT TIMEOUT NEGOTIATE / DONE
+
+text
 
 Illegal transitions are physically forbidden by `VireoStateMachine`.
 
@@ -95,55 +95,84 @@ Illegal transitions are physically forbidden by `VireoStateMachine`.
 
 ---
 
+## Implementations
+
+| Language | Path | Version | Status |
+|----------|------|---------|--------|
+| Python | `core/` + `api/` | v3.1.0 | 32/32 tests pass |
+| Rust | `sdk/rust/` | v3.2.0 | 19/19 unit tests + 1/1 conformance pass |
+| TypeScript | `sdk/typescript/` | — | v3.3 target |
+
+---
+
 ## Quick Start
+
+### Python
 
 ```bash
 git clone https://github.com/serhohro/vireo-ai-communicator-4.git
 cd vireo-ai-communicator-4
 pip install -r requirements.txt
 python -m api.server
-```
+Then open http://localhost:5000/web.
 
-Then open `http://localhost:5000/web`.
-
----
-
-## Conformance
-
-```bash
+Rust
+bash
+cd sdk/rust
+cargo test
+cargo test --test test_vectors -- --nocapture
+Conformance
+Python SDK
+bash
 pytest tests/conformance/ -v
-```
+Result: 32 passed.
 
-**Result:** 32 passed.
+Rust SDK
+bash
+cd sdk/rust
+cargo test
+Result: 19 unit tests passed + 1 cross-language vector passed.
 
----
+Cross-Language (North Star)
+bash
+# 1. Python generates the vector
+python scripts/generate_test_vectors.py
 
-## European LLM Support
+# 2. Rust verifies the same vector
+cd sdk/rust
+cargo test --test test_vectors -- --nocapture
+Expected output:
 
-| Provider | Country |
-|----------|---------|
-| Mistral AI | France |
-| Aleph Alpha | Germany |
-| Cohere | Switzerland |
-
----
-
-## The North Star
-
-> **"Prove that Vireo can make independently implemented AI agents interoperable."**
+text
+🌿 001_propose_commit — 001_propose_commit.json
+   ✅ canonical bytes match (226 bytes)
+   ✅ wire_hash match: 011c2182af8206779ae3bc4ff145467a49ae0a2389ee54f940da9de24e7255db
+   ✅ Python signature verifies in Rust
+   🎯 001_propose_commit — PASS
+European LLM Support
+Provider	Country
+Mistral AI	France
+Aleph Alpha	Germany
+Cohere	Switzerland
+The North Star
+"Prove that Vireo can make independently implemented AI agents interoperable."
 
 The proof is a single conformance test vector:
 
-```
+text
 tests/conformance/vectors/001_propose_commit.json
-```
+When Python, Rust, and TypeScript produce identical canonical_hex, wire_hash_hex, and signature_hex - the North Star is achieved.
 
-When Python, Rust, and TypeScript produce **identical** `canonical_hex`, `wire_hash_hex`, and `signature_hex` - the North Star is achieved.
+Current progress: ✅ Python OK | ✅ Rust OK | ⏳ TypeScript pending
 
-**Current progress:** Python OK | Rust pending | TypeScript pending
+Achieved on 2026-09-11: Python and Rust produce byte-identical output
+for vector 001_propose_commit:
 
----
+canonical bytes: 226 B, identical
 
-## License
+wire_hash: 011c2182af8206779ae3bc4ff145467a49ae0a2389ee54f940da9de24e7255db
 
+Ed25519 signature: Python's signature verifies in Rust.
+
+License
 Apache 2.0

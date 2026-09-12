@@ -2,16 +2,16 @@
   "did:vireo:vy9G3tfNwr3tb3Na6GqqPK2uHi4pIl_nkhyZHMOfS_o": {
     "did": "did:vireo:vy9G3tfNwr3tb3Na6GqqPK2uHi4pIl_nkhyZHMOfS_o",
     "name": "agent-vision",
-    "public_key_hex": "9f3e6b832d794b7ada1e53c1ba2c86a309a40f68008e922a9c68597ee1c672dc",
+    "public_key_hex": "4edb5ba8300ba7c4f13127447de5318a4a7dbaa220ac0195d0c00cb50d50324b",
     "endpoint": "",
-    "registered_at": 1789132618551
+    "registered_at": 1789192200009
   },
   "did:vireo:RFgzaS_S1AQPp2apmmBPGhNjpRE0RlwGjW6u2iX3Ho4": {
     "did": "did:vireo:RFgzaS_S1AQPp2apmmBPGhNjpRE0RlwGjW6u2iX3Ho4",
     "name": "agent-training",
-    "public_key_hex": "5f2608505bb2be65621dee7145df5a88347a32cbcde07819b51be4992f0e2fd4",
+    "public_key_hex": "833a9ba3325079f76665da31a005c044e0282499fc9743ecca9ee87976d88c51",
     "endpoint": "",
-    "registered_at": 1789132618819
+    "registered_at": 1789192200020
   },
   "did:vireo:__4hWurg8azzLP4TUx_tlyqW14bsUkBh0Jukg9WVRUE": {
     "did": "did:vireo:__4hWurg8azzLP4TUx_tlyqW14bsUkBh0Jukg9WVRUE",
