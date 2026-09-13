@@ -1,6 +1,6 @@
 # Vireo — AI-to-AI Communication Language and Wire Protocol
 
-AI-to-AI communication language and wire protocol with built-in Ed25519, DIDs, and contract lifecycle. Byte-identical cross-language wire format (Python ↔ Rust).
+AI-to-AI communication language and wire protocol with built-in Ed25519, DIDs, and contract lifecycle. **Byte-identical cross-language wire format (Python ↔ Rust ↔ TypeScript).**
 
 ---
 
