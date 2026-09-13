@@ -124,8 +124,11 @@ bash
 pytest tests/conformance/ -v
 Result: 32 passed.
 
-Rust SDK
-bash
+## Conformance
+
+### Python SDK
+
+```bash
 cd sdk/rust
 cargo test
 Result: 19 unit tests passed + 1 cross-language vector passed.
