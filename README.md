@@ -25,7 +25,7 @@ No other AI-to-AI protocol combines all four layers — language, wire format, c
 - **Deterministic bytes — identical in Python, Rust, and TypeScript
 ---
 
-## Status: v3.2.0 — Rust SDK + Cross-Language Conformance
+## Status: v3.3.0 — TypeScript SDK + Triple-Language Conformance
 
 | Component | Status |
 |-----------|--------|
