@@ -165,6 +165,7 @@ The proof is a single conformance test vector:
 text
 tests/conformance/vectors/001_propose_commit.json
 When Python, Rust, and TypeScript produce identical canonical_hex, wire_hash_hex, and signature_hex - the North Star is achieved.
+
 ✅ Achieved on 2026-09-13: Python, Rust, and TypeScript produce byte-identical output for vector 001_propose_commit.
 
 Current progress: ✅ Python OK | ✅ Rust OK | ✅ TypeScript OK
