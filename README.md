@@ -44,7 +44,7 @@ No other AI-to-AI protocol combines all four layers — language, wire format, c
 | WASM runtime | v3.3 target |
 | Semantic AST Pass | v3.3 target |
 
-**Conformance:** 32 / 32 tests passed (Python 3.11.9) + 19 / 19 (Rust 1.98.1) + 1 / 1 cross-language vector
+Conformance: 32 / 32 tests passed (Python 3.11.9) + 19 / 19 (Rust 1.98.1) + 10 / 10 (TypeScript 20) + 1 / 1 cross-language vector
 
 **Benchmarks** (measured, not marketing):
 
