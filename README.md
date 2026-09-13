@@ -145,12 +145,13 @@ cd sdk/rust
 cargo test --test test_vectors -- --nocapture
 Expected output:
 
-text
+```text
 🌿 001_propose_commit — 001_propose_commit.json
    ✅ canonical bytes match (226 bytes)
    ✅ wire_hash match: 011c2182af8206779ae3bc4ff145467a49ae0a2389ee54f940da9de24e7255db
    ✅ Python signature verifies in Rust
    🎯 001_propose_commit — PASS
+```
 European LLM Support
 Provider	Country
 Mistral AI	France
