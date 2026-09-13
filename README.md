@@ -19,13 +19,12 @@ Vireo unifies four layers in a single protocol:
 
 No other AI-to-AI protocol combines all four layers — language, wire format, cryptography, and identity — in a single deterministic format.
 
-**What makes it "first":**
+## What makes Vireo different
 
-- **Ed25519 built into the wire format** - every message is signed
-- **DIDs as first-class identity** - no central authority
-- **Contract lifecycle enforced** - DISCOVER -> PROPOSE -> NEGOTIATE -> COMMIT -> EXECUTE -> VERIFY -> DONE
-- **Deterministic bytes** - identical in Python and Rust (TypeScript pending)
-
+- **Ed25519 built into the wire format** — every message is signed
+- **DIDs as first-class identity** — no central authority
+- **Contract lifecycle enforced** — `DISCOVER → PROPOSE → NEGOTIATE → COMMIT → EXECUTE → VERIFY → DONE`
+- **Deterministic bytes** — identical in Python and Rust (TypeScript pending)
 ---
 
 ## Status: v3.2.0 — Rust SDK + Cross-Language Conformance
