@@ -113,8 +113,8 @@ pip install -r requirements.txt
 python -m api.server
 Then open http://localhost:5000/web.
 
-Rust
-bash
+### Rust
+```bash
 cd sdk/rust
 cargo test
 cargo test --test test_vectors -- --nocapture
