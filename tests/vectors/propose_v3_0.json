@@ -1,0 +1,31 @@
+{
+  "filename": "propose_v3_0.bin",
+  "size": 255,
+  "hash": "bd809dbb35cd7b5120cd3e2d3840fc04f150437509c9b8864a4ae4ce5a53f083",
+  "data": {
+    "version": "3.0.0",
+    "type": "propose",
+    "id": "msg_1234567890",
+    "sender": "did:vireo:alice",
+    "recipient": "did:vireo:bob",
+    "timestamp": 1700000000,
+    "nonce": "n_abcdef123",
+    "payload": {
+      "task": "analyze_code",
+      "parameters": {
+        "language": "python",
+        "depth": "full"
+      },
+      "contract": {
+        "price": 100,
+        "deadline": "2024-12-31",
+        "terms": [
+          "quality",
+          "timeliness"
+        ]
+      }
+    }
+  },
+  "generated": "2026-09-05T22:50:57.019183",
+  "version": "3.0.0"
+}

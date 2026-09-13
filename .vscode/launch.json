@@ -1,0 +1,144 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Vireo API Server",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/api/server.py",
+            "console": "integratedTerminal",
+            "env": {
+                "VIREO_ENV": "development",
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": ["--host", "0.0.0.0", "--port", "8000", "--reload"]
+        },
+        {
+            "name": "Python: Run Tests",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "tests/",
+                "-v",
+                "--cov=.",
+                "--cov-report=html"
+            ],
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+        },
+        {
+            "name": "Python: Run Conformance Tests",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "tests/conformance/",
+                "-v"
+            ],
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+        },
+        {
+            "name": "Python: Generate Test Vectors",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/generate_test_vectors.py",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python: Run Benchmarks",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/run_benchmarks.py",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Rust: Run Vireo Server",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceFolder}/target/debug/vireo-server",
+            "args": ["--host", "0.0.0.0", "--port", "8080"],
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "RUST_LOG": "debug"
+            }
+        },
+        {
+            "name": "Rust: Run Tests",
+            "type": "lldb",
+            "request": "launch",
+            "program": "cargo",
+            "args": ["test", "--", "--nocapture"],
+            "cwd": "${workspaceFolder}/sdk/rust"
+        },
+        {
+            "name": "TypeScript: Run Development Server",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": ["run", "dev"],
+            "cwd": "${workspaceFolder}/sdk/typescript",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "TypeScript: Run Tests",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": ["run", "test"],
+            "cwd": "${workspaceFolder}/sdk/typescript",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Docker: Start Services",
+            "type": "docker",
+            "request": "launch",
+            "dockerCompose": {
+                "composeFile": "${workspaceFolder}/docker/docker-compose.yml",
+                "service": "all",
+                "up": {
+                    "detached": true
+                }
+            }
+        },
+        {
+            "name": "Docker: Stop Services",
+            "type": "docker",
+            "request": "launch",
+            "dockerCompose": {
+                "composeFile": "${workspaceFolder}/docker/docker-compose.yml",
+                "service": "all",
+                "down": true
+            }
+        },
+        {
+            "name": "Attach to Docker Container",
+            "type": "docker",
+            "request": "attach",
+            "containerName": "vireo-api"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Vireo Full Stack",
+            "configurations": [
+                "Python: Vireo API Server",
+                "Rust: Run Vireo Server",
+                "TypeScript: Run Development Server"
+            ]
+        },
+        {
+            "name": "Vireo Test Suite",
+            "configurations": [
+                "Python: Run Tests",
+                "Rust: Run Tests",
+                "TypeScript: Run Tests"
+            ]
+        }
+    ]
+}

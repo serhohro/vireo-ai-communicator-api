@@ -1,0 +1,14 @@
+{
+  "filename": "edge_cases/duplicate_keys.bin",
+  "size": 45,
+  "hash": "5230c8b4856b342bf0c4e7e57125f834550e836a7b2b82c3300e82d52859b51b",
+  "data": {
+    "version": "3.0.0",
+    "type": "test",
+    "payload": {
+      "key": "second"
+    }
+  },
+  "generated": "2026-09-05T22:50:57.033181",
+  "version": "3.0.0"
+}

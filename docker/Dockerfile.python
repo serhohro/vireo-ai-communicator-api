@@ -1,0 +1,137 @@
+# ============================================================
+# VIREO PYTHON API SERVER
+# Dockerfile для Python API сервера
+# ============================================================
+#
+# Build:
+#   docker build -t vireo-api:latest -f docker/Dockerfile.python .
+#
+# Run:
+#   docker run -p 8000:8000 vireo-api:latest
+#
+# ============================================================
+
+# ============================================================
+# STAGE 1: BUILDER
+# ============================================================
+
+FROM python:3.11-slim AS builder
+
+# Встановлення робочої директорії
+WORKDIR /app
+
+# Встановлення системних залежностей
+RUN apt-get update && apt-get install -y \
+    curl \
+    gcc \
+    g++ \
+    make \
+    libffi-dev \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Копіювання requirements
+COPY requirements.txt .
+
+# Встановлення Python залежностей
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# ============================================================
+# STAGE 2: APPLICATION
+# ============================================================
+
+FROM python:3.11-slim AS app
+
+# Встановлення робочої директорії
+WORKDIR /app
+
+# Встановлення мінімальних системних залежностей
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Копіювання встановлених пакетів з builder
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Копіювання коду проєкту
+COPY . .
+
+# Створення необхідних папок
+RUN mkdir -p /app/data /app/logs /app/models
+
+# Змінні середовища
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
+ENV VIREO_ENV=production
+ENV VIREO_LOG_LEVEL=info
+
+# Відкриття порту
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# ============================================================
+# STAGE 3: DEVELOPMENT
+# ============================================================
+
+FROM app AS development
+
+# Встановлення додаткових інструментів для розробки
+RUN pip install --no-cache-dir \
+    black \
+    mypy \
+    pylint \
+    pytest \
+    pytest-cov \
+    pytest-asyncio
+
+ENV VIREO_ENV=development
+ENV VIREO_DEBUG=true
+
+# ============================================================
+# STAGE 4: PRODUCTION
+# ============================================================
+
+FROM app AS production
+
+ENV VIREO_ENV=production
+ENV VIREO_DEBUG=false
+
+# Запуск API сервера через uvicorn
+CMD ["uvicorn", "api.server:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+
+# ============================================================
+# STAGE 5: WITH OLLAMA
+# ============================================================
+
+FROM app AS with-ollama
+
+# Встановлення Ollama
+RUN curl -fsSL https://ollama.com/install.sh | sh
+
+# Копіювання entrypoint
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["uvicorn", "api.server:app", "--host", "0.0.0.0", "--port", "8000"]
+
+# ============================================================
+# STAGE 6: TEST
+# ============================================================
+
+FROM app AS test
+
+# Запуск тестів
+CMD ["pytest", "tests/", "-v", "--cov=.", "--cov-report=html"]
+
+# ============================================================
+# DEFAULT TARGET
+# ============================================================
+
+# За замовчуванням використовуємо production
+FROM production

@@ -1,0 +1,108 @@
+# ═════════════════════════════════════════════════════════════════
+# Vireo v3.1 — .gitignore
+# ═════════════════════════════════════════════════════════════════
+
+# ── Python ───────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ── Virtualenv ───────────────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ── Test / coverage ──────────────────────────────────────────────
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+
+# ── Vireo local state ────────────────────────────────────────────
+nonces.db
+nonces.db-shm
+nonces.db-wal
+did_registry.json
+keys.json
+*.log
+
+# ── Secrets ──────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+
+# ── Rust ─────────────────────────────────────────────────────────
+sdk/rust/target/
+target/
+*.rs.bk
+
+# ── TypeScript / Node ────────────────────────────────────────────
+sdk/typescript/node_modules/
+sdk/typescript/dist/
+node_modules/
+*.tsbuildinfo
+
+# ── Go ───────────────────────────────────────────────────────────
+*.exe
+*.exe~
+*.dll
+*.dylib
+
+# ── Java ─────────────────────────────────────────────────────────
+*.class
+*.jar
+*.war
+*.ear
+
+# ── WASM ─────────────────────────────────────────────────────────
+*.wasm
+runtime/wasm/build/
+
+# ── IDE ──────────────────────────────────────────────────────────
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
+*.swp
+*.swo
+*~
+
+# ── OS ───────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Backup / temp ────────────────────────────────────────────────
+core_old/
+core_backup_*/
+*_backup/
+*.old
+pyproject.toml.old
+web/index_v3_0_0.html
+web_interface.html
+web_interface.html.backup
+_check.txt
+server_log.txt
+vireo.toml
+Новая папка/
+create_*.py
+write_*.py
+fix_*.py
+
+# ── Docker ───────────────────────────────────────────────────────
+*.pid
+*.sock

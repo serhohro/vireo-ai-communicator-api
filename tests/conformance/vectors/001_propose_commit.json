@@ -1,0 +1,35 @@
+{
+  "$schema": "vireo-conformance-vector/v1",
+  "id": "001_propose_commit",
+  "description": "PROPOSE envelope — Python ↔ Rust cross-language conformance",
+  "version": "3.1",
+  "input_fields": {
+    "intent": "PROPOSE",
+    "timestamp_ms": 1773168000000,
+    "nonce_hex": "0102030405060708090a0b0c0d0e0f10",
+    "sender_did": "did:vireo:alice",
+    "recipient_did": "did:vireo:bob",
+    "payload": {
+      "task": "conformance_test",
+      "contract": {
+        "price": 100,
+        "currency": "USD",
+        "deadline": "2026-12-31"
+      },
+      "terms": [
+        "quality",
+        "timeliness"
+      ]
+    }
+  },
+  "keys": {
+    "private_key_hex": "9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60",
+    "public_key_hex": "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a"
+  },
+  "expected_outputs": {
+    "canonical_bytes_hex": "56495245030100020000019cd90c7c000102030405060708090a0b0c0d0e0f10146a49bb214c9acee5390b2d715491ace1ccc853beb136641f1d4621279f3737a43d44f5f3f197f4c61c2ab5d4e9c0e65fb408dfdda1ca7805397c8c3e821ea50000007e7b22636f6e7472616374223a7b2263757272656e6379223a22555344222c22646561646c696e65223a22323032362d31322d3331222c227072696365223a3130307d2c227461736b223a22636f6e666f726d616e63655f74657374222c227465726d73223a5b227175616c697479222c2274696d656c696e657373225d7d",
+    "canonical_bytes_len": 226,
+    "wire_hash_hex": "011c2182af8206779ae3bc4ff145467a49ae0a2389ee54f940da9de24e7255db",
+    "signature_hex": "3ea2f58b925dafa0082370bf7b2e7f3bf5ea83d4d4da814231ede21beffd4312ebcbff1fcc3c4e10dc44269320404ceeed6419dffcabe35a5080349f1129f104"
+  }
+}

@@ -1,0 +1,31 @@
+﻿# ─────────────────────────────────────────────────────────────
+# Vireo v3.1 — Interoperability Release
+# ─────────────────────────────────────────────────────────────
+
+# Core
+flask>=3.0.0
+flask-cors>=4.0.0
+requests>=2.31.0
+
+# Crypto
+pynacl>=1.5.0
+cryptography>=42.0.0
+
+# Data
+redis>=5.0.0
+
+# SMT
+z3-solver>=4.12.0
+
+# LLM providers
+ollama>=0.1.0
+openai>=1.0.0
+anthropic>=0.18.0
+google-generativeai>=0.3.0
+mistralai>=0.1.0
+cohere>=5.0.0
+
+# Test
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-benchmark>=4.0.0

@@ -1,0 +1,74 @@
+```json
+{
+  "name": "vireo-language",
+  "displayName": "Vireo Language",
+  "description": "Syntax highlighting, code snippets, and language support for Vireo — the world's first AI-to-AI communication language",
+  "version": "1.4.0",
+  "publisher": "serhohro",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Formatters",
+    "Snippets"
+  ],
+  "keywords": [
+    "vireo",
+    "ai",
+    "programming-language",
+    "syntax-highlighting",
+    "machine-learning",
+    "neural-networks"
+  ],
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/serhohro/vireo-ai-communicator-api.git"
+  },
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/serhohro/vireo-ai-communicator-api/issues"
+  },
+  "homepage": "https://github.com/serhohro/vireo-ai-communicator-api#readme",
+  "contributes": {
+    "languages": [
+      {
+        "id": "vireo",
+        "aliases": ["Vireo", "vireo"],
+        "extensions": [".v", ".vireo"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "vireo",
+        "scopeName": "source.vireo",
+        "path": "./syntaxes/vireo.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "vireo",
+        "path": "./snippets/vireo.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "vireo.runScript",
+        "title": "Vireo: Run Script"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "vireo.runScript",
+        "key": "ctrl+shift+r",
+        "when": "editorLangId == vireo"
+      }
+    ]
+  },
+  "activationEvents": [
+    "onCommand:vireo.runScript"
+  ],
+  "main": "./extension.js"
+}

@@ -1,0 +1,80 @@
+<!-- [file name]: editors/pycharm/vireo.xml -->
+<!-- ============================================================
+     PYCHARM FILE TYPE FOR VIREO
+     ============================================================ -->
+
+<filetype>
+    <name>Vireo</name>
+    <extensions>v;vireo</extensions>
+    
+    <highlighting>
+        <keywords>
+            <keyword>let</keyword>
+            <keyword>const</keyword>
+            <keyword>fn</keyword>
+            <keyword>return</keyword>
+            <keyword>if</keyword>
+            <keyword>else</keyword>
+            <keyword>for</keyword>
+            <keyword>while</keyword>
+            <keyword>print</keyword>
+            <keyword>model</keyword>
+            <keyword>train</keyword>
+            <keyword>predict</keyword>
+            <keyword>evaluate</keyword>
+            <keyword>agent</keyword>
+            <keyword>negotiation</keyword>
+            <keyword>contract</keyword>
+            <keyword>import</keyword>
+            <keyword>export</keyword>
+            <keyword>pub</keyword>
+            <keyword>module</keyword>
+            <keyword>use</keyword>
+        </keywords>
+        
+        <keywords2>
+            <keyword>Dense</keyword>
+            <keyword>Conv2D</keyword>
+            <keyword>MaxPool2D</keyword>
+            <keyword>BatchNorm</keyword>
+            <keyword>Dropout</keyword>
+            <keyword>Flatten</keyword>
+            <keyword>LSTM</keyword>
+            <keyword>Embedding</keyword>
+            <keyword>LayerNorm</keyword>
+        </keywords2>
+        
+        <keywords3>
+            <keyword>ReLU</keyword>
+            <keyword>Sigmoid</keyword>
+            <keyword>Tanh</keyword>
+            <keyword>Softmax</keyword>
+            <keyword>Swish</keyword>
+            <keyword>SGD</keyword>
+            <keyword>Adam</keyword>
+            <keyword>CrossEntropy</keyword>
+            <keyword>MSE</keyword>
+        </keywords3>
+        
+        <keywords4>
+            <keyword>Tensor</keyword>
+            <keyword>Int</keyword>
+            <keyword>F32</keyword>
+            <keyword>F64</keyword>
+            <keyword>Bool</keyword>
+            <keyword>Str</keyword>
+            <keyword>List</keyword>
+            <keyword>Dict</keyword>
+            <keyword>Signature</keyword>
+            <keyword>DID</keyword>
+        </keywords4>
+        
+        <decorators>
+            <decorator>@neural</decorator>
+            <decorator>@gpu</decorator>
+            <decorator>@jit</decorator>
+            <decorator>@parallel</decorator>
+            <decorator>@distributed</decorator>
+        </decorators>
+    </highlighting>
+</filetype>

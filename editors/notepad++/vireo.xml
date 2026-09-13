@@ -1,0 +1,62 @@
+<!-- [file name]: editors/notepad++/vireo.xml -->
+<!-- ============================================================
+     NOTEPAD++ USER DEFINED LANGUAGE FOR VIREO
+     ============================================================ -->
+
+<NotepadPlus>
+    <UserLang name="Vireo" ext="v" udlVersion="2.1">
+        <Settings>
+            <Global caseIgnored="no" allowFoldOfComments="no" foldCompact="no" forcePureLC="0" decimalSeparator="0" />
+            <Prefix Keywords1="no" Keywords2="no" Keywords3="no" Keywords4="no" Keywords5="no" Keywords6="no" Keywords7="no" Keywords8="no" />
+        </Settings>
+        
+        <KeywordLists>
+            <Keywords name="Comments">00// 01 02 03/* 04*/</Keywords>
+            <Keywords name="Numbers">0 1 2 3 4 5 6 7 8 9</Keywords>
+            
+            <Keywords name="Keywords1">
+                let const fn return if else for while print model train predict evaluate
+                agent negotiation contract import export pub module use
+            </Keywords>
+            
+            <Keywords name="Keywords2">
+                Dense Conv2D MaxPool2D BatchNorm Dropout Flatten LSTM
+                Embedding LayerNorm
+            </Keywords>
+            
+            <Keywords name="Keywords3">
+                ReLU Sigmoid Tanh Softmax Swish
+                SGD Adam CrossEntropy MSE
+            </Keywords>
+            
+            <Keywords name="Keywords4">
+                Tensor Int F32 F64 Bool Str List Dict Signature DID
+            </Keywords>
+            
+            <Keywords name="Keywords5">
+                @neural @gpu @jit @parallel @distributed
+            </Keywords>
+            
+            <Keywords name="Keywords6">
+                true false none
+            </Keywords>
+            
+            <Keywords name="Delimiters">00" 01" 02 03' 04' 05</Keywords>
+        </KeywordLists>
+        
+        <Styles>
+            <WordsStyle name="DEFAULT" fgColor="000000" bgColor="FFFFFF" fontName="" fontStyle="0" fontSize="" />
+            <WordsStyle name="COMMENTS" fgColor="008000" bgColor="FFFFFF" fontName="" fontStyle="2" fontSize="" />
+            <WordsStyle name="NUMBERS" fgColor="FF8000" bgColor="FFFFFF" fontName="" fontStyle="0" fontSize="" />
+            <WordsStyle name="KEYWORDS1" fgColor="0000FF" bgColor="FFFFFF" fontName="" fontStyle="1" fontSize="" />
+            <WordsStyle name="KEYWORDS2" fgColor="A31515" bgColor="FFFFFF" fontName="" fontStyle="1" fontSize="" />
+            <WordsStyle name="KEYWORDS3" fgColor="2B91AF" bgColor="FFFFFF" fontName="" fontStyle="0" fontSize="" />
+            <WordsStyle name="KEYWORDS4" fgColor="0000FF" bgColor="FFFFFF" fontName="" fontStyle="0" fontSize="" />
+            <WordsStyle name="KEYWORDS5" fgColor="FF00FF" bgColor="FFFFFF" fontName="" fontStyle="1" fontSize="" />
+            <WordsStyle name="KEYWORDS6" fgColor="800000" bgColor="FFFFFF" fontName="" fontStyle="1" fontSize="" />
+            <WordsStyle name="OPERATORS" fgColor="000000" bgColor="FFFFFF" fontName="" fontStyle="1" fontSize="" />
+            <WordsStyle name="DELIMITERS1" fgColor="A31515" bgColor="FFFFFF" fontName="" fontStyle="0" fontSize="" />
+            <WordsStyle name="DELIMITERS2" fgColor="A31515" bgColor="FFFFFF" fontName="" fontStyle="0" fontSize="" />
+        </Styles>
+    </UserLang>
+</NotepadPlus>

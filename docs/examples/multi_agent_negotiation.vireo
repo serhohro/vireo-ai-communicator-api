@@ -1,0 +1,532 @@
+// ============================================================
+// multi_agent_negotiation.vireo
+// Multi-agent system with negotiation and coordination
+// ============================================================
+
+import protocol
+import crypto
+import math
+
+// ============================================================
+// Coordinator Agent
+// ============================================================
+agent Coordinator {
+    name: "Coordinator"
+    version: "1.0.0"
+    description: "Orchestrates multi-agent workflows"
+    
+    capabilities: ["coordination", "orchestration", "monitoring"]
+    
+    state {
+        agents: {}  // agent_id -> {capabilities, status, trust_score}
+        workflows: {}
+        active_tasks: {}
+        completed_tasks: {}
+    }
+    
+    // ============================================================
+    // Agent Registration
+    // ============================================================
+    on message "register" {
+        let agent_id = message.sender
+        let capabilities = message.payload.capabilities
+        
+        // Verify agent
+        let verified = verify_agent(agent_id, message.signature)
+        if not verified {
+            respond({
+                type: "registration_failed",
+                payload: {
+                    reason: "Verification failed",
+                    agent_id: agent_id
+                }
+            })
+            return
+        }
+        
+        // Register agent
+        state.agents[agent_id] = {
+            capabilities: capabilities,
+            status: "idle",
+            trust_score: calculate_initial_trust(agent_id),
+            registered_at: now(),
+            last_heartbeat: now()
+        }
+        
+        respond({
+            type: "registered",
+            payload: {
+                agent_id: agent_id,
+                status: "active",
+                trust_score: state.agents[agent_id].trust_score
+            }
+        })
+    }
+    
+    // ============================================================
+    // Workflow Creation
+    // ============================================================
+    on message "create_workflow" {
+        let workflow = message.payload
+        let workflow_id = generate_workflow_id()
+        
+        // Validate workflow
+        let validation = validate_workflow(workflow)
+        if not validation.valid {
+            respond({
+                type: "workflow_invalid",
+                payload: {
+                    reason: validation.reason
+                }
+            })
+            return
+        }
+        
+        // Assign agents to tasks
+        let assignments = assign_agents_to_tasks(
+            tasks: workflow.tasks,
+            available_agents: state.agents
+        )
+        
+        // Create workflow
+        state.workflows[workflow_id] = {
+            name: workflow.name,
+            description: workflow.description,
+            tasks: workflow.tasks,
+            assignments: assignments,
+            status: "created",
+            created_at: now(),
+            updated_at: now()
+        }
+        
+        respond({
+            type: "workflow_created",
+            payload: {
+                workflow_id: workflow_id,
+                assignments: assignments,
+                estimated_duration: calculate_duration(assignments)
+            }
+        })
+    }
+    
+    // ============================================================
+    // Workflow Execution
+    // ============================================================
+    on message "start_workflow" {
+        let workflow_id = message.payload.workflow_id
+        
+        if workflow_id not in state.workflows {
+            respond({
+                type: "error",
+                payload: {
+                    error: "Workflow not found",
+                    workflow_id: workflow_id
+                }
+            })
+            return
+        }
+        
+        let workflow = state.workflows[workflow_id]
+        
+        // Start tasks in parallel
+        let task_futures = []
+        for task in workflow.tasks {
+            let agent_id = workflow.assignments[task.id]
+            let future = execute_task(
+                agent_id: agent_id,
+                task: task,
+                workflow_id: workflow_id
+            )
+            task_futures.push(future)
+        }
+        
+        // Monitor execution
+        let results = monitor_tasks(task_futures)
+        
+        // Update workflow
+        workflow.status = "completed"
+        workflow.updated_at = now()
+        workflow.results = results
+        
+        state.workflows[workflow_id] = workflow
+        
+        respond({
+            type: "workflow_completed",
+            payload: {
+                workflow_id: workflow_id,
+                results: results,
+                duration: workflow.updated_at - workflow.created_at
+            }
+        })
+    }
+    
+    // ============================================================
+    // Negotiation Support
+    // ============================================================
+    on message "negotiate" {
+        let negotiation = message.payload
+        
+        // Find best agent for task
+        let candidates = find_agents_for_task(
+            task: negotiation.task,
+            agents: state.agents,
+            min_trust: 0.6
+        )
+        
+        if len(candidates) == 0 {
+            respond({
+                type: "no_candidates",
+                payload: {
+                    reason: "No suitable agents found",
+                    requirements: negotiation.requirements
+                }
+            })
+            return
+        }
+        
+        // Sort by trust score and capabilities
+        let sorted = sort_candidates(candidates)
+        
+        // Start negotiation with top candidate
+        let negotiation_id = start_negotiation(
+            task: negotiation.task,
+            candidates: sorted,
+            terms: negotiation.terms
+        )
+        
+        respond({
+            type: "negotiation_started",
+            payload: {
+                negotiation_id: negotiation_id,
+                candidates: sorted,
+                status: "in_progress"
+            }
+        })
+    }
+    
+    // ============================================================
+    // Helper Functions
+    // ============================================================
+    
+    fn verify_agent(agent_id: string, signature: bytes) -> bool {
+        let public_key = resolve_public_key(agent_id)
+        let challenge = get_challenge(agent_id)
+        return crypto.verify(
+            data: challenge,
+            signature: signature,
+            public_key: public_key
+        )
+    }
+    
+    fn calculate_initial_trust(agent_id: string) -> float {
+        // Check reputation system
+        let reputation = get_reputation(agent_id)
+        if reputation {
+            return reputation.trust_score
+        }
+        return 0.5  // Neutral trust
+    }
+    
+    fn validate_workflow(workflow: dict) -> {valid: bool, reason: string} {
+        // Check required fields
+        let required = ["name", "tasks"]
+        for field in required {
+            if field not in workflow {
+                return {valid: false, reason: "Missing field: ${field}"}
+            }
+        }
+        
+        // Check tasks
+        for task in workflow.tasks {
+            if "id" not in task {
+                return {valid: false, reason: "Task missing id"}
+            }
+            if "type" not in task {
+                return {valid: false, reason: "Task missing type"}
+            }
+            if "requirements" not in task {
+                return {valid: false, reason: "Task missing requirements"}
+            }
+        }
+        
+        return {valid: true, reason: ""}
+    }
+    
+    fn assign_agents_to_tasks(tasks: [dict], available_agents: dict) -> dict {
+        let assignments = {}
+        
+        for task in tasks {
+            let candidates = find_agents_for_task(
+                task: task,
+                agents: available_agents,
+                min_trust: 0.5
+            )
+            
+            if len(candidates) > 0 {
+                // Assign to best matching agent
+                assignments[task.id] = candidates[0].id
+            } else {
+                assignments[task.id] = null
+            }
+        }
+        
+        return assignments
+    }
+    
+    fn find_agents_for_task(task: dict, agents: dict, min_trust: float) -> [dict] {
+        let candidates = []
+        
+        for agent_id, info in agents {
+            // Check capabilities
+            let has_capability = check_capabilities(
+                agent_capabilities: info.capabilities,
+                required: task.requirements.capabilities
+            )
+            
+            if not has_capability {
+                continue
+            }
+            
+            // Check trust
+            if info.trust_score < min_trust {
+                continue
+            }
+            
+            // Check availability
+            if info.status != "idle" {
+                continue
+            }
+            
+            candidates.push({
+                id: agent_id,
+                capabilities: info.capabilities,
+                trust_score: info.trust_score,
+                match_score: calculate_match_score(info, task)
+            })
+        }
+        
+        return candidates
+    }
+    
+    fn calculate_match_score(agent_info: dict, task: dict) -> float {
+        // Calculate how well agent matches task
+        let capability_match = len(
+            intersect(agent_info.capabilities, task.requirements.capabilities)
+        ) / len(task.requirements.capabilities)
+        
+        let trust_weight = agent_info.trust_score
+        let availability_weight = if agent_info.status == "idle" { 1.0 } else { 0.5 }
+        
+        return (
+            capability_match * 0.5 +
+            trust_weight * 0.3 +
+            availability_weight * 0.2
+        )
+    }
+    
+    fn sort_candidates(candidates: [dict]) -> [dict] {
+        return sort(candidates, by: "match_score", order: "descending")
+    }
+    
+    fn execute_task(agent_id: string, task: dict, workflow_id: string) -> future {
+        let message = {
+            type: "execute_task",
+            payload: {
+                workflow_id: workflow_id,
+                task_id: task.id,
+                parameters: task.parameters,
+                context: task.context
+            }
+        }
+        
+        return send_message(agent_id, message)
+    }
+    
+    fn monitor_tasks(task_futures: [future]) -> dict {
+        let results = {}
+        
+        for future in task_futures {
+            let result = wait_for_future(future, timeout: 300)
+            results[result.task_id] = {
+                status: result.status,
+                data: result.data,
+                duration: result.duration
+            }
+        }
+        
+        return results
+    }
+    
+    fn start_negotiation(task: dict, candidates: [dict], terms: dict) -> string {
+        let negotiation_id = "neg_" + random_string(12)
+        
+        // Send propose to top candidate
+        let top_candidate = candidates[0]
+        send_message(top_candidate.id, {
+            type: "propose_contract",
+            payload: {
+                task: task,
+                terms: terms,
+                negotiation_id: negotiation_id
+            }
+        })
+        
+        return negotiation_id
+    }
+    
+    fn generate_workflow_id() -> string {
+        return "wf_" + random_string(12)
+    }
+    
+    fn random_string(length: int) -> string {
+        let chars = "abcdefghijklmnopqrstuvwxyz0123456789"
+        let result = ""
+        for i in 0..length {
+            result = result + chars[random_int(0, len(chars) - 1)]
+        }
+        return result
+    }
+    
+    fn check_capabilities(agent_capabilities: [string], required: [string]) -> bool {
+        for req in required {
+            if req not in agent_capabilities {
+                return false
+            }
+        }
+        return true
+    }
+    
+    fn intersect(a: [string], b: [string]) -> [string] {
+        let result = []
+        for item in a {
+            if item in b {
+                result.push(item)
+            }
+        }
+        return result
+    }
+}
+
+// ============================================================
+// Worker Agent (Template)
+// ============================================================
+agent Worker {
+    name: "Worker"
+    version: "1.0.0"
+    description: "Worker agent for multi-agent system"
+    
+    capabilities: ["computation", "analysis"]
+    
+    state {
+        coordinator: null
+        current_task: null
+        completed_tasks: 0
+    }
+    
+    on init {
+        // Register with coordinator
+        send(coordinator_id, {
+            type: "register",
+            payload: {
+                capabilities: capabilities
+            }
+        })
+        
+        respond({
+            type: "ready",
+            payload: {
+                status: "registered",
+                capabilities: capabilities
+            }
+        })
+    }
+    
+    on message "execute_task" {
+        let task = message.payload
+        
+        state.current_task = task
+        
+        // Process task
+        let result = process_task(task)
+        
+        state.completed_tasks = state.completed_tasks + 1
+        
+        respond({
+            type: "task_completed",
+            payload: {
+                task_id: task.task_id,
+                result: result,
+                duration: result.duration
+            }
+        })
+    }
+    
+    fn process_task(task: dict) -> dict {
+        // Simulate task processing
+        let start = now()
+        
+        let result = match task.type {
+            "computation" => compute(task.parameters)
+            "analysis" => analyze(task.parameters)
+            "transform" => transform(task.parameters)
+            _ => {error: "Unknown task type"}
+        }
+        
+        return {
+            data: result,
+            duration: now() - start
+        }
+    }
+}
+
+// ============================================================
+// Usage Example
+// ============================================================
+/*
+// Register worker with coordinator
+{
+    "type": "register",
+    "payload": {
+        "capabilities": ["computation", "analysis"]
+    }
+}
+
+// Create workflow
+{
+    "type": "create_workflow",
+    "payload": {
+        "name": "Data Processing Pipeline",
+        "description": "Process and analyze data",
+        "tasks": [
+            {
+                "id": "task_1",
+                "type": "computation",
+                "requirements": {
+                    "capabilities": ["computation"]
+                },
+                "parameters": {
+                    "operation": "clean_data"
+                }
+            },
+            {
+                "id": "task_2",
+                "type": "analysis",
+                "requirements": {
+                    "capabilities": ["analysis"]
+                },
+                "parameters": {
+                    "method": "statistical"
+                }
+            }
+        ]
+    }
+}
+
+// Start workflow
+{
+    "type": "start_workflow",
+    "payload": {
+        "workflow_id": "wf_abc123"
+    }
+}
+*/

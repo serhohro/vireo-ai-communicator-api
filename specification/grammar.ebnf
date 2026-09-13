@@ -1,0 +1,262 @@
+(* Vireo Grammar v3.0.0 *)
+(* EBNF specification for the Vireo language *)
+
+(* ============================================================
+   PROGRAM
+   ============================================================ *)
+
+program = { import | declaration } ;
+
+(* ============================================================
+   IMPORTS
+   ============================================================ *)
+
+import = "import" string ;
+
+(* ============================================================
+   DECLARATIONS
+   ============================================================ *)
+
+declaration = agent_decl
+            | contract_decl
+            | function_decl
+            | struct_decl
+            | enum_decl
+            | const_decl ;
+
+(* ============================================================
+   AGENT DECLARATION
+   ============================================================ *)
+
+agent_decl = "agent" identifier "{" { agent_field } "}" ;
+agent_field = identifier "=" expression ";" ;
+
+(* ============================================================
+   CONTRACT DECLARATION
+   ============================================================ *)
+
+contract_decl = "contract" identifier "{" { contract_field } "}" ;
+contract_field = identifier ":" type [ "=" expression ] ";" ;
+
+(* ============================================================
+   FUNCTION DECLARATION
+   ============================================================ *)
+
+function_decl = "fn" identifier "(" [ params ] ")" [ "->" type ] block ;
+params = param { "," param } ;
+param = identifier ":" type ;
+
+(* ============================================================
+   STRUCT DECLARATION
+   ============================================================ *)
+
+struct_decl = "struct" identifier "{" { struct_field } "}" ;
+struct_field = identifier ":" type ";" ;
+
+(* ============================================================
+   ENUM DECLARATION
+   ============================================================ *)
+
+enum_decl = "enum" identifier "{" { enum_variant } "}" ;
+enum_variant = identifier [ "(" type ")" ] [ "," ] ;
+
+(* ============================================================
+   CONST DECLARATION
+   ============================================================ *)
+
+const_decl = "const" identifier ":" type "=" expression ";" ;
+
+(* ============================================================
+   TYPES
+   ============================================================ *)
+
+type = primitive_type
+     | array_type
+     | map_type
+     | user_type
+     | optional_type
+     | union_type ;
+
+primitive_type = "int" | "float" | "bool" | "string" | "bytes" | "any" ;
+array_type = "array" "[" type "]" ;
+map_type = "map" "[" type "," type "]" ;
+user_type = identifier ;
+optional_type = type "?" ;
+union_type = "union" "{" type { "," type } "}" ;
+
+(* ============================================================
+   BLOCKS AND STATEMENTS
+   ============================================================ *)
+
+block = "{" { statement } "}" ;
+
+statement = variable_decl
+          | assignment
+          | expression
+          | return_statement
+          | if_statement
+          | while_statement
+          | for_statement
+          | match_statement
+          | break_statement
+          | continue_statement
+          | yield_statement
+          | try_statement
+          | throw_statement ;
+
+(* ============================================================
+   VARIABLES
+   ============================================================ *)
+
+variable_decl = "let" identifier [ ":" type ] "=" expression ";" ;
+assignment = identifier "=" expression ";" ;
+
+(* ============================================================
+   CONTROL FLOW
+   ============================================================ *)
+
+return_statement = "return" [ expression ] ";" ;
+
+if_statement = "if" expression block [ "else" ( block | if_statement ) ] ;
+
+while_statement = "while" expression block ;
+
+for_statement = "for" identifier "in" expression block ;
+
+match_statement = "match" expression "{" { match_case } "}" ;
+match_case = "case" pattern "=>" block [ "," ] ;
+
+break_statement = "break" [ expression ] ";" ;
+continue_statement = "continue" ";" ;
+yield_statement = "yield" expression ";" ;
+
+try_statement = "try" block "catch" identifier block ;
+throw_statement = "throw" expression ";" ;
+
+(* ============================================================
+   PATTERNS
+   ============================================================ *)
+
+pattern = literal_pattern
+        | variable_pattern
+        | struct_pattern
+        | array_pattern
+        | tuple_pattern
+        | wildcard_pattern
+        | range_pattern ;
+
+literal_pattern = literal ;
+variable_pattern = identifier ;
+struct_pattern = identifier "{" { field_pattern } "}" ;
+field_pattern = identifier ":" pattern ;
+array_pattern = "[" [ pattern { "," pattern } ] "]" ;
+tuple_pattern = "(" [ pattern { "," pattern } ] ")" ;
+wildcard_pattern = "_" ;
+range_pattern = expression ".." expression ;
+
+(* ============================================================
+   EXPRESSIONS
+   ============================================================ *)
+
+expression = assignment_expression
+           | binary_expression
+           | unary_expression
+           | primary_expression ;
+
+assignment_expression = expression "=" expression ;
+
+binary_expression = expression operator expression ;
+operator = "+" | "-" | "*" | "/" | "%"
+         | "==" | "!=" | "<" | ">" | "<=" | ">="
+         | "&&" | "||"
+         | "|" | "&" | "^" | "<<" | ">>"
+         | "??" ;
+
+unary_expression = ("-" | "!" | "~" | "&" | "*") expression ;
+
+primary_expression = literal
+                   | variable
+                   | function_call
+                   | struct_literal
+                   | array_literal
+                   | map_literal
+                   | tuple_literal
+                   | lambda_expression
+                   | parenthesized_expression
+                   | range_expression
+                   | await_expression ;
+
+literal = int_literal
+        | float_literal
+        | bool_literal
+        | string_literal
+        | bytes_literal
+        | null_literal ;
+
+int_literal = [ "-" ] digit { digit } ;
+float_literal = [ "-" ] digit { digit } "." digit { digit } ;
+bool_literal = "true" | "false" ;
+string_literal = '"' { character } '"' | "'" { character } "'" ;
+bytes_literal = "b'" { hex_digit { hex_digit } } "'" | "b\"" { hex_digit { hex_digit } } "\"" ;
+null_literal = "null" ;
+
+variable = identifier ;
+
+function_call = identifier "(" [ arguments ] ")" ;
+arguments = expression { "," expression } ;
+
+struct_literal = identifier "{" { struct_field_literal } "}" ;
+struct_field_literal = identifier ":" expression [ "," ] ;
+
+array_literal = "[" [ expression { "," expression } ] "]" ;
+map_literal = "{" [ map_entry { "," map_entry } ] "}" ;
+map_entry = expression ":" expression ;
+
+tuple_literal = "(" [ expression { "," expression } ] ")" ;
+
+lambda_expression = "|" [ params ] "|" [ "->" type ] block ;
+
+parenthesized_expression = "(" expression ")" ;
+
+range_expression = expression ".." [ "=" ] expression ;
+
+await_expression = "await" expression ;
+
+(* ============================================================
+   LEXICAL ELEMENTS
+   ============================================================ *)
+
+identifier = letter { letter | digit | "_" } ;
+
+letter = "A" | "B" | "C" | "D" | "E" | "F" | "G"
+       | "H" | "I" | "J" | "K" | "L" | "M" | "N"
+       | "O" | "P" | "Q" | "R" | "S" | "T" | "U"
+       | "V" | "W" | "X" | "Y" | "Z"
+       | "a" | "b" | "c" | "d" | "e" | "f" | "g"
+       | "h" | "i" | "j" | "k" | "l" | "m" | "n"
+       | "o" | "p" | "q" | "r" | "s" | "t" | "u"
+       | "v" | "w" | "x" | "y" | "z" ;
+
+digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+
+hex_digit = digit | "A" | "B" | "C" | "D" | "E" | "F"
+                  | "a" | "b" | "c" | "d" | "e" | "f" ;
+
+character = ? any character except " and \ ? | escape_sequence ;
+escape_sequence = "\" ( "\"" | "'" | "\\" | "n" | "r" | "t" | "0" | "x" hex_digit hex_digit | "u{" hex_digit { hex_digit } "}" ) ;
+
+string = '"' { character } '"' | "'" { character } "'" ;
+
+(* ============================================================
+   WHITESPACE AND COMMENTS
+   ============================================================ *)
+
+comment = "//" { ? any character except newline ? } [ newline ]
+        | "/*" { ? any character ? } "*/" ;
+
+whitespace = " " | "\t" | "\n" | "\r" ;
+
+(* Ignore whitespace and comments *)
+%import common.WS
+%ignore WS
+%ignore comment

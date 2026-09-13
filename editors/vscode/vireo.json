@@ -1,0 +1,152 @@
+{
+    "Hello World": {
+        "prefix": "hello",
+        "body": [
+            "fn main() {",
+            "    print \"Hello, Vireo!\"",
+            "}"
+        ],
+        "description": "Vireo Hello World"
+    },
+    "Function": {
+        "prefix": "fn",
+        "body": [
+            "fn ${1:name}(${2:args}) {",
+            "    ${3:// body}",
+            "    return ${4:value}",
+            "}"
+        ],
+        "description": "Vireo function"
+    },
+    "Let Variable": {
+        "prefix": "let",
+        "body": "let ${1:name} = ${2:value}",
+        "description": "Vireo variable declaration"
+    },
+    "Const Variable": {
+        "prefix": "const",
+        "body": "const ${1:name} = ${2:value}",
+        "description": "Vireo constant declaration"
+    },
+    "If Statement": {
+        "prefix": "if",
+        "body": [
+            "if ${1:condition} {",
+            "    ${2:// body}",
+            "}"
+        ],
+        "description": "Vireo if statement"
+    },
+    "If-Else Statement": {
+        "prefix": "ifelse",
+        "body": [
+            "if ${1:condition} {",
+            "    ${2:// if body}",
+            "} else {",
+            "    ${3:// else body}",
+            "}"
+        ],
+        "description": "Vireo if-else statement"
+    },
+    "For Loop": {
+        "prefix": "for",
+        "body": [
+            "for ${1:i} in ${2:range(10)} {",
+            "    ${3:// body}",
+            "}"
+        ],
+        "description": "Vireo for loop"
+    },
+    "While Loop": {
+        "prefix": "while",
+        "body": [
+            "while ${1:condition} {",
+            "    ${2:// body}",
+            "}"
+        ],
+        "description": "Vireo while loop"
+    },
+    "Neural Network": {
+        "prefix": "neural",
+        "body": [
+            "@neural",
+            "fn ${1:model_name}(${2:input}: Tensor<F32, [${3:batch}, ${4:dim}]>) -> Tensor<F32, [${3:batch}, ${5:output}]> {",
+            "    let x = dense(${2:input}, ${6:256}, activation=ReLU)",
+            "    let x = dropout(x, 0.3)",
+            "    let x = dense(x, ${7:128}, activation=ReLU)",
+            "    return dense(x, ${5:output}, activation=Softmax)",
+            "}"
+        ],
+        "description": "Vireo neural network template"
+    },
+    "Model Definition": {
+        "prefix": "model",
+        "body": [
+            "model ${1:ModelName} {",
+            "    layer Dense(${2:input}, ${3:output})",
+            "    activation ${4:ReLU}",
+            "    layer Dense(${3:output}, ${5:next})",
+            "    activation ${6:Softmax}",
+            "}"
+        ],
+        "description": "Vireo model definition"
+    },
+    "Train": {
+        "prefix": "train",
+        "body": [
+            "train ${1:ModelName} {",
+            "    data = \"${2:dataset}\"",
+            "    epochs = ${3:10}",
+            "    batch_size = ${4:64}",
+            "    lr = ${5:0.001}",
+            "}"
+        ],
+        "description": "Vireo training block"
+    },
+    "Tensor": {
+        "prefix": "tensor",
+        "body": [
+            "let ${1:name}: Tensor<F32, [${2:rows}, ${3:cols}]> = [",
+            "    [${4:values}]",
+            "]"
+        ],
+        "description": "Vireo tensor declaration"
+    },
+    "Print": {
+        "prefix": "print",
+        "body": "print ${1:value}",
+        "description": "Vireo print statement"
+    },
+    "Agent": {
+        "prefix": "agent",
+        "body": [
+            "agent ${1:AgentName} {",
+            "    identity: \"${2:did:key:...}\"",
+            "    public_key: \"${3:0x...}\"",
+            "    capability ${4:capability_name}",
+            "}"
+        ],
+        "description": "Vireo agent definition"
+    },
+    "Negotiation": {
+        "prefix": "negotiation",
+        "body": [
+            "negotiation ${1:NegotiationName} {",
+            "    party Initiator: ${2:AgentA}",
+            "    party Provider: ${3:AgentB}",
+            "    ",
+            "    timeout = ${4:5s}",
+            "    max_rounds = ${5:3}",
+            "    ",
+            "    on offer(Agreement) {",
+            "        if Agreement.price <= ${6:500} {",
+            "            accept(Agreement)",
+            "        } else {",
+            "            reject(\"Price too high\")",
+            "        }",
+            "    }",
+            "}"
+        ],
+        "description": "Vireo negotiation protocol"
+    }
+}

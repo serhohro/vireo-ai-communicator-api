@@ -1,0 +1,11 @@
+{
+  "filename": "edge_cases/malformed_v7.bin",
+  "size": 23,
+  "hash": "d8f8891b6f71fc67674fc22fc6ee59d3369be1ae0dc0d9af0107561bb904961d",
+  "data": {
+    "type": "propose",
+    "payload": {}
+  },
+  "generated": "2026-09-05T22:50:57.043178",
+  "version": "3.0.0"
+}

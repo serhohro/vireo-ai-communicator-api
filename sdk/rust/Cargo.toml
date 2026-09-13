@@ -1,0 +1,21 @@
+[package]
+name = "vireo-ai"
+version = "3.2.0"
+edition = "2021"
+description = "The world's first AI-to-AI communication language with built-in Ed25519, DIDs, and contract lifecycle"
+license = "Apache-2.0"
+repository = "https://github.com/serhohro/vireo-ai-communicator-4"
+
+[dependencies]
+ed25519-dalek = { version = "2.1", features = ["rand_core"] }
+blake2 = "0.10"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+uuid = { version = "1.7", features = ["v4"] }
+thiserror = "1.0"
+base64 = "0.22"
+hex = "0.4"
+rand = "0.8"
+
+[dev-dependencies]
+hex-literal = "0.4"

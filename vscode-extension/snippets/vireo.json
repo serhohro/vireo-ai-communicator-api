@@ -1,0 +1,96 @@
+{
+    "Hello World": {
+        "prefix": "hello",
+        "body": [
+            "fn main() {",
+            "    print \"Hello, Vireo!\"",
+            "}"
+        ],
+        "description": "Vireo Hello World"
+    },
+    "Function": {
+        "prefix": "fn",
+        "body": [
+            "fn ${1:name}(${2:args}) {",
+            "    ${3:// body}",
+            "    return ${4:value}",
+            "}"
+        ],
+        "description": "Vireo function"
+    },
+    "Let Variable": {
+        "prefix": "let",
+        "body": "let ${1:name} = ${2:value}",
+        "description": "Vireo variable declaration"
+    },
+    "Const Variable": {
+        "prefix": "const",
+        "body": "const ${1:name} = ${2:value}",
+        "description": "Vireo constant declaration"
+    },
+    "If Statement": {
+        "prefix": "if",
+        "body": [
+            "if ${1:condition} {",
+            "    ${2:// body}",
+            "}"
+        ],
+        "description": "Vireo if statement"
+    },
+    "If-Else Statement": {
+        "prefix": "ifelse",
+        "body": [
+            "if ${1:condition} {",
+            "    ${2:// if body}",
+            "} else {",
+            "    ${3:// else body}",
+            "}"
+        ],
+        "description": "Vireo if-else statement"
+    },
+    "For Loop": {
+        "prefix": "for",
+        "body": [
+            "for ${1:i} in ${2:range(10)} {",
+            "    ${3:// body}",
+            "}"
+        ],
+        "description": "Vireo for loop"
+    },
+    "While Loop": {
+        "prefix": "while",
+        "body": [
+            "while ${1:condition} {",
+            "    ${2:// body}",
+            "}"
+        ],
+        "description": "Vireo while loop"
+    },
+    "Neural Network": {
+        "prefix": "neural",
+        "body": [
+            "@neural",
+            "fn ${1:model_name}(${2:input}: Tensor<F32, [${3:batch}, ${4:dim}]>) -> Tensor<F32, [${3:batch}, ${5:output}]> {",
+            "    let x = dense(${2:input}, ${6:256}, activation=ReLU)",
+            "    let x = dropout(x, 0.3)",
+            "    let x = dense(x, ${7:128}, activation=ReLU)",
+            "    return dense(x, ${5:output}, activation=Softmax)",
+            "}"
+        ],
+        "description": "Vireo neural network template"
+    },
+    "Tensor": {
+        "prefix": "tensor",
+        "body": [
+            "let ${1:name}: Tensor<F32, [${2:rows}, ${3:cols}]> = [",
+            "    [${4:values}]",
+            "]"
+        ],
+        "description": "Vireo tensor declaration"
+    },
+    "Print": {
+        "prefix": "print",
+        "body": "print ${1:value}",
+        "description": "Vireo print statement"
+    }
+}

@@ -1,0 +1,126 @@
+## `specification/schema.json`
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Vireo Message Schema v3.0.0",
+  "description": "JSON Schema for Vireo protocol messages",
+  "definitions": {
+    "DID": {
+      "type": "string",
+      "pattern": "^did:vireo:agent:[a-zA-Z0-9_-]+$"
+    },
+    "Intent": {
+      "type": "integer",
+      "enum": [1, 2, 3, 4, 5, 6, 7, 8],
+      "enumNames": [
+        "PROPOSE",
+        "COMMIT",
+        "EXECUTE",
+        "VERIFY",
+        "DONE",
+        "ESCALATE",
+        "REJECT",
+        "TIMEOUT"
+      ]
+    },
+    "Flags": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 255
+    },
+    "Nonce": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{32}$"
+    },
+    "Signature": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{128}$"
+    },
+    "PayloadHash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "Timestamp": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9999999999999
+    },
+    "Version": {
+      "type": "integer",
+      "const": 48
+    },
+    "Magic": {
+      "type": "string",
+      "pattern": "^VIRE$"
+    }
+  },
+  "type": "object",
+  "properties": {
+    "header": {
+      "type": "object",
+      "properties": {
+        "magic": {
+          "$ref": "#/definitions/Magic"
+        },
+        "version": {
+          "$ref": "#/definitions/Version"
+        },
+        "flags": {
+          "$ref": "#/definitions/Flags"
+        },
+        "reserved": {
+          "type": "integer",
+          "const": 0
+        }
+      },
+      "required": ["magic", "version", "flags"]
+    },
+    "body": {
+      "type": "object",
+      "properties": {
+        "sender": {
+          "$ref": "#/definitions/DID"
+        },
+        "recipient": {
+          "$ref": "#/definitions/DID"
+        },
+        "intent": {
+          "$ref": "#/definitions/Intent"
+        },
+        "timestamp": {
+          "$ref": "#/definitions/Timestamp"
+        },
+        "nonce": {
+          "$ref": "#/definitions/Nonce"
+        },
+        "proposal_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "payload_hash": {
+          "$ref": "#/definitions/PayloadHash"
+        },
+        "signature": {
+          "$ref": "#/definitions/Signature"
+        }
+      },
+      "required": [
+        "sender",
+        "recipient",
+        "intent",
+        "timestamp",
+        "nonce",
+        "proposal_id",
+        "payload_hash",
+        "signature"
+      ]
+    },
+    "payload": {
+      "type": "object",
+      "description": "Optional message payload"
+    }
+  },
+  "required": ["header", "body"],
+  "additionalProperties": false
+}

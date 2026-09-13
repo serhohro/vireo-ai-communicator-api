@@ -1,0 +1,51 @@
+// [file name]: models/zoo/resnet.vireo
+// ============================================================
+// RESNET STYLE MODEL FOR IMAGE CLASSIFICATION
+// ============================================================
+
+model ResNet {
+    // Початкові згорткові шари
+    layer Conv2D(3, 64, 7, stride=2, padding=3)
+    activation ReLU
+    layer MaxPool2D(3, stride=2, padding=1)
+    
+    // ResNet блок 1
+    layer Conv2D(64, 64, 3, padding=1)
+    activation ReLU
+    layer Conv2D(64, 64, 3, padding=1)
+    activation ReLU
+    
+    // ResNet блок 2
+    layer Conv2D(64, 128, 3, stride=2, padding=1)
+    activation ReLU
+    layer Conv2D(128, 128, 3, padding=1)
+    activation ReLU
+    
+    // ResNet блок 3
+    layer Conv2D(128, 256, 3, stride=2, padding=1)
+    activation ReLU
+    layer Conv2D(256, 256, 3, padding=1)
+    activation ReLU
+    
+    // ResNet блок 4
+    layer Conv2D(256, 512, 3, stride=2, padding=1)
+    activation ReLU
+    layer Conv2D(512, 512, 3, padding=1)
+    activation ReLU
+    
+    // Класифікатор
+    layer Flatten()
+    layer Dense(512 * 7 * 7, 4096)
+    activation ReLU
+    layer Dropout(0.5)
+    layer Dense(4096, 1000)
+    activation Softmax
+}
+
+train ResNet {
+    data = "imagenet"
+    epochs = 90
+    batch_size = 256
+    lr = 0.1
+    optimizer = SGD(momentum=0.9)
+}

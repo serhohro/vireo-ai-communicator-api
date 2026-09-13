@@ -1,0 +1,266 @@
+// ============================================================
+// VIREO CORE GRAMMAR (Lark)
+// Версія: 3.0.0
+// ============================================================
+
+// ============================================================
+// ПРОГРАМА
+// ============================================================
+
+program: statement*
+
+statement: import_stmt
+         | variable_def
+         | function_def
+         | model_def
+         | agent_def
+         | contract_def
+         | negotiation_def
+         | if_stmt
+         | while_stmt
+         | for_stmt
+         | print_stmt
+         | return_stmt
+         | expression_stmt
+         | security_policy
+
+// ============================================================
+// ІМПОРТИ
+// ============================================================
+
+import_stmt: "import" IDENTIFIER
+
+// ============================================================
+// ЗМІННІ
+// ============================================================
+
+variable_def: "let" IDENTIFIER "=" expression
+
+// ============================================================
+// ФУНКЦІЇ
+// ============================================================
+
+function_def: "fn" IDENTIFIER "(" [parameter_list] ")" block
+
+parameter_list: IDENTIFIER ["," IDENTIFIER]*
+
+// ============================================================
+// БЛОКИ
+// ============================================================
+
+block: "{" statement* "}"
+
+// ============================================================
+// МОДЕЛІ (ML)
+// ============================================================
+
+model_def: "model" IDENTIFIER block
+
+model_layer: "layer" IDENTIFIER "(" [argument_list] ")"
+
+model_activation: "activation" IDENTIFIER
+
+model_loss: "loss" IDENTIFIER ["(" [argument_list] ")"]
+
+model_optimizer: "optimizer" IDENTIFIER ["(" [argument_list] ")"]
+
+model_metrics: "metrics" "[" IDENTIFIER ["," IDENTIFIER]* "]"
+
+// ============================================================
+// АГЕНТИ
+// ============================================================
+
+agent_def: "agent" IDENTIFIER block
+
+agent_identity: "identity" ":" STRING
+
+agent_capability: "capability" IDENTIFIER "(" [parameter_list] ")"
+
+agent_role: "role" ":" STRING
+
+agent_trust: "trust" ":" expression
+
+agent_reputation: "reputation" ":" expression
+
+// ============================================================
+// КОНТРАКТИ
+// ============================================================
+
+contract_def: "contract" IDENTIFIER block
+
+contract_field: IDENTIFIER ":" type "=" expression
+
+contract_condition: "condition" expression
+
+contract_invariant: "invariant" expression
+
+contract_verify: "verify" expression
+
+contract_allowed_actions: "allowed_actions" ":" array
+
+contract_required_approvals: "required_approvals" ":" NUMBER
+
+// ============================================================
+// ПЕРЕГОВОРИ
+// ============================================================
+
+negotiation_def: "negotiation" IDENTIFIER block
+
+negotiation_party: "party" IDENTIFIER ":" IDENTIFIER
+
+negotiation_timeout: "timeout" "=" NUMBER "s"
+
+negotiation_verify_timeout: "verify_timeout" "=" NUMBER "s"
+
+negotiation_max_rounds: "max_rounds" "=" NUMBER
+
+negotiation_on_offer: "on" "offer" "(" IDENTIFIER ":" IDENTIFIER ")" block
+
+negotiation_on_commit: "on" "commit" block
+
+negotiation_on_verify: "on" "verify" block
+
+negotiation_on_escalate: "on" "escalate" block
+
+// ============================================================
+// БЕЗПЕКА
+// ============================================================
+
+security_policy: "security" block
+
+encryption: "encrypt" "(" expression "," expression ")"
+
+signature: "sign" "(" expression "," expression ")"
+
+verification: "verify" "(" expression "," expression "," expression ")"
+
+// ============================================================
+// КОНТРОЛЬ ПОТОКУ
+// ============================================================
+
+if_stmt: "if" expression block ["else" block]
+
+while_stmt: "while" expression block
+
+for_stmt: "for" IDENTIFIER "in" expression block
+
+// ============================================================
+// ВИВІД ТА ПОВЕРНЕННЯ
+// ============================================================
+
+print_stmt: "print" "(" [expression] ")"
+
+return_stmt: "return" [expression]
+
+expression_stmt: expression
+
+// ============================================================
+// ВИРАЗИ
+// ============================================================
+
+expression: logical_or
+
+logical_or: logical_and ["||" logical_and]*
+
+logical_and: comparison ["&&" comparison]*
+
+comparison: addition [("==" | "!=" | "<" | ">" | "<=" | ">=") addition]
+
+addition: multiplication [("+" | "-") multiplication]*
+
+multiplication: unary [("*" | "/" | "%") unary]*
+
+unary: ["-" | "!"] primary
+
+primary: literal
+       | IDENTIFIER
+       | function_call
+       | "(" expression ")"
+       | array
+       | object
+       | did_literal
+       | tensor_literal
+
+// ============================================================
+// ЛІТЕРАЛИ
+// ============================================================
+
+literal: NUMBER
+       | FLOAT
+       | STRING
+       | "true"
+       | "false"
+       | "none"
+
+function_call: IDENTIFIER "(" [argument_list] ")"
+
+argument_list: expression ["," expression]*
+
+array: "[" [expression_list] "]"
+
+object: "{" [field_list] "}"
+
+expression_list: expression ["," expression]*
+
+field_list: IDENTIFIER ":" expression ["," IDENTIFIER ":" expression]*
+
+did_literal: "did:" IDENTIFIER ":" IDENTIFIER
+
+tensor_literal: "Tensor" "(" array ")"
+
+// ============================================================
+// ТИПИ
+// ============================================================
+
+type: "Int"
+     | "Float"
+     | "String"
+     | "Bool"
+     | "List" "[" type "]"
+     | "Map" "[" type "," type "]"
+     | "DID"
+     | "Agent"
+     | "Contract"
+     | IDENTIFIER
+
+// ============================================================
+// ТЕНЗОРНІ ОПЕРАЦІЇ
+// ============================================================
+
+tensor_add: expression "+" expression
+tensor_sub: expression "-" expression
+tensor_mul: expression "*" expression
+tensor_div: expression "/" expression
+tensor_matmul: expression "." "matmul" "(" expression ")"
+tensor_transpose: expression "." "transpose" "(" ")"
+tensor_reshape: expression "." "reshape" "(" array ")"
+
+// ============================================================
+// ЛЕКСЕМИ
+// ============================================================
+
+IDENTIFIER: LETTER (LETTER | DIGIT | "_")*
+
+NUMBER: DIGIT+
+
+FLOAT: DIGIT+ "." DIGIT+
+
+STRING: "\"" (CHARACTER | ESCAPE)* "\""
+
+DID: "did:" IDENTIFIER ":" IDENTIFIER
+
+COMMENT: "//" /[^\n]*/
+       | "/*" /[^*]* "*/"
+
+// ============================================================
+// БАЗОВІ ЛЕКСЕМИ
+// ============================================================
+
+LETTER: "a".."z" | "A".."Z"
+DIGIT: "0".."9"
+CHARACTER: /[^"\n\\]/
+ESCAPE: "\\" ("n" | "t" | "\"" | "'" | "\\")
+
+%import common.WS
+%ignore WS
+%ignore COMMENT

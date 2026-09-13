@@ -1,0 +1,23 @@
+{
+  "filename": "done_v3_0.bin",
+  "size": 231,
+  "hash": "190070629d1af290153fe983c424f2052911e0120cff49e6557d7692d48e8add",
+  "data": {
+    "version": "3.0.0",
+    "type": "done",
+    "id": "msg_1234567895",
+    "sender": "did:vireo:bob",
+    "recipient": "did:vireo:alice",
+    "timestamp": 1700000005,
+    "nonce": "n_abcdef128",
+    "payload": {
+      "status": "success",
+      "payment": 75,
+      "completed_at": 1700000010,
+      "receipt": "rcpt_123456",
+      "feedback": "Task completed successfully"
+    }
+  },
+  "generated": "2026-09-05T22:50:57.026180",
+  "version": "3.0.0"
+}

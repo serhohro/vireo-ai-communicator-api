@@ -1,0 +1,24 @@
+{
+  "filename": "commit_v3_0.bin",
+  "size": 214,
+  "hash": "0ba104a3609228c138306d071fa65fb4b1ae075000a760c34ef8aa84fc87838c",
+  "data": {
+    "version": "3.0.0",
+    "type": "commit",
+    "id": "msg_1234567891",
+    "sender": "did:vireo:bob",
+    "recipient": "did:vireo:alice",
+    "timestamp": 1700000001,
+    "nonce": "n_abcdef124",
+    "payload": {
+      "accepted": true,
+      "counter_offer": {
+        "price": 75,
+        "deadline": "2024-12-20"
+      },
+      "signature": "sig_commit_123456"
+    }
+  },
+  "generated": "2026-09-05T22:50:57.021181",
+  "version": "3.0.0"
+}
