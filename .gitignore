@@ -106,3 +106,19 @@ fix_*.py
 # ── Docker ───────────────────────────────────────────────────────
 *.pid
 *.sock
+# Vireo - TypeScript SDK
+sdk/typescript/node_modules/
+sdk/typescript/dist/
+sdk/typescript/coverage/
+
+# Backup
+.git.backup-*/
+
+# Editor
+.vscode/
+.idea/
+
+# Backups
+*.bak
+*.backup
+*.orig
