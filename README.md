@@ -6,18 +6,18 @@ AI-to-AI communication protocol with built-in Ed25519, DIDs, and contract lifecy
 
 ---
 
-## Why "the world's first"?
+## Why Vireo
 
-Vireo is the first system that unifies **four layers** in a single language:
+Vireo unifies four layers in a single protocol:
 
 | Layer | Vireo provides | Others |
-|-------|----------------|--------|
-| **Language** | Vireo DSL for agent coordination | FIPA-ACL (1990s) - protocol only |
-| **Protocol** | 96-byte wire + RFC 8785 JCS | A2A - JSON-RPC only |
-| **Cryptography** | Ed25519 + BLAKE2b-256 | MCP - no crypto |
+|---|---|---|
+| **Language** | Vireo DSL for agent coordination | FIPA-ACL (1990s) — protocol only |
+| **Protocol** | 96-byte wire + RFC 8785 JCS | A2A — JSON-RPC only |
+| **Cryptography** | Ed25519 + BLAKE2b-256 | MCP — no crypto |
 | **Identity** | DID-based (`did:vireo:...`) | None in A2A/MCP |
 
-No other system combines all four.
+No other AI-to-AI protocol combines all four layers — language, wire format, cryptography, and identity — in a single deterministic format.
 
 **What makes it "first":**
 
