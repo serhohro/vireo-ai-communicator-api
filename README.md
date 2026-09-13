@@ -38,7 +38,7 @@ No other AI-to-AI protocol combines all four layers — language, wire format, c
 | Trust bootstrap (challenge-response) | Implemented |
 | Contract-level verification | Implemented |
 | LLM provider adapters (9 providers) | Partial |
-| **Cross-language conformance (Python ↔ Rust)** | **Implemented (v3.2.0)** |
+| **Cross-language conformance (Python ↔ Rust ↔ TypeScript)	Implemented (v3.3.0)** |
 | Rust SDK | Implemented (v3.2.0) |
 | TypeScript SDK | v3.3 target |
 | WASM runtime | v3.3 target |
