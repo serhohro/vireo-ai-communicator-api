@@ -98,7 +98,7 @@ Illegal transitions are physically forbidden by `VireoStateMachine`.
 |----------|------|---------|--------|
 | Python | `core/` + `api/` | v3.1.0 | 32/32 tests pass |
 | Rust | `sdk/rust/` | v3.2.0 | 19/19 unit tests + 1/1 conformance pass |
-| TypeScript | `sdk/typescript/` | — | v3.3 target |
+| **TypeScript** | **`sdk/typescript/`** | **v3.3.0** | **10/10 tests + 7/7 conformance** ✅ |
 
 ---
 
