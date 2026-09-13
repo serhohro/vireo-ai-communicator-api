@@ -72,10 +72,30 @@ jobs:
       - name: Cross-language conformance test
         run: cargo test --test test_vectors -- --nocapture
 
+  typescript:
+    name: TypeScript SDK conformance
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sdk/typescript
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run conformance tests
+        run: npm test
+
   conformance-status:
     name: North Star
     runs-on: ubuntu-latest
-    needs: [python, rust]
+    needs: [python, rust, typescript]
     steps:
       - name: All conformance checks passed
-        run: echo "✅ Python ↔ Rust byte-identical. North Star achieved."
+        run: echo "✅ Python ↔ Rust ↔ TypeScript byte-identical. North Star achieved."
