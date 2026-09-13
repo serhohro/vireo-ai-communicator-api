@@ -109,8 +109,8 @@ Illegal transitions are physically forbidden by `VireoStateMachine`.
 ### Python
 
 ```bash
-git clone https://github.com/serhohro/vireo-ai-communicator-4.git
-cd vireo-ai-communicator-4
+git clone https://github.com/serhohro/vireo-ai-communicator-api.git
+cd vireo-ai-communicator-api
 pip install -r requirements.txt
 python -m api.server
 Then open http://localhost:5000/web.
