@@ -1,8 +1,8 @@
 # Vireo
 
-**The world's first AI-to-AI communication language with built-in Ed25519, DIDs, and contract lifecycle.**
+# Vireo — AI-to-AI Communication Protocol
 
-*Experimental proof-of-concept. Do not use in production without a security audit.*
+AI-to-AI communication protocol with built-in Ed25519, DIDs, and contract lifecycle. Byte-identical cross-language wire format (Python ↔ Rust).
 
 ---
 
