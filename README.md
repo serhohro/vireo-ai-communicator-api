@@ -22,8 +22,7 @@ No other AI-to-AI protocol combines all four layers — language, wire format, c
 - **Ed25519 built into the wire format** — every message is signed
 - **DIDs as first-class identity** — no central authority
 - **Contract lifecycle enforced** — `DISCOVER → PROPOSE → NEGOTIATE → COMMIT → EXECUTE → VERIFY → DONE`
-- **Deterministic bytes — identical in Python, Rust, and TypeScript
----
+- **Deterministic bytes** — identical in Python, Rust, and TypeScript
 
 ## Status: v3.3.0 — TypeScript SDK + Triple-Language Conformance
 
