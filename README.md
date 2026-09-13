@@ -133,8 +133,10 @@ cd sdk/rust
 cargo test
 Result: 19 unit tests passed + 1 cross-language vector passed.
 
-Cross-Language (North Star)
-bash
+## Cross-Language (North Star)
+
+```bash
+
 # 1. Python generates the vector
 python scripts/generate_test_vectors
 
