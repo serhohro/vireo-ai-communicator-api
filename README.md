@@ -1,6 +1,8 @@
 # Vireo — AI-to-AI Communication Language and Wire Protocol
 
-AI-to-AI communication language and wire protocol with built-in Ed25519, DIDs, and contract lifecycle. **Byte-identical cross-language wire format (Python ↔ Rust ↔ TypeScript).**
+AI-to-AI communication language and wire protocol with built-in Ed25519, DIDs, and contract lifecycle. Byte-identical cross-language wire format (Python ↔ Rust).
+
+> **Standards aren't declared. They're reproduced.**
 
 ---
 
@@ -22,12 +24,14 @@ No other AI-to-AI protocol combines all four layers — language, wire format, c
 - **Ed25519 built into the wire format** — every message is signed
 - **DIDs as first-class identity** — no central authority
 - **Contract lifecycle enforced** — `DISCOVER → PROPOSE → NEGOTIATE → COMMIT → EXECUTE → VERIFY → DONE`
-- **Deterministic bytes** — identical in Python, Rust, and TypeScript
+- **Deterministic bytes** — identical in Python and Rust (TypeScript pending)
 
-## Status: v3.3.0 — TypeScript SDK + Triple-Language Conformance
+---
+
+## Status: v3.2.0 — Rust SDK + Cross-Language Conformance
 
 | Component | Status |
-|-----------|--------|
+|---|---|
 | Wire format (96B header + RFC 8785 JCS) | Implemented (Python + Rust) |
 | Ed25519 signing and verification | Implemented (Python + Rust) |
 | BLAKE2b-256 hashing | Implemented (Python + Rust) |
@@ -37,46 +41,52 @@ No other AI-to-AI protocol combines all four layers — language, wire format, c
 | Trust bootstrap (challenge-response) | Implemented |
 | Contract-level verification | Implemented |
 | LLM provider adapters (9 providers) | Partial |
-| **Cross-language conformance (Python ↔ Rust ↔ TypeScript)	Implemented (v3.3.0)** |
-| Rust SDK	Implemented (v3.2.0) |
-| TypeScript SDK	✅ Implemented (v3.3.0) |
+| Cross-language conformance (Python ↔ Rust) | Implemented (v3.2.0) |
+| Rust SDK | Implemented (v3.2.0) |
+| TypeScript SDK | v3.3 target |
 | WASM runtime | v3.3 target |
 | Semantic AST Pass | v3.3 target |
 
-Conformance: 32 / 32 tests passed (Python 3.11.9) + 19 / 19 (Rust 1.98.1) + 10 / 10 (TypeScript 20) + 1 / 1 cross-language vector
+**Conformance:** 32 / 32 tests passed (Python 3.11.9) + 19 / 19 (Rust 1.98.1) + 1 / 1 cross-language vector
 
-**Benchmarks** (measured, not marketing):
+---
+
+## Benchmarks (measured, not marketing)
 
 | Metric | Result |
-|--------|--------|
+|---|---|
 | Wire size (small) | 2.58x smaller than JSON |
 | Wire size (medium) | 1.79x smaller |
 | BLAKE2b vs SHA-256 | 1.53x faster |
 | Ed25519 sign | 39.3 us |
 | Ed25519 verify | 66.4 us |
-| Serialization speed | 0.42x-0.90x slower than JSON |
+| Serialization speed | 0.42x–0.90x slower than JSON |
 
-**Honest note:** Vireo trades raw serialization speed for **deterministic bytes** - required for cross-language Ed25519 signatures.
+**Honest note:** Vireo trades raw serialization speed for deterministic bytes — required for cross-language Ed25519 signatures.
 
 ---
 
 ## Architecture
-LLM = Reasoning Engine
-Vireo = Control Plane
-A2A = Agent Transport / Discovery
-MCP = Tool / Context Interface
-HTTP/WS/gRPC = Transport
 
-text
+```
+LLM            = Reasoning Engine
+Vireo          = Control Plane
+A2A            = Agent Transport / Discovery
+MCP            = Tool / Context Interface
+HTTP/WS/gRPC   = Transport
+```
 
-### Lifecycle
-DISCOVER -> PROPOSE -> NEGOTIATE -> COMMIT -> EXECUTE -> VERIFY -> DONE
-| | | | |
-REJECTED REJECTED CANCELLED FAILED ESCALATED
-| | |
-TIMEOUT TIMEOUT NEGOTIATE / DONE
+---
 
-text
+## Lifecycle
+
+```
+DISCOVER → PROPOSE → NEGOTIATE → COMMIT → EXECUTE → VERIFY → DONE
+              ↓          ↓          ↓         ↓         ↓
+           REJECTED   REJECTED   CANCELLED  FAILED  ESCALATED
+              ↓          ↓
+           TIMEOUT    TIMEOUT
+```
 
 Illegal transitions are physically forbidden by `VireoStateMachine`.
 
@@ -94,10 +104,10 @@ Illegal transitions are physically forbidden by `VireoStateMachine`.
 ## Implementations
 
 | Language | Path | Version | Status |
-|----------|------|---------|--------|
+|---|---|---|---|
 | Python | `core/` + `api/` | v3.1.0 | 32/32 tests pass |
 | Rust | `sdk/rust/` | v3.2.0 | 19/19 unit tests + 1/1 conformance pass |
-| **TypeScript** | **`sdk/typescript/`** | **v3.3.0** | **10/10 tests + 7/7 conformance** ✅ |
+| TypeScript | `sdk/typescript/` | — | v3.3 target |
 
 ---
 
@@ -110,38 +120,50 @@ git clone https://github.com/serhohro/vireo-ai-communicator-api.git
 cd vireo-ai-communicator-api
 pip install -r requirements.txt
 python -m api.server
+```
+
 Then open http://localhost:5000/web.
 
 ### Rust
+
 ```bash
 cd sdk/rust
 cargo test
 cargo test --test test_vectors -- --nocapture
-Conformance
-Python SDK
-bash
-pytest tests/conformance/ -v
-Result: 32 passed.
+```
+
+---
 
 ## Conformance
 
 ### Python SDK
 
 ```bash
-cd sdk/rust
-cargo test
-Result: 19 unit tests passed + 1 cross-language vector passed.
+pytest tests/conformance/ -v
+```
 
-## Cross-Language (North Star)
+Result: **32 passed.**
+
+### Rust SDK
 
 ```bash
+cd sdk/rust
+cargo test
+```
 
+Result: **19 unit tests passed + 1 cross-language vector passed.**
+
+### Cross-Language (North Star)
+
+```bash
 # 1. Python generates the vector
 python scripts/generate_test_vectors
 
 # 2. Rust verifies the same vector
 cd sdk/rust
 cargo test --test test_vectors -- --nocapture
+```
+
 Expected output:
 
 ```text
@@ -151,30 +173,41 @@ Expected output:
    ✅ Python signature verifies in Rust
    🎯 001_propose_commit — PASS
 ```
-European LLM Support
-Provider	Country
-Mistral AI	France
-Aleph Alpha	Germany
-Cohere	Switzerland
-The North Star
-"Prove that Vireo can make independently implemented AI agents interoperable."
 
-```markdown
-The proof is a single conformance test vector: `tests/conformance/vectors/001_propose_commit.json`
+---
+
+## European LLM Support
+
+| Provider | Country |
+|---|---|
+| Mistral AI | France |
+| Aleph Alpha | Germany |
+| Cohere | Switzerland |
+
+---
+
+## The North Star
+
+> **"Prove that Vireo can make independently implemented AI agents interoperable."**
+
+The proof is a single conformance test vector:
+
+```
+tests/conformance/vectors/001_propose_commit.json
+```
 
 When Python, Rust, and TypeScript produce identical `canonical_hex`, `wire_hash_hex`, and `signature_hex` — the North Star is achieved.
 
-✅ **Achieved on 2026-09-13:** Python, Rust, and TypeScript produce byte-identical output for vector `001_propose_commit`.
+**Current progress:** ✅ Python OK | ✅ Rust OK | ⏳ TypeScript pending
 
-**Current progress:** ✅ Python OK | ✅ Rust OK | ✅ TypeScript OK
-Achieved on 2026-09-11: Python and Rust produce byte-identical output
-for vector 001_propose_commit:
+**Achieved on 2026-09-11:** Python and Rust produce byte-identical output for vector `001_propose_commit`:
 
-canonical bytes: 226 B, identical
+- canonical bytes: **226 B, identical**
+- wire_hash: `011c2182af8206779ae3bc4ff145467a49ae0a2389ee54f940da9de24e7255db`
+- Ed25519 signature: **Python's signature verifies in Rust**
 
-wire_hash: 011c2182af8206779ae3bc4ff145467a49ae0a2389ee54f940da9de24e7255db
+---
 
-Ed25519 signature: Python's signature verifies in Rust.
+## License
 
-License
 Apache 2.0
