@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vireo v3.1 - AI-to-AI Communication</title>
+    <title>Vireo v3.3.0 - AI-to-AI Communication</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -268,7 +268,7 @@
     <div class="container">
 
         <header class="header">
-            <h1>🌿 Vireo <span>v3.1</span></h1>
+            <h1>🌿 Vireo <span>v3.3.0</span></h1>
             <p class="subtitle">AI-to-AI communication language with built-in Ed25519, DIDs, and contract lifecycle</p>
             <p class="subtitle" style="font-size:0.8em; color:#718096;">
                 Wire 0x0301 · Ed25519 + BLAKE2b-256 · RFC 8785 JCS · DIDs · Contract Lifecycle
@@ -290,7 +290,7 @@
             <span class="status-item">🌐 Wire: 0x0301</span>
             <span class="status-item">🔐 Ed25519 + BLAKE2b-256</span>
             <span class="status-item">✅ 32/32 Python · 19/19 Rust · 10/10 TypeScript</span>
-            <span class="status-item"><span class="badge green">v3.1</span></span>
+            <span class="status-item"><span class="badge green">v3.3.0</span></span>
         </div>
 
         <div class="nav-tabs">
@@ -300,7 +300,8 @@
             <button class="nav-tab" data-tab="wire">🌐 Open Wire <span class="v3-badge">v3.1</span></button>
             <button class="nav-tab" data-tab="did">🔐 DIDs <span class="v3-badge">v3.1</span></button>
             <button class="nav-tab" data-tab="wasm">⚡ WASM <span class="v3-badge" style="background:#ed8936;">v3.2</span></button>
-            <button class="nav-tab" data-tab="rust">🦀 Rust <span class="v3-badge" style="background:#ed8936;">v3.2</span></button>
+            <button class="nav-tab" data-tab="rust">🦀 Rust <span class="v3-badge" style="background:#48bb78;">v3.2</span></button>
+            <button class="nav-tab" data-tab="typescript">🟦 TypeScript <span class="v3-badge" style="background:#48bb78;">v3.3</span></button>
             <button class="nav-tab" data-tab="mcp">🔌 MCP <span class="v3-badge" style="background:#ed8936;">v3.2</span></button>
             <button class="nav-tab" data-tab="providers">📡 Providers</button>
             <button class="nav-tab" data-tab="chat">💬 Chat</button>
@@ -310,7 +311,7 @@
 
         <div id="tab-autonomous" class="tab-content active">
             <div class="card">
-                <h3><span class="icon">🤖</span> Autonomous AI-to-AI Communication <span style="font-size:0.5em; color:#48bb78;">v3.1</span></h3>
+                <h3><span class="icon">🤖</span> Autonomous AI-to-AI Communication <span style="font-size:0.5em; color:#48bb78;">v3.3.0</span></h3>
                 <p style="color:#a0aec0; margin-bottom:15px;">
                     Two AI agents negotiate and execute tasks autonomously.
                     State machine + Ed25519 + nonce replay protection enforced.
@@ -358,7 +359,7 @@
 
         <div id="tab-agents" class="tab-content">
             <div class="card">
-                <h3><span class="icon">🧠</span> Agents Management <span style="font-size:0.5em; color:#63b3ed;">v3.1</span></h3>
+                <h3><span class="icon">🧠</span> Agents Management <span style="font-size:0.5em; color:#63b3ed;">v3.3.0</span></h3>
                 <p style="color:#a0aec0; margin-bottom:15px;">Each agent gets a real Ed25519 keypair and DID.</p>
                 <div class="row">
                     <div>
@@ -385,7 +386,7 @@
 
         <div id="tab-contracts" class="tab-content">
             <div class="card">
-                <h3><span class="icon">📜</span> Contracts v3.1</h3>
+                <h3><span class="icon">📜</span> Contracts v3.3.0</h3>
                 <p style="color:#a0aec0; margin-bottom:15px;">
                     Create, execute, and verify contracts between agents.
                     State machine enforced: PROPOSE &rarr; NEGOTIATE &rarr; COMMIT &rarr; EXECUTE &rarr; VERIFY &rarr; DONE.
@@ -425,7 +426,7 @@
 
         <div id="tab-wire" class="tab-content">
             <div class="card">
-                <h3><span class="icon">🌐</span> Open Wire Protocol <span style="font-size:0.5em; color:#63b3ed;">v3.1</span></h3>
+                <h3><span class="icon">🌐</span> Open Wire Protocol <span style="font-size:0.5em; color:#63b3ed;">v3.3.0</span></h3>
                 <p style="color:#a0aec0; margin-bottom:15px;">
                     Canonical binary protocol. 96-byte header + RFC 8785 JCS payload.
                     Measured: <strong style="color:#48bb78;">up to 2.58x smaller</strong> than JSON for small messages.
@@ -440,7 +441,7 @@
 
         <div id="tab-did" class="tab-content">
             <div class="card">
-                <h3><span class="icon">🔐</span> DIDs &amp; Trust Bootstrap <span style="font-size:0.5em; color:#9f7aea;">v3.1</span></h3>
+                <h3><span class="icon">🔐</span> DIDs &amp; Trust Bootstrap <span style="font-size:0.5em; color:#9f7aea;">v3.3.0</span></h3>
                 <p style="color:#a0aec0; margin-bottom:15px;">
                     Decentralized Identifiers. Format: <code>did:vireo:&lt;base64url(BLAKE2b-256("agent:name"))&gt;</code>.
                     Ed25519 challenge-response trust bootstrap.
@@ -463,7 +464,7 @@
             <div class="card">
                 <h3><span class="icon">⚡</span> WASM Runtime <span style="font-size:0.5em; color:#ed8936;">planned v3.2</span></h3>
                 <p style="color:#ed8936; margin-bottom:15px;">
-                    <strong>NOT IMPLEMENTED IN v3.1.</strong> WASM runtime is planned for v3.2. See ROADMAP.md.
+                    <strong>NOT IMPLEMENTED IN v3.3.0.</strong> WASM runtime is planned for future release. See ROADMAP.md.
                 </p>
                 <div id="wasm-result" class="result-box warning" style="margin-top:15px;">
                     ⚠️ This feature is planned for v3.2.
@@ -473,12 +474,29 @@
 
         <div id="tab-rust" class="tab-content">
             <div class="card">
-                <h3><span class="icon">🦀</span> Rust SDK <span style="font-size:0.5em; color:#ed8936;">planned v3.2</span></h3>
+                <h3><span class="icon">🦀</span> Rust SDK <span style="font-size:0.5em; color:#48bb78;">implemented v3.2.0</span></h3>
                 <p style="color:#ed8936; margin-bottom:15px;">
-                    <strong>NOT IMPLEMENTED IN v3.1.</strong> Rust SDK is planned for v3.2. See ROADMAP.md.
+                    <strong>Rust SDK v3.2.0</strong> — Ed25519 + BLAKE2b-256 + RFC 8785 JCS. Byte-identical with Python and TypeScript. See sdk/rust/.
                 </p>
-                <div id="rust-result" class="result-box warning" style="margin-top:15px;">
-                    ⚠️ This feature is planned for v3.2.
+                <div id="rust-result" class="result-box success" style="margin-top:15px;">
+                    ✅ Rust SDK v3.2.0 available. See sdk/rust/.
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-typescript" class="tab-content">
+            <div class="card">
+                <h3><span class="icon">🟦</span> TypeScript SDK <span style="font-size:0.5em; color:#48bb78;">implemented v3.3.0</span></h3>
+                <p style="color:#48bb78; margin-bottom:15px;">
+                    <strong>TypeScript SDK v3.3.0</strong> — Ed25519 + BLAKE2b-256 + RFC 8785 JCS.
+                    Byte-identical with Python and Rust.
+                </p>
+                <p style="color:#a0aec0;">
+                    Install: <code>npm install @vireo-ai/sdk</code>
+                    <br>Reproduce: <code>cd sdk/typescript && npm test</code>
+                </p>
+                <div id="typescript-result" class="result-box success" style="margin-top:15px;">
+                    ✅ TypeScript SDK v3.3.0 available. See sdk/typescript/.
                 </div>
             </div>
         </div>
@@ -487,7 +505,7 @@
             <div class="card">
                 <h3><span class="icon">🔌</span> MCP Integration <span style="font-size:0.5em; color:#ed8936;">planned v3.2</span></h3>
                 <p style="color:#ed8936; margin-bottom:15px;">
-                    <strong>NOT IMPLEMENTED IN v3.1.</strong> MCP integration is planned for v3.2. See ROADMAP.md.
+                    <strong>NOT IMPLEMENTED IN v3.3.0.</strong> MCP integration is planned for future release. See ROADMAP.md.
                 </p>
                 <div id="mcp-result" class="result-box warning" style="margin-top:15px;">
                     ⚠️ This feature is planned for v3.2.
@@ -514,7 +532,7 @@
             <div class="card">
                 <h3><span class="icon">💬</span> AI Chat</h3>
                 <label class="label">📝 Message</label>
-                <input type="text" id="chat-message" value="What is Vireo v3.1?" />
+                <input type="text" id="chat-message" value="What is Vireo v3.3.0?" />
                 <label class="label" style="margin-top:10px;">🤖 Model</label>
                 <input type="text" id="chat-model" value="ollama" />
                 <button class="btn btn-green" onclick="sendChat()" style="margin-top:12px;">💬 Send</button>
@@ -527,7 +545,7 @@
         <div id="tab-docs" class="tab-content">
             <div class="card">
                 <h3><span class="icon">📚</span> Documentation</h3>
-                <p style="color:#a0aec0; margin-bottom:15px;">Vireo v3.1 API Documentation and Guides.</p>
+                <p style="color:#a0aec0; margin-bottom:15px;">Vireo v3.3.0 API Documentation and Guides.</p>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
                     <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:10px; border-left:3px solid #48bb78;">
                         <strong style="color:#48bb78;">📄 README</strong>
@@ -553,7 +571,7 @@
 
         <div id="tab-security" class="tab-content">
             <div class="card">
-                <h3><span class="icon">🔐</span> Security v3.1</h3>
+                <h3><span class="icon">🔐</span> Security v3.3.0</h3>
                 <p style="color:#a0aec0; margin-bottom:15px;">Real Ed25519 cryptography. No mocks.</p>
                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
                     <button class="btn btn-green" onclick="generateKeys()">🔑 Generate Keys</button>
@@ -568,7 +586,7 @@
 
         <footer class="footer">
             <p>
-                <strong>Vireo v3.1</strong> - AI-to-AI communication language with built-in Ed25519, DIDs, and contract lifecycle
+                <strong>Vireo v3.3.0</strong> - AI-to-AI communication language with built-in Ed25519, DIDs, and contract lifecycle
             </p>
             <p style="margin-top:5px;">
                 <a href="https://github.com/serhohro/vireo-ai-communicator-api" target="_blank">GitHub</a> ·
@@ -826,7 +844,7 @@
         }
 
         async function signMessageV3() {
-            const message = prompt('Enter message to sign:', 'Hello Vireo v3.1');
+            const message = prompt('Enter message to sign:', 'Hello Vireo v3.3.0');
             if (!message) return;
             const priv = prompt('Paste private_key_hex:');
             if (!priv) return;
@@ -844,7 +862,7 @@
         async function verifySignature() {
             const pub = prompt('Paste public_key_hex:');
             if (!pub) return;
-            const message = prompt('Enter message:', 'Hello Vireo v3.1');
+            const message = prompt('Enter message:', 'Hello Vireo v3.3.0');
             if (!message) return;
             const sig = prompt('Paste signature_hex:');
             if (!sig) return;
@@ -860,7 +878,7 @@
         }
 
         checkServerStatus();
-        console.log('Vireo v3.1 Web Interface loaded.');
+        console.log('Vireo v3.3.0 Web Interface loaded.');
         setInterval(checkServerStatus, 30000);
     </script>
 

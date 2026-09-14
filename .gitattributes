@@ -1,0 +1,48 @@
+# Default: normalize all text files to LF in repository
+* text=auto eol=lf
+
+# HTML — force LF
+*.html text eol=lf
+
+# Markdown, JSON, JS, CSS — LF
+*.md text eol=lf
+*.json text eol=lf
+*.js text eol=lf
+*.css text eol=lf
+
+# Python — LF
+*.py text eol=lf
+
+# Rust — LF
+*.rs text eol=lf
+
+# TypeScript — LF
+*.ts text eol=lf
+
+# YAML — LF
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Shell — LF
+*.sh text eol=lf
+
+# Windows-specific (if any)
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files — no conversion
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.pdf binary
+*.zip binary
+*.tar binary
+*.gz binary
+
+# Linguist — mark as vendored/generated
