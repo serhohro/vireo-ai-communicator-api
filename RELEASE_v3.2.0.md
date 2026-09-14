@@ -1,6 +1,6 @@
 # Vireo v3.2.0 — Rust SDK + Cross-Language Conformance
 
-**The world's first AI-to-AI communication language with built-in Ed25519, DIDs, and contract lifecycle.**
+**AI-to-AI communication language with built-in Ed25519, DIDs, and contract lifecycle.**
 
 *Experimental proof-of-concept — not production-ready.*
 

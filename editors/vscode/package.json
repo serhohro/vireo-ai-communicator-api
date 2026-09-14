@@ -2,7 +2,7 @@
 {
   "name": "vireo-language",
   "displayName": "Vireo Language",
-  "description": "Syntax highlighting, code snippets, and language support for Vireo — the world's first AI-to-AI communication language",
+  "description": "Syntax highlighting, code snippets, and language support for Vireo — AI-to-AI communication language",
   "version": "1.4.0",
   "publisher": "serhohro",
   "engines": {

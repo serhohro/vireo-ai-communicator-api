@@ -472,4 +472,4 @@ SOC 2 Type II
 
 FedRAMP
 
-Vireo — The World's First AI-to-AI Communication Language 🌿
+Vireo — AI-to-AI Communication Language 🌿

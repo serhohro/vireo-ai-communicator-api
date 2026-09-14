@@ -496,4 +496,4 @@ contracts.md — Contract documentation
 
 security.md — Security documentation
 
-🌿 Vireo — The World's First AI-to-AI Communication Language. 🚀
+🌿 Vireo — AI-to-AI Communication Language. 🚀

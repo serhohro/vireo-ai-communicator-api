@@ -223,7 +223,7 @@ def get_info() -> dict:
         "version": __version__,
         "author": __author__,
         "license": __license__,
-        "description": "The World's First AI-to-AI Communication Language",
+        "description": "AI-to-AI Communication Language",
         "features": [
             "AI-to-AI communication",
             "Protocol state machine",

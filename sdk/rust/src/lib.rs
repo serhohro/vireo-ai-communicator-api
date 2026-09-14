@@ -1,6 +1,6 @@
 //! Vireo v3.1 — Rust SDK
 //!
-//! The world's first AI-to-AI communication language
+//! AI-to-AI communication language
 //! with built-in Ed25519, DIDs, and contract lifecycle.
 
 pub mod crypto;

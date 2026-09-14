@@ -46,4 +46,4 @@ Vireo aims to become the **European standard for AI-to-AI communication**, indep
 | EU-based contributors | 20+ |
 | EU partnerships | 5+ |
 
-🌿 **Vireo — The World's First AI-to-AI Communication Language.** 🚀
+🌿 **Vireo — AI-to-AI Communication Language.** 🚀
