@@ -1,5 +1,5 @@
 # ═════════════════════════════════════════════════════════════════
-# Vireo v3.1 — .gitignore
+# Vireo — .gitignore
 # ═════════════════════════════════════════════════════════════════
 
 # ── Python ───────────────────────────────────────────────────────
@@ -54,6 +54,7 @@ target/
 # ── TypeScript / Node ────────────────────────────────────────────
 sdk/typescript/node_modules/
 sdk/typescript/dist/
+sdk/typescript/coverage/
 node_modules/
 *.tsbuildinfo
 
@@ -106,19 +107,14 @@ fix_*.py
 # ── Docker ───────────────────────────────────────────────────────
 *.pid
 *.sock
-# Vireo - TypeScript SDK
-sdk/typescript/node_modules/
-sdk/typescript/dist/
-sdk/typescript/coverage/
 
-# Backup
+# ── Git backups ──────────────────────────────────────────────────
 .git.backup-*/
 
-# Editor
-.vscode/
-.idea/
-
-# Backups
+# ── Backups ──────────────────────────────────────────────────────
 *.bak
 *.backup
 *.orig
+
+# ── Vireo Research — raw AI responses (not for publication) ──────
+vireo-research/responses-backup/
