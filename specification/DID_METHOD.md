@@ -23,24 +23,23 @@ AI agents need portable, self-certifying identity to:
 - Key rotation and revocation support.
 
 ## 3. DID Syntax
-did:vireo:<identifier>
+
+### 3.1 ABNF Grammar
+
+```abnf
+vireo-did = "did:vireo:" vireo-id
+vireo-id  = 32HEXDIG
+3.2 Identifier Derivation
+The identifier is derived deterministically from the public key:
 
 text
-
-Where `<identifier>` is derived as:
-first-32-hex-chars-of-SHA256(public-key-bytes)
-
+identifier = LOWERHEX( SHA256(public-key-bytes)[0:16] )
+3.3 Example
 text
-
-Example:
 did:vireo:a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef1234
-
-text
-
-## 4. DID Document
-
-### 4.1 Example DID Document
-```json
+4. DID Document
+4.1 Example DID Document
+json
 {
   "@context": "https://www.w3.org/ns/did/v1",
   "id": "did:vireo:a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef1234",
@@ -130,7 +129,12 @@ Sponsor email (if present) SHOULD be a dedicated contact, not personal.
 7.3 Operator Privacy
 DID registry operators SHOULD NOT log resolution requests.
 
-8. References
+8. Intellectual Property
+This specification is licensed under the Apache License 2.0.
+
+Contributions to this specification are made under the terms of the Apache License 2.0. Implementers are free to use, modify, and distribute this specification in accordance with the license.
+
+9. References
 W3C Decentralized Identifiers (DIDs) v1.0
 
 RFC 8032: EdDSA
