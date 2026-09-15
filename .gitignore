@@ -118,3 +118,6 @@ fix_*.py
 
 # ── Vireo Research — raw AI responses (not for publication) ──────
 vireo-research/responses-backup/
+
+# Research backup (full AI outputs, not published due to ToS)
+vireo-research/responses-backup/
