@@ -33,8 +33,7 @@ Requirements for the identifier:
 
 1. **Resolvable.** A resolver must be able to obtain the public key
    from the DID alone, without an out-of-band channel.
-2. **Self-certifying.** The DID Document must bind the identifier to
-   the key material used for signing.
+2. **TLS-anchored.** The DID Document is retrieved over HTTPS, binding the identifier to the domain's TLS certificate and to the key material published in the DID Document.
 3. **Normative.** There must be exactly one resolution model — no
    "registry OR local construction" ambiguity.
 4. **Rotatable.** Key rotation must be expressible as a signed update
@@ -45,6 +44,8 @@ Requirements for the identifier:
 The `did:vireo` method satisfies all five requirements by mapping the
 method-specific identifier to an HTTPS URL and reusing the normative
 `publicKeyMultibase` verification-method representation.
+
+Note on terminology: the method is not self-certifying in the did:key sense - the identifier does not embed the public key. Instead, the binding between identifier and key is anchored in the domain's TLS certificate and in the published DID Document. This is the same trust model as did:web and did:wba.
 
 ---
 
@@ -97,7 +98,7 @@ design, which was neither resolvable nor self-certifying.
 ```
 did:vireo:agent.example.com:agents:alice
 did:vireo:agent.example.com:agents:bob
-did:vireo:registry.vireo.ai:agents:did%3Akey-1
+did:vireo:registry.vireo.ai:agents:alice
 did:vireo:agents.acme.com:supply-chain:buyer-42
 ```
 
@@ -283,6 +284,13 @@ resolution model.
 
 ### 6.1 Create
 
+**HTTP binding:**
+
+- **Method:** `PUT`
+- **URL:** the resolution URL from Section 5.1 step 4 (i.e. `https://<domain>/<path>/did.json`)
+- **Content-Type:** `application/did+json`
+- **Body:** the DID Document (Section 4)
+
 **Inputs:**
 
 - `domain` — DNS name controlled by the subject
@@ -315,6 +323,12 @@ resolution model.
 
 ### 6.2 Read (Resolve)
 
+**HTTP binding:**
+
+- **Method:** `GET`
+- **URL:** the resolution URL from Section 5.1 step 4
+- **Accept:** `application/did+json`
+
 **Inputs:**
 
 - `did` — the DID string
@@ -332,6 +346,13 @@ resolution model.
 - All error codes from Section 5.2.
 
 ### 6.3 Update
+
+**HTTP binding:**
+
+- **Method:** `PUT`
+- **URL:** the resolution URL from Section 5.1 step 4
+- **Content-Type:** `application/did+json`
+- **Body:** the new DID Document
 
 **Inputs:**
 
@@ -369,6 +390,13 @@ signature itself. See KEY_LIFECYCLE.md for the full rotation
 protocol.
 
 ### 6.4 Deactivate
+
+**HTTP binding:**
+
+- **Method:** `PUT`
+- **URL:** the resolution URL from Section 5.1 step 4
+- **Content-Type:** `application/did+json`
+- **Body:** the DID Document with `"deactivated": true`
 
 **Inputs:**
 
