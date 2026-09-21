@@ -28,7 +28,7 @@ No other AI-to-AI protocol combines all four layers — language, wire format, c
 
 ---
 
-## Status: v3.2.0 — Rust SDK + Cross-Language Conformance
+## Status: v3.2.0 (Rust) — v3.3.0 (TypeScript + Triple-Language Conformance)
 
 | Component | Status |
 |---|---|
@@ -41,13 +41,14 @@ No other AI-to-AI protocol combines all four layers — language, wire format, c
 | Trust bootstrap (challenge-response) | Implemented |
 | Contract-level verification | Implemented |
 | LLM provider adapters (9 providers) | Partial |
-| Cross-language conformance (Python ↔ Rust ↔ TypeScript) | Implemented (v3.2.0) |
+| Cross-language conformance (Python ↔ Rust) | Implemented (v3.2.0) |
+| Cross-language conformance (Python ↔ Rust ↔ TypeScript) | Implemented (v3.3.0) |
 | Rust SDK | Implemented (v3.2.0) |
-| TypeScript SDK | Implemented (v3.2.0) |
+| TypeScript SDK | Implemented (v3.3.0) |
 | WASM runtime | v3.3 target |
 | Semantic AST Pass | v3.3 target |
 
-**Conformance:** 32 / 32 tests passed (Python 3.11.9) + 19 / 19 (Rust 1.98.1) + 1 / 1 cross-language vector
+**Conformance:** 32 / 32 tests passed (Python 3.11.9) + 19 / 19 (Rust 1.98.1) + 10 / 10 (TypeScript Node 20) + 1 / 1 cross-language vector
 
 ---
 
@@ -107,7 +108,7 @@ Illegal transitions are physically forbidden by `VireoStateMachine`.
 |---|---|---|---|
 | Python | `core/` + `api/` | v3.1.0 | 32/32 tests pass |
 | Rust | `sdk/rust/` | v3.2.0 | 19/19 unit tests + 1/1 conformance pass |
-| TypeScript | `sdk/typescript/` | v3.2.0 | 10/10 tests pass (incl. 1/1 conformance) |
+| TypeScript | `sdk/typescript/` | v3.3.0 | 10/10 tests pass (incl. 1/1 conformance) |
 
 ---
 
@@ -200,7 +201,8 @@ When Python, Rust, and TypeScript produce identical `canonical_hex`, `wire_hash_
 
 **Current progress:** ✅ Python OK | ✅ Rust OK | ✅ TypeScript OK
 
-**Achieved on 2026-09-11:** Python, Rust, and TypeScript produce byte-identical output for vector `001_propose_commit`:
+**Achieved on 2026-09-11 (v3.2.0):** Python and Rust produce byte-identical output.
+**Achieved on 2026-09-13 (v3.3.0):** Python, Rust, and TypeScript produce byte-identical output for vector `001_propose_commit`:
 
 - canonical bytes: **226 B, identical**
 - wire_hash: `011c2182af8206779ae3bc4ff145467a49ae0a2389ee54f940da9de24e7255db`
