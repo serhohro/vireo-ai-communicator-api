@@ -24,7 +24,7 @@ No other AI-to-AI protocol combines all four layers — language, wire format, c
 - **Ed25519 built into the wire format** — every message is signed
 - **DIDs as first-class identity** — no central authority
 - **Contract lifecycle enforced** — `DISCOVER → PROPOSE → NEGOTIATE → COMMIT → EXECUTE → VERIFY → DONE`
-- **Deterministic bytes** — identical in Python and Rust (TypeScript pending)
+- **Deterministic bytes** — identical in Python, Rust, and TypeScript
 
 ---
 
@@ -41,9 +41,9 @@ No other AI-to-AI protocol combines all four layers — language, wire format, c
 | Trust bootstrap (challenge-response) | Implemented |
 | Contract-level verification | Implemented |
 | LLM provider adapters (9 providers) | Partial |
-| Cross-language conformance (Python ↔ Rust) | Implemented (v3.2.0) |
+| Cross-language conformance (Python ↔ Rust ↔ TypeScript) | Implemented (v3.2.0) |
 | Rust SDK | Implemented (v3.2.0) |
-| TypeScript SDK | v3.3 target |
+| TypeScript SDK | Implemented (v3.2.0) |
 | WASM runtime | v3.3 target |
 | Semantic AST Pass | v3.3 target |
 
@@ -107,7 +107,7 @@ Illegal transitions are physically forbidden by `VireoStateMachine`.
 |---|---|---|---|
 | Python | `core/` + `api/` | v3.1.0 | 32/32 tests pass |
 | Rust | `sdk/rust/` | v3.2.0 | 19/19 unit tests + 1/1 conformance pass |
-| TypeScript | `sdk/typescript/` | — | v3.3 target |
+| TypeScript | `sdk/typescript/` | v3.2.0 | 10/10 tests pass (incl. 1/1 conformance) |
 
 ---
 
@@ -198,9 +198,9 @@ tests/conformance/vectors/001_propose_commit.json
 
 When Python, Rust, and TypeScript produce identical `canonical_hex`, `wire_hash_hex`, and `signature_hex` — the North Star is achieved.
 
-**Current progress:** ✅ Python OK | ✅ Rust OK | ⏳ TypeScript pending
+**Current progress:** ✅ Python OK | ✅ Rust OK | ✅ TypeScript OK
 
-**Achieved on 2026-09-11:** Python and Rust produce byte-identical output for vector `001_propose_commit`:
+**Achieved on 2026-09-11:** Python, Rust, and TypeScript produce byte-identical output for vector `001_propose_commit`:
 
 - canonical bytes: **226 B, identical**
 - wire_hash: `011c2182af8206779ae3bc4ff145467a49ae0a2389ee54f940da9de24e7255db`

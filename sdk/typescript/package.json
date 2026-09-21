@@ -1,6 +1,6 @@
 {
   "name": "@vireo-ai/sdk",
-  "version": "3.3.0",
+  "version": "3.2.0",
   "description": "Vireo TypeScript SDK — AI-to-AI communication language and wire protocol",
   "author": "Serhii (serhohro)",
   "license": "Apache-2.0",
