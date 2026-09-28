@@ -1,6 +1,12 @@
 # Vireo — AI-to-AI Communication Language and Wire Protocol
 
-AI-to-AI communication language and wire protocol with built-in Ed25519, DIDs, and contract lifecycle. Byte-identical cross-language wire format (Python ↔ Rust).
+[![W3C DID Method](https://img.shields.io/badge/W3C-DID%20Method%20Registry-blue)](https://www.w3.org/TR/did-extensions-methods/)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![CI](https://github.com/serhohro/vireo-ai-communicator-api/actions/workflows/conformance.yml/badge.svg)](https://github.com/serhohro/vireo-ai-communicator-api/actions/workflows/conformance.yml)
+
+AI-to-AI communication language and wire protocol with built-in Ed25519, DIDs, and contract lifecycle. Byte-identical cross-language wire format (Python ↔ Rust ↔ TypeScript).
+
+**`did:vireo` is registered in the [W3C DID Method Registry](https://www.w3.org/TR/did-extensions-methods/) (W3C Group Note, 26 September 2026).**
 
 > **Standards aren't declared. They're reproduced.**
 
