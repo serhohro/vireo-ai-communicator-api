@@ -219,3 +219,6 @@ When Python, Rust, and TypeScript produce identical `canonical_hex`, `wire_hash_
 ## License
 
 Apache 2.0
+
+
+<!-- Build status checked: November 2026 -->
